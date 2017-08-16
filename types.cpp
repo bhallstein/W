@@ -10,12 +10,6 @@
 
 /* W::Exception */
 
-W::Exception::Exception(const char *_msg, int _err)
-{
-	std::stringstream ss;
-	ss << _msg << " (error: " << _err << ")";
-	msg = ss.str();
-}
 W::Exception::Exception(const std::string &_msg, int _err)
 {
 	std::stringstream ss;

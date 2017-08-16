@@ -9,16 +9,15 @@ namespace W {
 	
 	namespace ReturnyType {
 		enum T {
-			EMPTY_RETURNY,
-			KILLER_RETURNY,
-			PAYLOAD_RETURNY		// has a string payload
+			Empty,
+			Killer,
+			Payload		// has a string payload
 		};
 	}
 	
 	class Returny {
 	public:
 		Returny(ReturnyType::T _type) : type(_type) { }
-		Returny(const Returny &r) : type(r.type), payload(r.payload) { }
 		bool operator==(Returny &r) {
 			return type == r.type;
 		}

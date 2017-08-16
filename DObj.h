@@ -92,9 +92,9 @@ namespace W {
 		DImage draws an image
 	 ***/
 	
-	class DImage : public _UniRectDObj {
+	class DImg : public _UniRectDObj {
 	public:
-		DImage(View *, const W::position &, const W::size &, Texture *, float opacity = 1, float rotation = 0);
+		DImg(View *, const W::position &, const W::size &, Texture *, float opacity = 1, float rotation = 0);
 		void setRot(float _r) { rotation = _r; setNeedsRecopy(); }
 		void setOpacity(float _o) { col.a = _o; setNeedsRecopy(); }
 		void setChunk(int a, int b, int c, int d) {

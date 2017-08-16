@@ -11,9 +11,9 @@
 
 #define GL_ARRAY_INITIAL_SIZE 256
 
-/********************************/
-/*** glData struct definition ***/
-/********************************/
+/**************************************/
+/*** glDataArrays struct definition ***/
+/**************************************/
 
 struct W::View::glDataArrays {
 	unsigned int array_size, array_used_size;

@@ -14,12 +14,12 @@ namespace W {
 	
 	namespace Corner {
 		enum T {
-			TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT
+			TopLeft, TopRight, BottomLeft, BottomRight
 		};
 	}
 	namespace PosType {
 		enum T {
-			FIXED, PROPORTIONAL
+			Fixed, Proportional
 		};
 	}
 	

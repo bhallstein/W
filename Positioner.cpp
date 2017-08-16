@@ -24,10 +24,10 @@ namespace W {
 		return true;
 	}
 	bool strToCorner(const std::string &s, Corner::T &c) {
-		if (s == "top left")          c = Corner::TOP_LEFT;
-		else if (s == "top right")    c = Corner::TOP_RIGHT;
-		else if (s == "bottom left")  c = Corner::BOTTOM_LEFT;
-		else if (s == "bottom right") c = Corner::BOTTOM_RIGHT;
+		if (s == "top left")          c = Corner::TopLeft;
+		else if (s == "top right")    c = Corner::TopRight;
+		else if (s == "bottom left")  c = Corner::BottomLeft;
+		else if (s == "bottom right") c = Corner::BottomRight;
 		else return false;
 		return true;
 	}
@@ -80,10 +80,10 @@ W::Positioner::Positioner(LuaObj *_l)
 		}
 		else {
 			string &c1 = sComponents[0], &c2 = sComponents[1];
-			sizing_method_x = (c1[c1.size()-1] == '%' ? PosType::PROPORTIONAL : PosType::FIXED);
-			sizing_method_y = (c2[c2.size()-1] == '%' ? PosType::PROPORTIONAL : PosType::FIXED);
-			strToT<float>(w, c1); if (sizing_method_x == PosType::PROPORTIONAL) w /= 100.0;
-			strToT<float>(h, c2); if (sizing_method_y == PosType::PROPORTIONAL) h /= 100.0;
+			sizing_method_x = (c1[c1.size()-1] == '%' ? PosType::Proportional : PosType::Fixed);
+			sizing_method_y = (c2[c2.size()-1] == '%' ? PosType::Proportional : PosType::Fixed);
+			strToT<float>(w, c1); if (sizing_method_x == PosType::Proportional) w /= 100.0;
+			strToT<float>(h, c2); if (sizing_method_y == PosType::Proportional) h /= 100.0;
 		}
 	}
 	
@@ -98,10 +98,10 @@ W::Positioner::Positioner(LuaObj *_l)
 		strSplit(s, sComponents, ',');
 		if (sComponents.size() == 2 && checkDistStr(sComponents[0]) && checkDistStr(sComponents[1])) {
 			string &c1 = sComponents[0], &c2 = sComponents[1];
-			pos_method_x = (c1[c1.size()-1] == '%' ? PosType::PROPORTIONAL : PosType::FIXED);
-			pos_method_y = (c2[c2.size()-1] == '%' ? PosType::PROPORTIONAL : PosType::FIXED);
-			strToT<float>(corner_x, c1); if (pos_method_x == PosType::PROPORTIONAL) corner_x /= 100.0;
-			strToT<float>(corner_y, c2); if (pos_method_y == PosType::PROPORTIONAL) corner_y /= 100.0;
+			pos_method_x = (c1[c1.size()-1] == '%' ? PosType::Proportional : PosType::Fixed);
+			pos_method_y = (c2[c2.size()-1] == '%' ? PosType::Proportional : PosType::Fixed);
+			strToT<float>(corner_x, c1); if (pos_method_x == PosType::Proportional) corner_x /= 100.0;
+			strToT<float>(corner_y, c2); if (pos_method_y == PosType::Proportional) corner_y /= 100.0;
 		}
 		else {
 			error = true;
@@ -117,7 +117,7 @@ W::Positioner::Positioner(LuaObj *_l)
 	LuaObj &l_corner = l["positioning_corner"];
 	downCase(l_corner.str_value);
 	if (l_corner.type == LuaObj::ValueType::NIL)
-		fixed_corner = Corner::TOP_LEFT;
+		fixed_corner = Corner::TopLeft;
 	else if (!strToCorner(l_corner.str_value, fixed_corner)) {
 		error = true;
 		errmsgs.push_back(
@@ -152,24 +152,24 @@ W::rect& W::Positioner::refresh(const size &container_size) {
 	const int &Ww = container_size.width;
 	const int &Wh = container_size.height;
 	
-	if (sizing_method_x == PosType::FIXED) _p.sz.width = w;
+	if (sizing_method_x == PosType::Fixed) _p.sz.width = w;
 	else _p.sz.width = w * Ww;
 	
-	if (sizing_method_y == PosType::FIXED) _p.sz.height = h;
+	if (sizing_method_y == PosType::Fixed) _p.sz.height = h;
 	else _p.sz.height = h * Wh;
 	
 	// Set x
-	if (fixed_corner == Corner::TOP_LEFT || fixed_corner == Corner::BOTTOM_LEFT)
-		_p.pos.x = (pos_method_x == PosType::FIXED ? corner_x : corner_x * Ww);
+	if (fixed_corner == Corner::TopLeft || fixed_corner == Corner::BottomLeft)
+		_p.pos.x = (pos_method_x == PosType::Fixed ? corner_x : corner_x * Ww);
 	else {
-		int rval = Ww - (pos_method_x == PosType::FIXED ? corner_x : corner_x * Ww);
+		int rval = Ww - (pos_method_x == PosType::Fixed ? corner_x : corner_x * Ww);
 		_p.pos.x = rval - _p.sz.width;
 	}
 	// Set y
-	if (fixed_corner == Corner::TOP_LEFT || fixed_corner == Corner::TOP_RIGHT)
-		_p.pos.y = (pos_method_y == PosType::FIXED ? corner_y : corner_y * Wh);
+	if (fixed_corner == Corner::TopLeft || fixed_corner == Corner::TopRight)
+		_p.pos.y = (pos_method_y == PosType::Fixed ? corner_y : corner_y * Wh);
 	else {
-		int bval = Wh - (pos_method_y == PosType::FIXED ? corner_y : corner_y * Wh);
+		int bval = Wh - (pos_method_y == PosType::Fixed ? corner_y : corner_y * Wh);
 		_p.pos.y = bval - _p.sz.height;
 	}
 	
@@ -177,6 +177,6 @@ W::rect& W::Positioner::refresh(const size &container_size) {
 }
 
 void W::Positioner::nudge(const position &delta) {
-	corner_x += (fixed_corner == Corner::TOP_LEFT || fixed_corner == Corner::BOTTOM_LEFT ? delta.x : -delta.x);
-	corner_y += (fixed_corner == Corner::TOP_LEFT || fixed_corner == Corner::TOP_RIGHT   ? delta.y : -delta.y);
+	corner_x += (fixed_corner == Corner::TopLeft || fixed_corner == Corner::BottomLeft ? delta.x : -delta.x);
+	corner_y += (fixed_corner == Corner::TopLeft || fixed_corner == Corner::TopRight   ? delta.y : -delta.y);
 }

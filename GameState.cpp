@@ -4,8 +4,8 @@
 /*** External W state push/pop fns ***/
 /*************************************/
 
-W::Returny W::KillerReturny(ReturnyType::KILLER_RETURNY);
-W::Returny W::EmptyReturny(ReturnyType::EMPTY_RETURNY);
+W::Returny W::KillerReturny(ReturnyType::Killer);
+W::Returny W::EmptyReturny(ReturnyType::Empty);
 
 void W::pushState(GameState *g) {
 	GameState::pushState(g);
@@ -20,7 +20,7 @@ void W::popState(W::Returny &r) {
 /**********************/
 
 bool W::GameState::_pop = false;
-W::Returny W::GameState::_returny(ReturnyType::EMPTY_RETURNY);
+W::Returny W::GameState::_returny(ReturnyType::Empty);
 std::vector<W::GameState*> W::GameState::_gsStack;
 
 

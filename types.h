@@ -109,9 +109,7 @@ namespace W {
 	/* Exceptions */
 	class Exception : public std::exception {
 	public:
-		Exception(const char *_msg) : msg(_msg) { }
 		Exception(const std::string &_msg) : msg(_msg) { }
-		Exception(const char *_msg, int _err);
 		Exception(const std::string &_msg, int _err);
 		~Exception() throw() { }
 		const char* what() {

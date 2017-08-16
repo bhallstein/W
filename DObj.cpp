@@ -98,11 +98,11 @@ W::DRect::DRect(View *_v, const position &_p, const size &_s, const Colour &_col
 }
 
 
-/*****************************/
-/*** DImage implementation ***/
-/*****************************/
+/***************************/
+/*** DImg implementation ***/
+/***************************/
 
-W::DImage::DImage(View *_v, const position &_p, const size &_s, Texture *_tex, float _opac, float _rot) :
+W::DImg::DImg(View *_v, const position &_p, const size &_s, Texture *_tex, float _opac, float _rot) :
 	_UniRectDObj(_v, _p, _s, Colour(1,1,1,_opac), _tex, _rot)
 {
 	// hai imagey
