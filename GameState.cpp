@@ -34,8 +34,6 @@ void W::popState(W::Returny &r) {
 bool W::GameState::_pop = false;
 W::Returny W::GameState::_returny(ReturnyType::Empty);
 std::vector<W::GameState*> W::GameState::_gsStack;
-W::GameState *W::GameState::_gsUnderConstruction = NULL;
-
 
 W::GameState::GameState(GameStateTranslucency _tr) :
 	translucent(_tr)
