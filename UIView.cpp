@@ -28,8 +28,6 @@ W::UIView::UIView(const std::string &viewname) :
 	dragloop(false),
 	cur_positioning_index(-1)
 {
-	createEvTypeMap();	// Make event type translation map for this uiview
-	
 	// Initialize from Lua
 	using std::string;
 	if (!initialize(viewname))
@@ -39,35 +37,40 @@ W::UIView::UIView(const std::string &viewname) :
 		);
 	updatePosition(_controller.window->getSize());
 	
+	Messenger::subscribeToMouseEvents(this, Callback(&UIView::mouseEvent, this), &rct);
+	
 	bgDRect = new DRect(this, position(), rct.sz, W::Colour::TransparentBlack);
 }
 
 W::UIView::~UIView()
 {
+	Messenger::unsubscribeFromMouseEvents(this, this);
 	delete bgDRect;
 }
 
-void W::UIView::processMouseEvent(Event *ev) {
+W::EventPropagation::T W::UIView::mouseEvent(Event *ev) {
+	using namespace EventType;
+	
 	if (dragloop) {
-		if (ev->type == EventType::MouseMove) {
+		if (ev->type == MouseMove) {
 			cur_positioner->nudge(ev->pos - drag_initial);
 			_updatePosition();
 		}
-		else if (ev->type == EventType::LMouseUp) {
-			Messenger::relinquishPrivilegedEventResponderStatus(this);
+		else if (ev->type == LMouseUp) {
+			Messenger::relinquishPrivilegedEventResponderStatus(this, MouseMove, this);
+			Messenger::relinquishPrivilegedEventResponderStatus(this, LMouseUp, this);
 			dragloop = false;
 		}
-		return;
 	}
 	
-	// Resubmit event, translated for UIView’s members
-	Event ev2(evTypeMap[ev->type], ev->pos);
+	else if (ev->type == EventType::LMouseDown && allowDrag
+		&& Messenger::requestPrivilegedEventResponderStatus(this, MouseMove, Callback(&UIView::mouseEvent, this))
+		&& Messenger::requestPrivilegedEventResponderStatus(this, LMouseUp, Callback(&UIView::mouseEvent, this))) {
+		drag_initial = ev->pos;
+		dragloop = true;
+	}
 	
-	bool wasDispatchedToElement = W::Messenger::dispatchPositionalEvent(&ev2);
-	
-	// If no element was found & allowDrag is true, perform dragloopery
-	if (!wasDispatchedToElement && allowDrag && ev->type == EventType::LMouseDown && Messenger::requestPrivilegedEventResponderStatus(Callback(&View::mouseEvent, (View*)this)))
-		drag_initial = ev->pos, dragloop = true;
+	return EventPropagation::ShouldStop;
 }
 
 void W::UIView::updatePosition(const size &winsize) {
@@ -287,7 +290,7 @@ W::UIElement* W::UIView::createElement(const std::string &limit, const std::stri
 		
 		// Create element
 		if (eltype == "button")
-			return new Button(this, name, pos, evTypeMap);
+			return new Button(name, pos, this);
 		else
 			throw Exception(
 				string("Invalid UIElement type '") + eltype + string("'")
@@ -301,13 +304,4 @@ W::UIElement* W::UIView::createElement(const std::string &limit, const std::stri
 			string("error: ") + exc.what()
 		);
 	}
-}
-
-void W::UIView::createEvTypeMap() {
-	using namespace EventType;
-	evTypeMap[MouseMove]  = Event::registerType();
-	evTypeMap[LMouseDown] = Event::registerType();
-	evTypeMap[LMouseUp]   = Event::registerType();
-	evTypeMap[RMouseDown] = Event::registerType();
-	evTypeMap[RMouseUp]   = Event::registerType();
 }

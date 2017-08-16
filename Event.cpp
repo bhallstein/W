@@ -25,6 +25,36 @@ W::Event::Event(EventType::T _type, KeyCode::T _key) : type(_type), key(_key) { 
 W::Event::Event(EventType::T _type, float _x) : type(_type), x(_x) { }
 W::Event::Event(EventType::T _type, int _touchID, const position &_pos, const position &_prev_pos) : type(_type), touchID(_touchID), pos(_pos), prev_pos(_prev_pos) { }
 
+bool W::Event::_isRaw() {
+	using namespace EventType;
+	return type >= RawMouseMove && type <= RawTouchCancelled;
+}
+bool W::Event::_isPositional() {
+	using namespace EventType;
+	return type >= MouseMove && type <= RawTouchCancelled;
+}
+bool W::Event::_isUI() {
+	using namespace EventType;
+	return type >= ButtonClick && type <= ButtonClick;	// lol
+}
+bool W::Event::_isTouch() {
+	using namespace EventType;
+	return type >= TouchMoved && type <= TouchCancelled;
+}
+
+void W::Event::_derawify() {
+	using namespace EventType;
+	if (type == RawMouseMove)           type = MouseMove;
+	else if (type == RawLMouseUp)       type = LMouseUp;
+	else if (type == RawLMouseDown)     type = LMouseDown;
+	else if (type == RawRMouseUp)       type = RMouseUp;
+	else if (type == RawRMouseDown)     type = RMouseDown;
+	else if (type == RawTouchDown)      type = TouchDown;
+	else if (type == RawTouchMoved)     type = TouchMoved;
+	else if (type == RawTouchUp)        type = TouchUp;
+	else if (type == RawTouchCancelled) type = TouchCancelled;
+}
+
 W::EventType::T W::Event::registerType() {
 	return _typecounter++;
 }

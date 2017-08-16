@@ -15,8 +15,8 @@
 #include "Callback.h"
 #include "DObj.h"
 
-W::UIElement::UIElement(const std::string &_name, W::Positioner *_pos, EvTypeMap &_evTypes) :
-	name(_name), positioner(_pos), evTypes(_evTypes)
+W::UIElement::UIElement(const std::string &_name, W::Positioner *_pos, View *_v) :
+	name(_name), positioner(_pos), view(_v)
 {
 	// hai element
 }
@@ -35,54 +35,54 @@ void W::UIElement::_updatePosition(const W::size &_s) {
 /* Button */
 /**********/
 
-W::Button::Button(View *_view, const std::string &_name, W::Positioner *_pos, EvTypeMap &_evTypes) :
-	UIElement(_name, _pos, _evTypes),
-	hover(false), active(false), view(_view),
+W::Button::Button(const std::string &_name, W::Positioner *_pos, View *_v) :
+	UIElement(_name, _pos, _v),
+	hover(false), active(false),
 	buttonClickEvent(EventType::ButtonClick),
 	btnrect(NULL)
 {
 	buttonClickEvent._payload = new std::string(name);
 	
 	Callback cb(&Button::recEv, this);
-	Messenger::subscribeToPositionalEventType(evTypes[EventType::MouseMove], cb, &rct);
-	Messenger::subscribeToPositionalEventType(evTypes[EventType::LMouseDown], cb, &rct);
-	Messenger::subscribeToPositionalEventType(evTypes[EventType::LMouseUp], cb, &rct);
+	Messenger::subscribeInView(view, EventType::MouseMove, cb, &rct);
+	Messenger::subscribeInView(view, EventType::LMouseDown, cb, &rct);
+	Messenger::subscribeInView(view, EventType::LMouseUp, cb, &rct);
 }
 W::Button::~Button()
 {
 	delete (std::string*)buttonClickEvent._payload;
 	if (btnrect) delete btnrect;
-	Messenger::unsubscribeFromPositionalEventType(evTypes[EventType::MouseMove], this);
-	Messenger::unsubscribeFromPositionalEventType(evTypes[EventType::LMouseDown], this);
-	Messenger::unsubscribeFromPositionalEventType(evTypes[EventType::LMouseUp], this);
+	Messenger::unsubscribeInView(view, EventType::MouseMove, this);
+	Messenger::unsubscribeInView(view, EventType::LMouseDown, this);
+	Messenger::unsubscribeInView(view, EventType::LMouseUp, this);
 }
 W::EventPropagation::T W::Button::recEv(W::Event *ev) {
 	using namespace EventType;
 	
-	if (ev->type == evTypes[LMouseDown]) {
+	if (ev->type == LMouseDown) {
 		active = true;
-		Messenger::requestPrivilegedResponderStatusForEventType(evTypes[MouseMove], Callback(&Button::recEv, this));
-		Messenger::requestPrivilegedResponderStatusForEventType(evTypes[LMouseUp], Callback(&Button::recEv, this));
+		Messenger::requestPrivilegedEventResponderStatus(view, MouseMove, Callback(&Button::recEv, this));
+		Messenger::requestPrivilegedEventResponderStatus(view, LMouseUp, Callback(&Button::recEv, this));
 	}
-	else if (ev->type == evTypes[MouseMove]) {
+	else if (ev->type == MouseMove) {
 		if (active) {
 			if (!rct.overlapsWith(ev->pos)) {
 				hover = false;
-				Messenger::relinquishPrivilegedResponderStatusForEventType(evTypes[MouseMove], this);
-				Messenger::relinquishPrivilegedResponderStatusForEventType(evTypes[LMouseUp], this);
+				Messenger::relinquishPrivilegedEventResponderStatus(view, MouseMove, this);
+				Messenger::relinquishPrivilegedEventResponderStatus(view, LMouseUp, this);
 			}
 		}
 		else {
 			hover = true;
 		}
 	}
-	else if (ev->type == evTypes[LMouseUp]) {
+	else if (ev->type == LMouseUp) {
 		if (active) {
 			active = false;
-			Messenger::relinquishPrivilegedResponderStatusForEventType(evTypes[MouseMove], this);
-			Messenger::relinquishPrivilegedResponderStatusForEventType(evTypes[LMouseUp], this);
+			Messenger::relinquishPrivilegedEventResponderStatus(view, MouseMove, this);
+			Messenger::relinquishPrivilegedEventResponderStatus(view, LMouseUp, this);
 			if (rct.overlapsWith(ev->pos))
-				Messenger::_dispatchUIEvent(&buttonClickEvent);
+				Messenger::dispatchEvent(&buttonClickEvent);
 		}
 	}
 	

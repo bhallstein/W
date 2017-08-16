@@ -40,6 +40,7 @@ W::View::View(const Positioner *_pos) :
 		_updatePosition();
 	}
 	
+	// Create gl arrays
 	array_size = GL_ARRAY_INITIAL_SIZE * 0.5;
 	increaseArraySize();
 }
@@ -62,17 +63,10 @@ void W::View::_updatePosition(const size &winsize) {
 	updatePosition(winsize);
 }
 
-W::EventPropagation::T W::View::mouseEvent(Event *ev) {
+void W::View::_convertEventCoords(Event *ev) {
 	ev->pos -= rct.pos;
-	processMouseEvent(ev);
-	return EventPropagation::ShouldStop;
-}
-
-void W::View::_subscribeToMouseEvents() {
-	Messenger::subscribeToMouseEvents(Callback(&View::mouseEvent, this), &rct);
-}
-void W::View::_unsubscribeFromMouseEvents() {
-	Messenger::unsubscribeFromMouseEvents(this);
+	ev->pos -= _offset;
+	convertEventCoords(ev);
 }
 
 void W::View::_addDObj(W::DObj *d) {

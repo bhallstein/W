@@ -28,7 +28,7 @@ namespace W {
 		UIView(const std::string &viewname);
 		~UIView();
 		
-		void processMouseEvent(Event *);
+		EventPropagation::T mouseEvent(Event *);
 //		void draw();
 		
 	protected:
@@ -66,11 +66,6 @@ namespace W {
 		void addElements(const std::string &limit, LuaObj *, orientation_enum);
 		UIElement* createElement(const std::string &limit, const std::string &name, LuaObj *, orientation_enum);
 			// These will throw, w/ useful error msg, if problem
-		
-		void createEvTypeMap();			// Translation table for event types subscribed
-		UIElement::EvTypeMap evTypeMap;	// to by UIElements. e.g. MouseMove => X
-										// (Specific to the UIView, since buttons will subscribe
-										// to view-specific mousey events submitted in processMouseEvent)
 		
 		DRect *bgDRect;
 	};

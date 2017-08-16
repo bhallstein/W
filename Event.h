@@ -21,15 +21,25 @@ namespace W {
 	namespace EventType {
 		typedef int T;
 		enum {
+			// Key
 			KeyDown, KeyUp,
-			MouseMove,
-			LMouseUp, LMouseDown, RMouseUp, RMouseDown,
-			ScreenEdgeTop, ScreenEdgeBottom, ScreenEdgeLeft, ScreenEdgeRight,
-			Closed,
-			ButtonClick,
 
-			TouchDown, TouchMoved, TouchUp, TouchCancelled,
-			Unknown
+			// Positional
+			MouseMove, LMouseUp, LMouseDown, RMouseUp, RMouseDown,
+				// Touch
+				TouchDown, TouchMoved, TouchUp, TouchCancelled,
+				// Raw
+				RawMouseMove, RawLMouseUp, RawLMouseDown, RawRMouseUp, RawRMouseDown,
+				RawTouchDown, RawTouchMoved, RawTouchUp, RawTouchCancelled,
+			
+			// ScreenEdge
+			ScreenEdgeTop, ScreenEdgeBottom, ScreenEdgeLeft, ScreenEdgeRight,
+			
+			// UI
+			ButtonClick,
+			
+			// Other
+			Closed, Unknown
 		};
 	}
 	
@@ -67,6 +77,14 @@ namespace W {
 		Event(W::EventType::T, W::KeyCode::T);
 		Event(W::EventType::T, float _x);
 		Event(EventType::T, int _touchID, const position &_pos, const position &_prev_pos = position(-1,-1));
+		
+		bool _isRaw();
+		bool _isPositional();
+		bool _isUI();
+		bool _isTouch();	// True if dispatched via the touch system: i.e. not
+							// TouchDown, which is dispatched via the positional system
+		
+		void _derawify();
 		
 		W::position pos;
 		W::position prev_pos;

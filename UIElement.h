@@ -28,9 +28,7 @@ namespace W {
 	
 	class UIElement {
 	public:
-		typedef std::map<EventType::T, EventType::T> EvTypeMap;
-		
-		UIElement(const std::string &_name, W::Positioner *, EvTypeMap &);
+		UIElement(const std::string &_name, W::Positioner *, View *);
 		~UIElement();
 		
 		void _updatePosition(const size &containersize);
@@ -44,13 +42,13 @@ namespace W {
 		std::string name;
 		W::Positioner *positioner;
 		rect rct;
-		std::map<EventType::T, EventType::T> &evTypes;
+		View *view;
 	};
 	
 	
 	class Button : public UIElement {
 	public:
-		Button(View *, const std::string &_name, W::Positioner *, EvTypeMap &);
+		Button(const std::string &_name, W::Positioner *, View *);
 		~Button();
 		EventPropagation::T recEv(Event *);
 		void activate();
@@ -61,7 +59,6 @@ namespace W {
 		bool active;
 		Event buttonClickEvent;
 		DRect *btnrect;
-		View *view;
 	};
 
 }

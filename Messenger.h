@@ -23,44 +23,55 @@ namespace W {
 	class EventResponder;
 	class Callback;
 	class GameState;
+	class View;
 	
 	class Messenger {
 	public:
-		static void subscribeToEventType(W::EventType::T, const W::Callback &);
-		static void unsubscribeFromEventType(W::EventType::T, void *);
-		
-		static void subscribeToPositionalEventType(W::EventType::T, const W::Callback &, W::rect *);
-		static void unsubscribeFromPositionalEventType(W::EventType::T, void *);
-		
-		static void subscribeToMouseEvents(const W::Callback &, W::rect *);
-		static void unsubscribeFromMouseEvents(void *);
-		
-		static bool requestPrivilegedEventResponderStatus(const W::Callback &);
-		static void relinquishPrivilegedEventResponderStatus(void *);
-		static bool requestPrivilegedResponderStatusForEventType(W::EventType::T, const W::Callback &);
-		static void relinquishPrivilegedResponderStatusForEventType(W::EventType::T, void *);
-		
+		// Dispatch
 		static bool dispatchEvent(W::Event *);
-		static bool dispatchPositionalEvent(W::Event *);
-		static void _dispatchUIEvent(W::Event *);
-		static bool _dispatchToPERs(W::Event *);
-			// Returns true if event was sent to a P.E.R., false otherwise
-		static void _dispatchTouchEvent(W::Event *);
 		
-		static void subscribeToUIEvent(const char *_element_name, W::EventType::T, const W::Callback &);
-		static void unsubscribeFromUIEvent(const char *_element_name, W::EventType::T, void *);
+		// Subscription
+		static void subscribe(W::EventType::T, const W::Callback &);
+		static void unsubscribe(W::EventType::T, void *);
+		
+		static void subscribeInView(View *, W::EventType::T, const W::Callback &, W::rect *);
+		static void unsubscribeInView(View *, W::EventType::T, void *);
+		
+		static void subscribeToMouseEvents(View *, const W::Callback &, W::rect *);
+		static void unsubscribeFromMouseEvents(View *, void *);
+		
+		static bool requestPrivilegedEventResponderStatus(View *, W::EventType::T, const W::Callback &);
+		static void relinquishPrivilegedEventResponderStatus(View *, W::EventType::T, void *);
+			// A P.E.R. receives positional events preferentially:
+			// - If there is a P.E.R. for a particular event type for a particular view,
+			//   it receives those events, and other subscribers do not.
 		
 		static bool subscribeToTouchEvent(int _touchID, const W::Callback &);
 		static void unsubscribeFromTouchEvent(int _touchID, void *);
 		
+		static void subscribeToUIEvent(const char *_element_name, W::EventType::T, const W::Callback &);
+		static void unsubscribeFromUIEvent(const char *_element_name, W::EventType::T, void *);
+		
+		// GameState/State management
 		static void _useTemporaryState();	// Save subscriptions in a temporary state, for transferal in setActive~
 		static void _setActiveGamestate(GameState *);
 		static void _gamestateDestroyed(GameState *);
 		
 	private:
-		struct _messenger_state;
-		static std::map<GameState*, _messenger_state*> _stateMap;
-		static _messenger_state *_s;	// The active state
+		Messenger() { }
+		
+		struct MState;
+		static std::map<GameState*, MState*> stateMap;
+		static MState *s;	// The active state
+		
+		static GameState *activeGS;
+		
+		// Private dispatch methods
+		static bool dispatchPositionally(W::Event *, View *);
+		static bool dispatchTouchically(W::Event *);
+		static bool dispatchUIEvent(W::Event *);
+		static bool dispatchToPERs(W::Event *, View *);
+
 		
 	};
 	

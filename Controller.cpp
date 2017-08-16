@@ -142,17 +142,9 @@ void W::Controller::update() {
 		Event *ev = *it;
 		if (ev->type == EventType::Closed)
 			g->handleCloseEvent();
-		else if (ev->type == EventType::LMouseDown || ev->type == EventType::LMouseUp
-				 || ev->type == EventType::RMouseDown || ev->type == EventType::RMouseUp
-				 || ev->type == EventType::MouseMove
-				 || ev->type == EventType::TouchDown)
-			Messenger::dispatchPositionalEvent(ev);
-		else if (ev->type == EventType::TouchMoved || ev->type == EventType::TouchUp || ev->type == EventType::TouchCancelled)
-			Messenger::_dispatchTouchEvent(ev);
 		else
 			Messenger::dispatchEvent(ev);
 		delete *it;
-//		if (GameState::_pop) break;
 	}
 	Event::_events.clear();
 

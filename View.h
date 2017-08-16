@@ -38,11 +38,8 @@ namespace W {
 		void _updatePosition();	// Gets the window size automatically
 		void _updatePosition(const size &winsize);
 		
-		W::EventPropagation::T mouseEvent(Event *);	// Converts event to view’s coordinates, and calls processMouseEvent()
-		virtual void processMouseEvent(Event *) { }	// Override to do something with mouse events
-		
-		void _subscribeToMouseEvents();		// Called by GS in addView()
-		void _unsubscribeFromMouseEvents();	// Called by GS in removeView()
+		void _convertEventCoords(Event *);				// Converts to view’s coordinates, and calls convertEventCoords() virtual
+		virtual void convertEventCoords(Event *) { }	// Override to perform further conversoin conversion of mouse events
 		
 		void _draw(const W::size &winSz);
 		
@@ -59,6 +56,8 @@ namespace W {
 			//  -> DObj::updateTexCoords();
 		
 		void dumpDObjs();
+		
+		const rect& getRct() { return rct; }
 		
 	protected:
 		Positioner *_positioner;

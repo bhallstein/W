@@ -84,7 +84,7 @@ void W::Window::beginDrawing(const size &winSize) {
 void W::Window::generateMouseMoveEvent() {
 	position p = getMousePosition();
 	if (p.x >= 0 && p.y >= 0 && p.x < sz.width && p.y < sz.height)
-		W::Event::_addEvent(new W::Event(EventType::MouseMove, p));
+		W::Event::_addEvent(new W::Event(EventType::RawMouseMove, p));
 	
 	static int generosity = 20, scrollMargin = 20;
 	// If within the view + generosity margin...
