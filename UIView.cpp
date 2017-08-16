@@ -14,7 +14,8 @@
 
 W::UIView::UIView(const std::string &viewname) :
 	View(NULL),
-	dragloop(false)
+	dragloop(false),
+	cur_positioning_index(-1)
 {
 	createEvTypeMap();	// Make event type translation map for this uiview
 	
@@ -26,11 +27,18 @@ W::UIView::UIView(const std::string &viewname) :
 			string("' - see log file for further details")
 		);
 	updatePosition(_window->getDimensions());
+	
+	rect r = {
+		position(),
+		rct.sz
+	};
+	bgDRect = new DrawnRect(this, r, W::Colour::TransparentBlack);
+	addDO(bgDRect, 0);
 }
 
 W::UIView::~UIView()
 {
-	// bai then
+	removeDO(bgDRect);
 }
 
 void W::UIView::processMouseEvent(Event *ev) {
@@ -46,44 +54,29 @@ void W::UIView::processMouseEvent(Event *ev) {
 		return;
 	}
 	
-	// If an element is under event, translate & resubmit.
-	UIElement *el = NULL;
-	// ...
+	// Resubmit event, translated for UIView’s members
+	Event ev2(evTypeMap[ev->type], ev->pos);
 	
-	// Otherwise, if allowDrag, do dragloopery
-	if (!el && allowDrag && ev->type == EventType::LEFTMOUSEDOWN && Messenger::requestPrivilegedEventResponderStatus(Callback(&View::receiveEvent, (View*)this)))
+	bool wasDispatchedToElement = W::Messenger::dispatchPositionalEvent(&ev2);
+	
+	// If no element was found & allowDrag is true, perform dragloopery
+	if (!wasDispatchedToElement && allowDrag && ev->type == EventType::LEFTMOUSEDOWN && Messenger::requestPrivilegedEventResponderStatus(Callback(&View::receiveEvent, (View*)this)))
 		drag_initial = ev->pos, dragloop = true;
-	
-//	Button *b = NULL;
-//	// Get last button that lies under the mouse
-//	for (std::vector<Button*>::iterator it = buttons.begin(); it < buttons.end(); it++) {
-//		Button *c = *it;
-//		if (c->pos.x <= ev->pos.x && c->pos.x + c->plan[0].sz.width > ev->pos.x
-//			&& c->pos.y <= ev->pos.y && c->pos.y + c->plan[0].sz.height > ev->pos.y)
-//			b = c;
-//	}
-//	if (b == NULL) {
-//		if (allowDrag && ev->type == EventType::LEFTMOUSEDOWN && Messenger::requestPrivilegedEventResponderStatus(Callback(&View::receiveEvent, (View*)this))) {
-//			dragloop = true;
-//			drag_initial = ev->pos;
-//		}
-//		return;
-//	}
 }
 
-void W::UIView::draw() {
-	// Draw background - subclass may override (otherwise, draws nothing)
-	drawCustomBackground();
-	// Draw elements
-	element_list *elvec = &(orientation == O_LANDSCAPE ?
-		landscape_elements :
-		portrait_elements)[cur_positioning_index];
-	for (element_list::iterator it = elvec->begin(); it < elvec->end(); it++) {
-		const position &pos = (*it)->pos;
-		const size &sz = (*it)->plan[0].sz;
-		drawRect(pos.x, pos.y, sz.width, sz.height, Colour::Black);
-	}
-}
+//void W::UIView::draw() {
+//	// Draw background - subclass may override (otherwise, draws nothing)
+//	drawCustomBackground();
+//	// Draw elements
+//	element_list *elvec = &(orientation == O_LANDSCAPE ?
+//		landscape_elements :
+//		portrait_elements)[cur_positioning_index];
+//	for (element_list::iterator it = elvec->begin(); it < elvec->end(); it++) {
+//		const position &pos = (*it)->pos;
+//		const size &sz = (*it)->plan[0].sz;
+//		drawRect(pos.x, pos.y, sz.width, sz.height, Colour::Black);
+//	}
+//}
 
 void W::UIView::updatePosition(const size &winsize) {
 	if (orientation_check)
@@ -92,6 +85,7 @@ void W::UIView::updatePosition(const size &winsize) {
 	std::vector<int> *limit_vec;
 	positioner_list *psnr_vec;
 	std::vector<element_list> *ellist_vec;
+	element_list *ellist;
 	
 	if (orientation == O_LANDSCAPE) {
 		limit_vec  = &landscape_positioning_limits;
@@ -103,27 +97,40 @@ void W::UIView::updatePosition(const size &winsize) {
 		psnr_vec   = &portrait_positioners;
 		ellist_vec = &portrait_elements;
 	}
-
-	// Set current positioning index
+	
+	// Get positioning index
 	// - Limits are "up to": a limit of 400 applies up to & including width 400
 	// - If width larger than greatest limit, the last limit is used
-	cur_positioning_index = -1;
-	for (std::vector<int>::iterator it = limit_vec->begin(); it < limit_vec->end(); it++, cur_positioning_index++)
+	int new_positioning_index = -1;
+	for (std::vector<int>::iterator it = limit_vec->begin(); it < limit_vec->end(); it++, new_positioning_index++)
 		if (*it > winsize.width)
 			break;
 	
+	// If change in index, deactivate current elements, activate new ones
+	if (new_positioning_index != cur_positioning_index) {
+		if (cur_positioning_index != -1) {
+			ellist = &ellist_vec->at(cur_positioning_index);
+			for (element_list::iterator it = ellist->begin(); it < ellist->end(); it++)
+				(*it)->deactivate();
+		}
+		ellist = &ellist_vec->at(new_positioning_index);
+		for (element_list::iterator it = ellist->begin(); it < ellist->end(); it++)
+			(*it)->activate();
+	}
+	cur_positioning_index = new_positioning_index;
+//	std::cout << "uiv: positioning index: " << cur_positioning_index << "\n";
+	
 	// Update position of self
 	cur_positioner = psnr_vec->at(cur_positioning_index);
-	rect &r = cur_positioner->refresh(winsize);
-	pos = r.pos;
-	plan[0].sz = r.sz;
+	rct = cur_positioner->refresh(winsize);
+//	std::cout << " - " << rct.pos.x << "," << rct.pos.y << " / " << rct.sz.width << "x" << rct.sz.height << "\n";
 	
 	allowDrag = cur_positioner->isDraggable();
 	
 	// Update element positions
-	element_list *ellist = &ellist_vec->at(cur_positioning_index);
+	ellist = &ellist_vec->at(cur_positioning_index);
 	for (element_list::iterator it = ellist->begin(); it < ellist->end(); it++)
-		(*it)->updatePosition(plan[0].sz);
+		(*it)->_updatePosition(rct.sz);
 }
 
 bool W::UIView::initialize(const std::string &viewname) {
@@ -131,7 +138,7 @@ bool W::UIView::initialize(const std::string &viewname) {
 	
 	LuaState ls;
 	if (!ls.loadFile(viewname.c_str())) {
-		W::log << "UIView: couldn’t open file \"" << viewname << "\"" << std::endl;
+		W::log << "UIView: couldn’t open file '" << viewname << "'" << std::endl;
 		return false;
 	}
 	
@@ -272,7 +279,7 @@ W::UIElement* W::UIView::createElement(const std::string &limit, const std::stri
 		
 		// Create element
 		if (eltype == "button")
-			return new Button(name, pos, evTypeMap);
+			return new Button(this, name, pos, evTypeMap);
 		else
 			throw Exception(
 				string("Invalid UIElement type '") + eltype + string("'")

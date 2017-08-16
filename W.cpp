@@ -244,6 +244,10 @@ void W::_update() {
 		Event &ev = *it;
 		if (ev.type == EventType::CLOSED)
 			g->handleCloseEvent();
+		else if (ev.type == EventType::LEFTMOUSEDOWN || ev.type == EventType::LEFTMOUSEUP
+				 || ev.type == EventType::RIGHTMOUSEDOWN || ev.type == EventType::RIGHTMOUSEUP
+				 || ev.type == EventType::MOUSEMOVE)
+			Messenger::dispatchPositionalEvent(&ev);
 		else
 			Messenger::dispatchEvent(&ev);
 		if (_gsShouldPop) break;

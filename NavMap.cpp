@@ -59,61 +59,50 @@ namespace W {
 	}
 	
 	void NavMap::makeImpassable(MappedObj *obj) {
-		int objx = obj->pos.x, objy = obj->pos.y;
-		for (std::vector<rect>::iterator it = obj->plan.begin(); it < obj->plan.end(); it++) {
-			int rx = it->pos.x, ry = it->pos.y;
-			int rwidth = it->sz.width, rheight = it->sz.height;
-			for (int i = objx + rx; i < objx + rx + rwidth; i++)
-				for (int j = objy + ry; j < objy + ry + rheight; j++)
-					if (i < 0 || j < 0 || i >= w || j >= h)
-						throw(Exception("NavMap::makeImpassable encountered out-of-bounds coordinate."));
-					else _makeImpassable(i, j);
-		}
+		int &ox = obj->rct.pos.x, &oy = obj->rct.pos.y;
+		int &ow = obj->rct.sz.width, &oh = obj->rct.sz.height;
+		for (int i = ox; i < ox + ow; i++)
+			for (int j = oy; j < oy + oh; j++)
+				if (i < 0 || j < 0 || i >= w || j >= h)
+					throw(Exception("NavMap::makeImpassable encountered out-of-bounds coordinate."));
+				else
+					_makeImpassable(i, j);
 	}
 	void NavMap::makePassable(MappedObj *obj) {
-		int objx = obj->pos.x, objy = obj->pos.y;
-		for (std::vector<rect>::iterator it = obj->plan.begin(); it < obj->plan.end(); it++) {
-			int rx = it->pos.x, ry = it->pos.y;
-			int rwidth = it->sz.width, rheight = it->sz.height;
-			for (int i = objx + rx; i < objx + rx + rwidth; i++)
-				for (int j = objy + ry; j < objy + ry + rheight; j++)
-					if (i < 0 || j < 0 || i >= w || j >= h)
-						throw(Exception("NavMap::makePassable encountered an out-of-bounds coordinate."));
-					else _makePassable(i, j);
-		}
+		int &ox = obj->rct.pos.x, &oy = obj->rct.pos.y;
+		int &ow = obj->rct.sz.width, &oh = obj->rct.sz.height;
+		for (int i = ox; i < ox + ow; i++)
+			for (int j = oy; j < oy + oh; j++)
+				if (i < 0 || j < 0 || i >= w || j >= h)
+					throw(Exception("NavMap::makePassable encountered out-of-bounds coordinate."));
+				else
+					_makePassable(i, j);
 	}
 	
 	void NavMap::isolate(MappedObj *obj) {
 		std::vector<NavNode *> edgey_nodes;
-		int objx = obj->pos.x, objy = obj->pos.y;
+		int &ox = obj->rct.pos.x, &oy = obj->rct.pos.y;
+		int &ow = obj->rct.sz.width, &oh = obj->rct.sz.height;
 		
-		// for each rect R in plan
-		for (std::vector<rect>::iterator it = obj->plan.begin(); it < obj->plan.end(); it++) {
-			rect *R = &*it;
-			int rx = R->pos.x, ry = R->pos.y;
-			int rwidth = R->sz.width, rheight = R->sz.height;
-
-			// for each node X in R
-			for (int i=objx + rx; i < objx + rx + rwidth; i++) {
-				for (int j=objy + ry; j < objy + ry + rheight; j++) {
-					if (i < 0 || j < 0 || i >= w || j >= h)
-						throw(Exception("NavMap::isolate encountered an out-of-bounds coordinate."));
-					NavNode *X = _nodeAt(i, j);
-					
-					// for each neighbour of X, Y
-					std::vector<NavNode*> *neighbours = &X->neighbours;
-					for (std::vector<NavNode*>::iterator ity = neighbours->begin(); ity < neighbours->end(); ) {
-						NavNode *Y = *ity;
-						W::position _p(Y->x, Y->y);
-						bool Y_is_part_of_obj = obj->overlapsWith(_p);
-						// if Y is not part of obj, sever links with X & add both to edgey nodes
-						if (Y_is_part_of_obj) ity++;
-						else {
-							Y->removeNeighbour(X);
-							ity = neighbours->erase(ity);
-							edgey_nodes.push_back(X);
-							edgey_nodes.push_back(Y);
-						}
+		for (int i=ox; i < ox + ow; i++) {
+			for (int j=oy; j < oy + oh; j++) {
+				if (i < 0 || j < 0 || i >= w || j >= h)
+					throw(Exception("NavMap::isolate encountered an out-of-bounds coordinate."));
+				NavNode *X = _nodeAt(i, j);
+				
+				// for each neighbour of X, Y
+				std::vector<NavNode*> &neighbours = X->neighbours;
+				for (std::vector<NavNode*>::iterator ity = neighbours.begin(); ity < neighbours.end(); ) {
+					NavNode *Y = *ity;
+					W::position _p(Y->x, Y->y);
+					bool Y_is_part_of_obj = obj->overlapsWith(_p);
+					// if Y is not part of obj, sever links with X & add both to edgey nodes
+					if (Y_is_part_of_obj) ity++;
+					else {
+						Y->removeNeighbour(X);
+						ity = neighbours.erase(ity);
+						edgey_nodes.push_back(X);
+						edgey_nodes.push_back(Y);
 					}
 				}
 			}
@@ -193,14 +182,11 @@ namespace W {
 		return nodes[atY*w + atX].passable;
 	}
 	bool NavMap::isPassableUnder(MappedObj *obj) {
-		std::vector<rect> *plan = &obj->plan;
-		for (int i=0; i < plan->size(); i++) {
-			rect *r = &plan->at(i);
-			for (int i = obj->pos.x + r->pos.x; i < obj->pos.x + r->pos.x + r->sz.width; i++)
-				for (int j = obj->pos.y + r->pos.y; j < obj->pos.y + r->pos.y + r->sz.height; j++)
-					if (!isPassableAt(i, j))
-						return false;
-		}
+		int &ox = obj->rct.pos.x, &oy = obj->rct.pos.y;
+		int &ow = obj->rct.sz.width, &oh = obj->rct.sz.height;
+		for (int i = ox; i < ox + ow; i++)
+			for (int j = oy; j < oy + oh; j++)
+				if (!isPassableAt(i, j)) return false;
 		return true;
 	}
 

@@ -1,19 +1,28 @@
 #include "Messenger.h"
 #include "Callback.h"
-#include "EventResponder.h"
 #include "MappedObj.h"
 
 #include <iostream>
 
 namespace W {
 
+	struct cbAndMO {
+		Callback *cb;
+		MappedObj *mo;
+		cbAndMO(Callback *_cb, MappedObj *_mo) : cb(_cb), mo(_mo) { }
+		~cbAndMO() {
+			delete cb;
+		}
+	};
 	struct Messenger::_messenger_state {
-		std::map<EventType::T, _callback_list> type_subscriptions;
+		std::map<EventType::T, std::vector<Callback*>> type_subscriptions;
+		std::map<EventType::T, std::vector<cbAndMO*>> positional_subscriptions;
+		
 		Callback *privileged_event_responder;
 		std::map<EventType::T, Callback *> type_pers;
 		
 		std::map<std::string, std::map<
-			EventType::T, _callback_list
+			EventType::T, std::vector<Callback*>
 		> > ui_subscriptions;
 		
 		_messenger_state() : privileged_event_responder(NULL) { }
@@ -60,34 +69,49 @@ void W::Messenger::subscribeToEventType(EventType::T t, const Callback &c) {
 	unsubscribeFromEventType(t, c.resp);
 	_s->type_subscriptions[t].push_back(c.copy());
 }
-void W::Messenger::unsubscribeFromEventType(EventType::T t, EventResponder *r) {
+void W::Messenger::unsubscribeFromEventType(EventType::T t, void *r) {
 	if (!_s) return;
-	_callback_list &cblist = _s->type_subscriptions[t];
-	_callback_list::iterator it;
-	for (it = cblist.begin(); it < cblist.end(); )
+	std::vector<Callback*> &cblist = _s->type_subscriptions[t];
+	for (std::vector<Callback*>::iterator it = cblist.begin(); it < cblist.end(); )
 		if ((*it)->resp == r) {
-//			std::cout << "unsub from event type " << t  << ": deleting subscription..." << std::endl;
 			delete *it;
 			it = cblist.erase(it);
 		}
 		else it++;
 }
 
-void W::Messenger::subscribeToMouseEvents(const Callback &c) {
+void W::Messenger::subscribeToPositionalEventType(W::EventType::T t, const W::Callback &c, W::MappedObj *mo) {
 	if (!_s) return;
-	subscribeToEventType(EventType::MOUSEMOVE, c);
-	subscribeToEventType(EventType::LEFTMOUSEDOWN, c);
-	subscribeToEventType(EventType::LEFTMOUSEUP, c);
-	subscribeToEventType(EventType::RIGHTMOUSEDOWN, c);
-	subscribeToEventType(EventType::RIGHTMOUSEUP, c);
+	unsubscribeFromPositionalEventType(t, c.resp);
+	_s->positional_subscriptions[t].push_back(new cbAndMO(c.copy(), mo));
 }
-void W::Messenger::unsubscribeFromMouseEvents(EventResponder *r) {
+void W::Messenger::unsubscribeFromPositionalEventType(W::EventType::T t, void *r) {
 	if (!_s) return;
-	unsubscribeFromEventType(EventType::MOUSEMOVE, r);
-	unsubscribeFromEventType(EventType::LEFTMOUSEDOWN, r);
-	unsubscribeFromEventType(EventType::LEFTMOUSEUP, r);
-	unsubscribeFromEventType(EventType::RIGHTMOUSEDOWN, r);
-	unsubscribeFromEventType(EventType::RIGHTMOUSEUP, r);
+	std::vector<cbAndMO*> &pos_sublist = _s->positional_subscriptions[t];
+	for (std::vector<cbAndMO*>::iterator it = pos_sublist.begin(); it < pos_sublist.end(); )
+		if ((*it)->cb->resp == r) {
+			delete *it;
+			it = pos_sublist.erase(it);
+		}
+		else
+			it++;
+}
+
+void W::Messenger::subscribeToMouseEvents(const Callback &c, MappedObj *mo) {
+	if (!_s) return;
+	subscribeToPositionalEventType(EventType::MOUSEMOVE, c, mo);
+	subscribeToPositionalEventType(EventType::LEFTMOUSEDOWN, c, mo);
+	subscribeToPositionalEventType(EventType::LEFTMOUSEUP, c, mo);
+	subscribeToPositionalEventType(EventType::RIGHTMOUSEDOWN, c, mo);
+	subscribeToPositionalEventType(EventType::RIGHTMOUSEUP, c, mo);
+}
+void W::Messenger::unsubscribeFromMouseEvents(void *r) {
+	if (!_s) return;
+	unsubscribeFromPositionalEventType(EventType::MOUSEMOVE, r);
+	unsubscribeFromPositionalEventType(EventType::LEFTMOUSEDOWN, r);
+	unsubscribeFromPositionalEventType(EventType::LEFTMOUSEUP, r);
+	unsubscribeFromPositionalEventType(EventType::RIGHTMOUSEDOWN, r);
+	unsubscribeFromPositionalEventType(EventType::RIGHTMOUSEUP, r);
 }
 
 bool W::Messenger::requestPrivilegedEventResponderStatus(const Callback &c) {
@@ -96,12 +120,13 @@ bool W::Messenger::requestPrivilegedEventResponderStatus(const Callback &c) {
 	_s->privileged_event_responder = c.copy();
 	return true;
 }
-void W::Messenger::relinquishPrivilegedEventResponderStatus(EventResponder *r) {
+void W::Messenger::relinquishPrivilegedEventResponderStatus(void *r) {
 	if (!_s) return;
-	if (_s->privileged_event_responder->resp == r) {
-		delete _s->privileged_event_responder;
-		_s->privileged_event_responder = NULL;
-	}
+	if (_s->privileged_event_responder)
+		if (_s->privileged_event_responder->resp == r) {
+			delete _s->privileged_event_responder;
+			_s->privileged_event_responder = NULL;
+		}
 }
 bool W::Messenger::requestPrivilegedResponderStatusForEventType(EventType::T t, const Callback &c) {
 	if (!_s) return false;
@@ -110,7 +135,7 @@ bool W::Messenger::requestPrivilegedResponderStatusForEventType(EventType::T t, 
 	_s->type_pers[t] = c.copy();
 	return true;
 }
-void W::Messenger::relinquishPrivilegedResponderStatusForEventType(EventType::T t, EventResponder *r) {
+void W::Messenger::relinquishPrivilegedResponderStatusForEventType(EventType::T t, void *r) {
 	if (!_s) return;
 	std::map<EventType::T, Callback*>::iterator it = _s->type_pers.find(t);
 	if (it != _s->type_pers.end() && it->second->resp == r) {
@@ -122,91 +147,99 @@ void W::Messenger::relinquishPrivilegedResponderStatusForEventType(EventType::T 
 void W::Messenger::dispatchEvent(Event *ev) {
 	if (!_s) return;
 	
-	std::map<EventType::T, _callback_list>::iterator it1;
-	std::map<EventType::T, Callback *>::iterator it2;
+	if (_dispatchToPERs(ev)) return;
 	
-	// If a general P.E.R. exists, send event to it
-	if (_s->privileged_event_responder != NULL)
-		_s->privileged_event_responder->call(ev);
-	
-	// If a P.E.R. exists specifically for this event type, send event to it
-	else if ((it2 = _s->type_pers.find(ev->type)) != _s->type_pers.end())
-		it2->second->call(ev);
-	
-	// Mouse dispatch
-	else if (ev->treat_as_mouse_event)
-		_dispatchMouseEvent(ev);
+	std::map<EventType::T, std::vector<Callback*>>::iterator it1;
 	
 	// Event type subscriptions
-	else if ((it1 = _s->type_subscriptions.find(ev->type)) != _s->type_subscriptions.end()) {
-		_callback_list &cblist = it1->second;
+	if ((it1 = _s->type_subscriptions.find(ev->type)) != _s->type_subscriptions.end()) {
+		std::vector<Callback*> &cblist = it1->second;
 		if (cblist.size()) cblist.back()->call(ev);
 	}
 }
-void W::Messenger::_dispatchMouseEvent(Event *ev) {
-//	printf("Dispatching mouse event (type %d) at %d,%d %.1f,%.1f\n", ev->type, ev->pos.x, ev->pos.y, ev->pos.a, ev->pos.b);
+bool W::Messenger::dispatchPositionalEvent(Event *ev) {
+	if (!_s) return false;
 	
-	// Find last MappedObj that overlaps the event’s location
-	Callback *last_sub = NULL;
-	_callback_list *sublst = &_s->type_subscriptions[ev->type];
-	for (_callback_list::iterator it = sublst->begin(); it != sublst->end(); it++) {
-		MappedObj *o = (MappedObj*) (*it)->resp;
-		if (o->overlapsWith(ev->pos))
-			last_sub = *it;
+	if (_dispatchToPERs(ev))
+		return true;
+	
+	// Positional dispatch
+	cbAndMO *_last = NULL;
+	std::vector<cbAndMO*> &pos_sublist = _s->positional_subscriptions[ev->type];
+	for (std::vector<cbAndMO*>::reverse_iterator it = pos_sublist.rbegin(); it != pos_sublist.rend(); it++)
+		if ((*it)->mo->overlapsWith(ev->pos)) {
+			_last = *it;
+			break;
+		}
+	if (_last != NULL) {
+		_last->cb->call(ev);
+		return true;
 	}
-	if (last_sub != NULL) {
-		last_sub->call(ev);
-		return;
-	}
-//	else {
-//		std::cout << "  no sub" << std::endl;
-//	}
+	
+	return false;
 }
 void W::Messenger::_dispatchUIEvent(W::Event *ev) {
 	if (!_s) return;
 	
 	std::string *elname = (std::string *)ev->_payload;
-
+	
 	std::map<std::string, std::map<
-		EventType::T, _callback_list
+		EventType::T, std::vector<Callback*>
 	> >::iterator it1 = _s->ui_subscriptions.find(*elname);
 	if (it1 == _s->ui_subscriptions.end())
 		return;
 	
-	std::map<EventType::T, _callback_list> &subs_for_element = it1->second;
-	std::map<EventType::T, _callback_list>::iterator it2 = subs_for_element.find(ev->type);
+	std::map<EventType::T, std::vector<Callback*>> &subs_for_element = it1->second;
+	std::map<EventType::T, std::vector<Callback*>>::iterator it2 = subs_for_element.find(ev->type);
 	if (it2 == subs_for_element.end())
 		return;
 	
-	_callback_list &cblist = it2->second;
-	_callback_list::iterator it3;
+	std::vector<Callback*> &cblist = it2->second;
+	std::vector<Callback*>::iterator it3;
 	for (it3 = cblist.begin(); it3 < cblist.end(); it3++)
 		(*it3)->call(ev);
+}
+bool W::Messenger::_dispatchToPERs(W::Event *ev) {
+	std::map<EventType::T, Callback *>::iterator it;
+	
+	// If a general P.E.R. exists, send event to it
+	if (_s->privileged_event_responder != NULL) {
+		_s->privileged_event_responder->call(ev);
+		return true;
+	}
+	
+	// If a P.E.R. exists specifically for this event type, send event to it
+	else if ((it = _s->type_pers.find(ev->type)) != _s->type_pers.end()) {
+		it->second->call(ev);
+		return true;
+	}
+
+	return false;
 }
 
 void W::Messenger::subscribeToUIEvent(const char *_elname, EventType::T t, const Callback &c) {
 	if (!_s) return;
 	unsubscribeFromUIEvent(_elname, t, c.resp);
 	
-	std::map<EventType::T, _callback_list> &subs_for_element = _s->ui_subscriptions[_elname];
-	_callback_list &subs_to_evtype_for_element = subs_for_element[t];
+	std::map<EventType::T, std::vector<Callback*> > &subs_for_element = _s->ui_subscriptions[_elname];
+	std::vector<Callback*> &subs_to_evtype_for_element = subs_for_element[t];
 	subs_to_evtype_for_element.push_back(c.copy());
 }
-void W::Messenger::unsubscribeFromUIEvent(const char *_elname, EventType::T t, EventResponder *r) {
+void W::Messenger::unsubscribeFromUIEvent(const char *_elname, EventType::T t, void *r) {
 	if (!_s) return;
 	
 	std::map<std::string, std::map<
-		EventType::T, _callback_list
+		EventType::T, std::vector<Callback*>
 	> >::iterator it1 = _s->ui_subscriptions.find(_elname);
 	if (it1 == _s->ui_subscriptions.end())
 		return;
 	
-	std::map<EventType::T, _callback_list>::iterator it2 = it1->second.find(t);
+	std::map<EventType::T, std::vector<Callback*>>::iterator it2 = it1->second.find(t);
 	if (it2 == it1->second.end())
 		return;
 	
-	_callback_list &cblist = it2->second;
-	_callback_list::iterator it3;
+	std::vector<Callback*> &cblist = it2->second;
+	std::vector<Callback*>::iterator it3;
 	for (it3 = cblist.begin(); it3 < cblist.end(); )
 		if ((*it3)->resp == r) {
 			delete *it3;

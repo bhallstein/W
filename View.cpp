@@ -5,7 +5,6 @@
 W::View::View(Positioner *_pos) :
 	_positioner(_pos)
 {
-	plan.resize(1);
 	if (_positioner)
 		_updatePosition(_window->getDimensions());
 }
@@ -15,18 +14,22 @@ W::View::~View()
 }
 
 void W::View::_updatePosition(const size &winsize) {
-	if (_positioner) {
-		const rect &r = _positioner->refresh(winsize);
-		pos = r.pos;
-		plan[0].sz = r.sz;
-	}
+	if (_positioner)
+		rct = _positioner->refresh(winsize);
 	updatePosition(winsize);
 }
 
 void W::View::receiveEvent(Event *ev) {
-	ev->pos.x -= pos.x;
-	ev->pos.y -= pos.y;
+	ev->pos.x -= rct.pos.x;
+	ev->pos.y -= rct.pos.y;
 	processMouseEvent(ev);
+}
+
+void W::View::_subscribeToMouseEvents() {
+	Messenger::subscribeToMouseEvents(Callback(&View::receiveEvent, this), this);
+}
+void W::View::_unsubscribeFromMouseEvents() {
+	Messenger::unsubscribeFromMouseEvents(this);
 }
 
 void W::View::addDO(DrawnObj *_obj, int layer) {
@@ -72,7 +75,8 @@ void W::View::_removeDO(DrawnObj *_obj) {
 }
 
 void W::View::_draw(const size &winSz) {
-	size &sz = plan[0].sz;
+	size &sz = rct.sz;
+	position &pos = rct.pos;
 	glScissor(pos.x, winSz.height - pos.y - sz.height, sz.width, sz.height);
 	
 	// Draw all DOs
@@ -82,18 +86,18 @@ void W::View::_draw(const size &winSz) {
 			DrawnObj *obj = *itv;
 			if (obj->type == DrawnObj::RECT) {
 				DrawnRect *drect = (DrawnRect*) obj;
-				rect &objPosn = drect->getPosn();
-				drawRect(objPosn.pos.x, objPosn.pos.y, objPosn.sz.width, objPosn.sz.height, drect->getCol(), drect->getRot());
+				rect objPosn = drect->getPosn();
+				drawRect(objPosn.pos.x + pos.x, objPosn.pos.y + pos.y, objPosn.sz.width, objPosn.sz.height, drect->getCol(), drect->getRot());
 			}
 			else if (obj->type == DrawnObj::TEXT) {
 				DrawnText *dtext = (DrawnText*) obj;
 				rect &objPosn = dtext->getPosn();
-				drawText(objPosn.pos.x, objPosn.pos.y, dtext->getCol(), dtext->getText().c_str());
+				drawText(objPosn.pos.x + pos.x, objPosn.pos.y + pos.y, dtext->getCol(), dtext->getText().c_str());
 			}
 			else if (obj->type == DrawnObj::IMAGE) {
 				DrawnImage *dimg = (DrawnImage*) obj;
 				rect &objPosn = dimg->getPosn();
-				drawImage(objPosn.pos.x, objPosn.pos.y, objPosn.sz.width, objPosn.sz.height, dimg->getTex(), dimg->getOpacity());
+				drawImage(objPosn.pos.x + pos.x, objPosn.pos.y + pos.y, objPosn.sz.width, objPosn.sz.height, dimg->getTex(), dimg->getOpacity());
 			}
 		}
 	}

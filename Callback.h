@@ -1,6 +1,8 @@
 #ifndef __W__Callback
 #define __W__Callback
 
+#include <iostream>
+
 namespace W {
 	
 	class Event;
@@ -9,7 +11,7 @@ namespace W {
 	public:
 		virtual ~CallbackBase() { }
 		virtual void call(Event *) = 0;
-		virtual CallbackBase* clone() = 0;
+		virtual CallbackBase* copy() = 0;
 	};
 	
 	template <class T>
@@ -21,10 +23,10 @@ namespace W {
 		void call(Event *ev) {
 			(o->*f)(ev);
 		}
-		CallbackBase* clone() {
+		CallbackBase* copy() {
 			return new MFCallback<T>(f, o);
 		}
-	private:
+	protected:
 		mftype f;
 		T *o;
 	};
@@ -32,18 +34,30 @@ namespace W {
 	class Callback {
 	public:
 		template <class T>
-		Callback(void (T::*_f)(Event *), T *_o) : s(new MFCallback<T>(_f, _o)), resp(_o) { }
-		Callback(CallbackBase *_s, EventResponder *_resp) : s(_s), resp(_resp) { }
-		~Callback() { delete s; }
+		Callback(void (T::*_f)(Event *), T *_o) :
+			c(new MFCallback<T>(_f, _o)), resp(_o)
+		{
+			// constr
+		}
+		~Callback() {
+			delete c;
+		}
 		void call(Event *ev) {
-			s->call(ev);
+			c->call(ev);
 		}
 		Callback* copy() const {
-			return new Callback(s->clone(), resp);
+			return new Callback(c->copy(), resp);
 		}
-		EventResponder *resp;
+		void *resp;
+		
 	private:
-		CallbackBase *s;
+		Callback(CallbackBase *_c, void *_resp) :
+			c(_c), resp(_resp)
+		{
+			// constr used by copy()
+		}
+		
+		CallbackBase *c;
 	};
 	
 }

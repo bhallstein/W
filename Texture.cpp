@@ -87,7 +87,9 @@ void W::Texture::destroy() {
 			<< usageCount << " DrawnObjs are still using it.";
 		throw Exception(ss.str());
 	}
+	_lock_mutex(&texture_mutex);
 	_textures_to_unload.push_back(this);
+	_unlock_mutex(&texture_mutex);
 }
 
 void W::Texture::upload() {

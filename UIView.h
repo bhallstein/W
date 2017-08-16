@@ -17,13 +17,14 @@ namespace W {
 		~UIView();
 		
 		void processMouseEvent(Event *);
-		void draw();
+//		void draw();
 		
 	protected:
 		virtual void drawCustomBackground() { }
 			// Override for custom drawing behind elements in UIView
 		void updatePosition(const size &winsize);
-			// Override; called after View::_updatePosition
+			// Override; note we do not call _updatePosition because that method of
+			// View doesn’t have access to all the positioner arrays of UIView
 		
 		bool allowDrag;		// Set from positioner when refreshed
 		bool dragloop;
@@ -59,6 +60,7 @@ namespace W {
 										// (Specific to the UIView, since buttons will subscribe
 										// to view-specific mousey events submitted in processMouseEvent)
 		
+		DrawnRect *bgDRect;
 	};
 
 }

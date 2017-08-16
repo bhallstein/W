@@ -5,23 +5,18 @@
 
 W::EventType::T W::Event::_typecounter = 100;
 
-W::Event::Event(bool _treat_as_mouse_event) :
-	treat_as_mouse_event(_treat_as_mouse_event)
+W::Event::Event(EventType::T _type) :
+	type(_type)
 {
 	
 }
-W::Event::Event(EventType::T _type, bool _treat_as_mouse_event) :
-	type(_type), treat_as_mouse_event(_treat_as_mouse_event)
-{
-	
-}
-W::Event::Event(EventType::T _type, const position &_pos, bool _treat_as_mouse_event) :
-	type(_type), treat_as_mouse_event(_treat_as_mouse_event), pos(_pos)
+W::Event::Event(EventType::T _type, const position &_pos) :
+	type(_type), pos(_pos)
 {
 	
 }
 W::Event::Event(EventType::T _type, KeyCode::T _key) :
-	type(_type), key(_key), treat_as_mouse_event(false)
+	type(_type), key(_key)
 {
 	
 }

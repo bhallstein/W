@@ -2,19 +2,19 @@
 #define __W__MappedObj
 
 #include "types.h"
-#include "EventResponder.h"
-#include <vector>
 
 namespace W {
 	
-	class MappedObj : public EventResponder {
+	class MappedObj {
 	public:
-		position pos;
-		std::vector<rect> plan;
-		
-		bool overlapsWith(const W::position &);
-		
-		virtual void _cplusplusisbollocks() { }
+		rect rct;
+		void setPos(W::position _pos) { rct.pos = _pos; }
+		void setSz(W::size _sz) { rct.sz = _sz; }
+		bool overlapsWith(const W::position &p) {
+			float x = rct.pos.x + rct.pos.a;
+			float y = rct.pos.y + rct.pos.b;
+			return (p.x >= x && p.x < x + rct.sz.width && p.y >= y && p.y < y + rct.sz.height);
+		}
 	};
 	
 }

@@ -28,6 +28,9 @@ namespace W {
 		void receiveEvent(Event *);					// Converts event to view’s coordinates, and calls processMouseEvent()
 		virtual void processMouseEvent(Event *) { }	// Override to do something with mouse events
 		
+		void _subscribeToMouseEvents();		// Called by GS in addView()
+		void _unsubscribeFromMouseEvents();	// Called by GS in removeView()
+		
 		// Drawn Object methods
 		void addDO(DrawnObj *, int layer = 1);
 		void removeDO(DrawnObj *);

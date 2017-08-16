@@ -1,5 +1,5 @@
-#ifndef __W_WINdow
-#define __W_WINdow
+#ifndef __W_Window
+#define __W_Window
 
 #include "types.h"
 #include "Colour.h"

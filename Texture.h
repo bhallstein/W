@@ -15,6 +15,7 @@ namespace W {
 	public:
 		Texture(const std::string &_filename);
 		~Texture();
+			// Must be called from the thread on which the OpenGL context is current
 		
 		void destroy();
 			// User should not call a texture’s destructor, but call destroy().

@@ -10,6 +10,7 @@
 #include "MappedObj.h"
 #include "Event.h"
 #include "Positioner.h"
+#include "DrawnObj.h"
 
 #include <string>
 #include <map>
@@ -23,7 +24,12 @@ namespace W {
 		UIElement(const std::string &_name, W::Positioner *, EvTypeMap &);
 		~UIElement();
 		
-		void updatePosition(const size &containersize);
+		void _updatePosition(const size &containersize);
+		virtual void updatePosition() { }
+			// Override to implement updates to D.O.s etc
+		
+		virtual void activate() = 0;
+		virtual void deactivate() = 0;
 		
 	protected:
 		std::string name;
@@ -34,13 +40,18 @@ namespace W {
 	
 	class Button : public UIElement {
 	public:
-		Button(const std::string &_name, W::Positioner *, EvTypeMap &);
+		Button(View *, const std::string &_name, W::Positioner *, EvTypeMap &);
 		~Button();
 		void recEv(Event *);
+		void activate();
+		void deactivate();
 	protected:
+		void updatePosition();
 		bool hover;
 		bool active;
 		Event buttonClickEvent;
+		DrawnRect *btnrect;
+		View *view;
 	};
 
 }
