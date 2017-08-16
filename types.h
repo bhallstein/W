@@ -42,17 +42,44 @@ namespace W {
 				a == pos2.a &&
 				b == pos2.b;
 		}
+		std::string xyStr() const {
+			std::stringstream ss;
+			ss << x << "," << y;
+			return ss.str();
+		}
+		std::string abStr() const {
+			std::stringstream ss;
+			ss << a << "," << b;
+			return ss.str();
+		}
+		std::string str() const {
+			return xyStr() + "[" + abStr() + "]";
+		}
 	};
 	struct size {
 		int width, height;
 		size() : width(0), height(0) { }
 		size(int _width, int _height) : width(_width), height(_height) { }
+		std::string str() const {
+			std::stringstream ss;
+			ss << width << "x" << height;
+			return ss.str();
+		}
 	};
 	struct rect {
 		struct position pos;
 		struct size sz;
 		rect() { }
 		rect(position _pos, size _sz) : pos(_pos), sz(_sz) { }
+		void setPos(const W::position &_pos) { pos = _pos; }
+		void setSz(const W::size &_sz) { sz = _sz; }
+		bool overlapsWith(const W::position &p) const {
+			float x = pos.x + pos.a, y = pos.y + pos.b;
+			return (p.x >= x && p.x < x + sz.width && p.y >= y && p.y < y + sz.height);
+		}
+		std::string str() const {
+			return pos.str() + std::string("/") + sz.str();
+		}
 	};
 
 	/* Exceptions */

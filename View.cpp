@@ -30,14 +30,15 @@ void W::View::_updatePosition(const size &winsize) {
 	updatePosition(winsize);
 }
 
-void W::View::receiveEvent(Event *ev) {
+W::EventPropagation::T W::View::receiveEvent(Event *ev) {
 	ev->pos.x -= rct.pos.x;
 	ev->pos.y -= rct.pos.y;
 	processMouseEvent(ev);
+	return EventPropagation::SHOULD_STOP;
 }
 
 void W::View::_subscribeToMouseEvents() {
-	Messenger::subscribeToMouseEvents(Callback(&View::receiveEvent, this), this);
+	Messenger::subscribeToMouseEvents(Callback(&View::receiveEvent, this), &rct);
 }
 void W::View::_unsubscribeFromMouseEvents() {
 	Messenger::unsubscribeFromMouseEvents(this);
@@ -70,8 +71,8 @@ void W::View::_updateDOs() {
 }
 
 void W::View::_removeDO(DrawnObj *_obj) {
-	for (std::map<int, DO_list>::iterator it = scene.begin(); it != scene.end(); ) {
-		DO_list &vec = it->second;
+	for (std::map<int, DO_list>::iterator itm = scene.begin(); itm != scene.end(); ) {
+		DO_list &vec = itm->second;
 		for (DO_list::iterator itv = vec.begin(); itv < vec.end(); )
 			if (*itv == _obj) {
 				delete *itv;
@@ -79,9 +80,9 @@ void W::View::_removeDO(DrawnObj *_obj) {
 			}
 			else ++itv;
 		if (!vec.size())
-			scene.erase(it++);
+			scene.erase(itm++);
 		else
-			++it;
+			++itm;
 	}
 }
 
@@ -103,18 +104,18 @@ void W::View::_draw(const size &winSz) {
 				DrawnRect *drect = (DrawnRect*) obj;
 				position &objPos = drect->rct.pos;
 				size &objSz = drect->rct.sz;
-				drawRect(objPos.x + pos.x, objPos.y + pos.y, objSz.width, objSz.height, drect->col, drect->rot);
+				drawRect(objPos.x + pos.x + _offset.x, objPos.y + pos.y + _offset.y, objSz.width, objSz.height, drect->col, drect->rot);
 			}
 			else if (obj->type == DrawnObj::TEXT) {
 				DrawnText *dtext = (DrawnText*) obj;
 				position &objPos = dtext->rct.pos;
-				drawText(objPos.x + pos.x, objPos.y + pos.y, dtext->col, dtext->txt.c_str(), dtext->r_align);
+				drawText(objPos.x + pos.x + _offset.x, objPos.y + pos.y + _offset.y, dtext->col, dtext->txt.c_str(), dtext->r_align);
 			}
 			else if (obj->type == DrawnObj::IMAGE) {
 				DrawnImage *dimg = (DrawnImage*) obj;
 				position &objPos = dimg->rct.pos;
 				size &objSz = dimg->rct.sz;
-				drawImage(objPos.x + pos.x, objPos.y + pos.y, objSz.width, objSz.height, dimg->getTex(), dimg->opac);
+				drawImage(objPos.x + pos.x + _offset.x, objPos.y + pos.y + _offset.y, objSz.width, objSz.height, dimg->getTex(), dimg->opac);
 			}
 		}
 	}

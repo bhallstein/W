@@ -11,17 +11,16 @@ namespace W {
 	class EventResponder;
 	class Callback;
 	class GameState;
-	class MappedObj;
 	
 	class Messenger {
 	public:
 		static void subscribeToEventType(W::EventType::T, const W::Callback &);
 		static void unsubscribeFromEventType(W::EventType::T, void *);
 		
-		static void subscribeToPositionalEventType(W::EventType::T, const W::Callback &, W::MappedObj *);
+		static void subscribeToPositionalEventType(W::EventType::T, const W::Callback &, W::rect *);
 		static void unsubscribeFromPositionalEventType(W::EventType::T, void *);
 		
-		static void subscribeToMouseEvents(const W::Callback &, W::MappedObj *);
+		static void subscribeToMouseEvents(const W::Callback &, W::rect *);
 		static void unsubscribeFromMouseEvents(void *);
 		
 		static bool requestPrivilegedEventResponderStatus(const W::Callback &);
@@ -29,7 +28,7 @@ namespace W {
 		static bool requestPrivilegedResponderStatusForEventType(W::EventType::T, const W::Callback &);
 		static void relinquishPrivilegedResponderStatusForEventType(W::EventType::T, void *);
 		
-		static void dispatchEvent(W::Event *);
+		static bool dispatchEvent(W::Event *);
 		static bool dispatchPositionalEvent(W::Event *);
 		static void _dispatchUIEvent(W::Event *);
 		static bool _dispatchToPERs(W::Event *);

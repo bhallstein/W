@@ -1,8 +1,8 @@
 #ifndef __W__View
 #define __W__View
 
-#include "MappedObj.h"
 #include "Colour.h"
+#include "Callback.h"
 
 #include <map>
 
@@ -16,7 +16,7 @@ namespace W {
 	class GameState;
 	class DrawnObj;
 	
-	class View : public MappedObj {
+	class View {
 	public:
 		View(Positioner *);
 		~View();
@@ -25,7 +25,7 @@ namespace W {
 		
 		void _updatePosition(const size &winsize);
 		
-		void receiveEvent(Event *);					// Converts event to view’s coordinates, and calls processMouseEvent()
+		W::EventPropagation::T receiveEvent(Event *);					// Converts event to view’s coordinates, and calls processMouseEvent()
 		virtual void processMouseEvent(Event *) { }	// Override to do something with mouse events
 		
 		void _subscribeToMouseEvents();		// Called by GS in addView()
@@ -38,10 +38,11 @@ namespace W {
 		void _updateDOs();
 			// Update status of all drawn objects.
 			// Graphics mutex must first be locked before this fn is called.
-
+		
 		void _draw(const W::size &winSz);
 	protected:
 		Positioner *_positioner;
+		rect rct;
 		
 		// Drawn Object vectors
 		typedef std::vector<DrawnObj*> DO_list;
@@ -57,6 +58,8 @@ namespace W {
 		std::vector<DOAndLayer> newDOs;
 		
 		void _removeDO(DrawnObj *);
+		
+		position _offset;
 		
 		virtual void updatePosition(const W::size &winsize) { }	// Let subsclasses perform own position update behaviours
 		virtual void performOpenGLBackgroundDrawing() { }

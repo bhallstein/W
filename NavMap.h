@@ -35,8 +35,6 @@ namespace W {
 	};
 	
 	
-	class MappedObj;
-	
 	class NavMap
 	{
 	public:
@@ -44,17 +42,18 @@ namespace W {
 		NavMap(int _w, int _h);
 		~NavMap();
 		
-		void makeImpassable(MappedObj *);	// Unlink all mappedobj nodes from the node network
-		void makePassable(MappedObj *);
+		void makeImpassable(const rect &);	// Unlink all nodes in rect from the node network
+		void makePassable(const rect &);
 		
-		void isolate(MappedObj *);			// Unlink only across edge nodes of mappedobj, leaving interior navigable
-		void unisolate(MappedObj *);
+		void isolate(const rect &);			// Unlink only across edge nodes of rect, leaving interior navigable
+		void unisolate(const rect &);
 		
 		void createConnection(const W::position &p1, const W::position &p2);
 		void removeConnection(const W::position &p1, const W::position &p2);
 		
 		bool isPassableAt(int atX, int atY);
-		bool isPassableUnder(MappedObj *);
+		bool isPassableAt(const W::position &);
+		bool isPassableUnder(const W::rect &);
 		
 		bool getRoute(int fromX, int fromY, int toX, int toY, std::vector<position> *route);
 		

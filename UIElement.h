@@ -7,7 +7,6 @@
 #define __W__UIElement
 
 #include "types.h"
-#include "MappedObj.h"
 #include "Event.h"
 #include "Positioner.h"
 #include "DrawnObj.h"
@@ -17,7 +16,7 @@
 
 namespace W {
 
-	class UIElement : public W::MappedObj {
+	class UIElement {
 	public:
 		typedef std::map<EventType::T, EventType::T> EvTypeMap;
 		
@@ -34,6 +33,7 @@ namespace W {
 	protected:
 		std::string name;
 		W::Positioner *positioner;
+		rect rct;
 		std::map<EventType::T, EventType::T> &evTypes;
 	};
 	
@@ -42,7 +42,7 @@ namespace W {
 	public:
 		Button(View *, const std::string &_name, W::Positioner *, EvTypeMap &);
 		~Button();
-		void recEv(Event *);
+		EventPropagation::T recEv(Event *);
 		void activate();
 		void deactivate();
 	protected:

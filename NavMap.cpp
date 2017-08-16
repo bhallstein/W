@@ -1,5 +1,4 @@
 #include "NavMap.h"
-#include "MappedObj.h"
 
 #define NAV_INFINITY 99999999
 
@@ -68,34 +67,28 @@ void W::NavMap::initialize() {
 	}
 }
 
-void W::NavMap::makeImpassable(MappedObj *obj) {
-	int &ox = obj->rct.pos.x, &oy = obj->rct.pos.y;
-	int &ow = obj->rct.sz.width, &oh = obj->rct.sz.height;
-	for (int i = ox; i < ox + ow; i++)
-		for (int j = oy; j < oy + oh; j++)
+void W::NavMap::makeImpassable(const rect &r) {
+	for (int i = r.pos.x; i < r.pos.x + r.sz.width; i++)
+		for (int j = r.pos.y; j < r.pos.y + r.sz.height; j++)
 			if (i < 0 || j < 0 || i >= w || j >= h)
 				throw(Exception("NavMap::makeImpassable encountered out-of-bounds coordinate."));
 			else
 				_makeImpassable(i, j);
 }
-void W::NavMap::makePassable(MappedObj *obj) {
-	int &ox = obj->rct.pos.x, &oy = obj->rct.pos.y;
-	int &ow = obj->rct.sz.width, &oh = obj->rct.sz.height;
-	for (int i = ox; i < ox + ow; i++)
-		for (int j = oy; j < oy + oh; j++)
+void W::NavMap::makePassable(const rect &r) {
+	for (int i = r.pos.x; i < r.pos.x + r.sz.width; i++)
+		for (int j = r.pos.y; j < r.pos.y + r.sz.height; j++)
 			if (i < 0 || j < 0 || i >= w || j >= h)
 				throw(Exception("NavMap::makePassable encountered out-of-bounds coordinate."));
 			else
 				_makePassable(i, j);
 }
 
-void W::NavMap::isolate(MappedObj *obj) {
+void W::NavMap::isolate(const rect &r) {
 	std::vector<NavNode *> edgey_nodes;
-	int &ox = obj->rct.pos.x, &oy = obj->rct.pos.y;
-	int &ow = obj->rct.sz.width, &oh = obj->rct.sz.height;
 	
-	for (int i=ox; i < ox + ow; i++) {
-		for (int j=oy; j < oy + oh; j++) {
+	for (int i = r.pos.x; i < r.pos.x + r.sz.width; i++) {
+		for (int j = r.pos.y; j < r.pos.y + r.sz.height; j++) {
 			if (i < 0 || j < 0 || i >= w || j >= h)
 				throw(Exception("NavMap::isolate encountered an out-of-bounds coordinate."));
 			NavNode *X = _nodeAt(i, j);
@@ -105,7 +98,7 @@ void W::NavMap::isolate(MappedObj *obj) {
 			for (std::vector<NavNode*>::iterator ity = neighbours.begin(); ity < neighbours.end(); ) {
 				NavNode *Y = *ity;
 				W::position _p(Y->x, Y->y);
-				bool Y_is_part_of_obj = obj->overlapsWith(_p);
+				bool Y_is_part_of_obj = r.overlapsWith(_p);
 				// if Y is not part of obj, sever links with X & add both to edgey nodes
 				if (Y_is_part_of_obj) ity++;
 				else {
@@ -169,7 +162,7 @@ void W::NavMap::isolate(MappedObj *obj) {
 //		Y->addNeighbour(X);
 //	}
 }
-void W::NavMap::unisolate(MappedObj *) {
+void W::NavMap::unisolate(const rect &r) {
 	// TODO: unisolate
 }
 
@@ -189,9 +182,12 @@ void W::NavMap::removeConnection(const W::position &p1, const W::position &p2) {
 bool W::NavMap::isPassableAt(int atX, int atY) {
 	return nodes[atY*w + atX].passable;
 }
-bool W::NavMap::isPassableUnder(MappedObj *obj) {
-	int &ox = obj->rct.pos.x, &oy = obj->rct.pos.y;
-	int &ow = obj->rct.sz.width, &oh = obj->rct.sz.height;
+bool W::NavMap::isPassableAt(const W::position &pos) {
+	return isPassableAt(pos.x, pos.y);
+}
+bool W::NavMap::isPassableUnder(const rect &r) {
+	const int &ox = r.pos.x, &oy = r.pos.y;
+	const int &ow = r.sz.width, &oh = r.sz.height;
 	for (int i = ox; i < ox + ow; i++)
 		for (int j = oy; j < oy + oh; j++)
 			if (!isPassableAt(i, j)) return false;

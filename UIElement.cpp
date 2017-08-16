@@ -32,9 +32,9 @@ W::Button::Button(View *_view, const std::string &_name, W::Positioner *_pos, Ev
 	btnrect = new DrawnRect(view, rct.pos, rct.sz, Colour::Black);
 	
 	Callback cb(&Button::recEv, this);
-	Messenger::subscribeToPositionalEventType(evTypes[EventType::MOUSEMOVE], cb, this);
-	Messenger::subscribeToPositionalEventType(evTypes[EventType::LEFTMOUSEDOWN], cb, this);
-	Messenger::subscribeToPositionalEventType(evTypes[EventType::LEFTMOUSEUP], cb, this);
+	Messenger::subscribeToPositionalEventType(evTypes[EventType::MOUSEMOVE], cb, &rct);
+	Messenger::subscribeToPositionalEventType(evTypes[EventType::LEFTMOUSEDOWN], cb, &rct);
+	Messenger::subscribeToPositionalEventType(evTypes[EventType::LEFTMOUSEUP], cb, &rct);
 }
 W::Button::~Button()
 {
@@ -44,7 +44,7 @@ W::Button::~Button()
 	Messenger::unsubscribeFromPositionalEventType(evTypes[EventType::LEFTMOUSEDOWN], this);
 	Messenger::unsubscribeFromPositionalEventType(evTypes[EventType::LEFTMOUSEUP], this);
 }
-void W::Button::recEv(W::Event *ev) {
+W::EventPropagation::T W::Button::recEv(W::Event *ev) {
 	using namespace EventType;
 	
 	if (ev->type == evTypes[LEFTMOUSEDOWN]) {
@@ -54,7 +54,7 @@ void W::Button::recEv(W::Event *ev) {
 	}
 	else if (ev->type == evTypes[MOUSEMOVE]) {
 		if (active) {
-			if (!this->overlapsWith(ev->pos)) {
+			if (!rct.overlapsWith(ev->pos)) {
 				hover = false;
 				Messenger::relinquishPrivilegedResponderStatusForEventType(evTypes[MOUSEMOVE], this);
 				Messenger::relinquishPrivilegedResponderStatusForEventType(evTypes[LEFTMOUSEUP], this);
@@ -69,10 +69,12 @@ void W::Button::recEv(W::Event *ev) {
 			active = false;
 			Messenger::relinquishPrivilegedResponderStatusForEventType(evTypes[MOUSEMOVE], this);
 			Messenger::relinquishPrivilegedResponderStatusForEventType(evTypes[LEFTMOUSEUP], this);
-			if (this->overlapsWith(ev->pos))
+			if (rct.overlapsWith(ev->pos))
 				Messenger::_dispatchUIEvent(&buttonClickEvent);
 		}
 	}
+	
+	return EventPropagation::SHOULD_STOP;
 }
 void W::Button::updatePosition() {
 	btnrect->setRect(rct);		// Update D.O.
