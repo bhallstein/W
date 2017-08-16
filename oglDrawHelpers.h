@@ -40,25 +40,24 @@ namespace W {
 		glEnd();
 	}
 	
-	inline void drawImage(float x, float y, float w, float h, Texture *tex, float opac = 1, float rot = 0) {
+	inline void drawImage(float x, float y, float w, float h, float texA, float texB, float texC, float texD, GLuint texId, float opac = 1, float rot = 0) {
 		if (!GLState::texturing_enabled) {
 			glEnable(GL_TEXTURE_2D);
 			GLState::texturing_enabled = true;
 		}
 		glColor4f(1, 1, 1, opac);
-		float texFloatW = tex->getFloatW();
-		float texFloatH = tex->getFloatH();
-		// Set glColor?
 		glLoadIdentity();
 		glTranslatef(x + w/2, y + h/2, 0);
 		glRotatef(rot, 0, 0, 1);
-		glBindTexture(GL_TEXTURE_2D, tex->getTexId());
+		glBindTexture(GL_TEXTURE_2D, texId);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glBegin(GL_QUADS);
 		{
-			glTexCoord2f(0, 0); glVertex2f(-w/2, -h/2);
-			glTexCoord2f(texFloatW, 0); glVertex2f(w/2, -h/2);
-			glTexCoord2f(texFloatW, texFloatH); glVertex2f(w/2, h/2);
-			glTexCoord2f(0, texFloatH); glVertex2f(-w/2, h/2);
+			glTexCoord2f(texA, texB); glVertex2f(-w/2, -h/2);
+			glTexCoord2f(texC, texB); glVertex2f(w/2, -h/2);
+			glTexCoord2f(texC, texD); glVertex2f(w/2, h/2);
+			glTexCoord2f(texA, texD); glVertex2f(-w/2, h/2);
 		}
 		glEnd();
 	}

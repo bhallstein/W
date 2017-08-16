@@ -182,7 +182,7 @@ void W::start() {
 	#ifdef __APPLE__
 		int err;
 		pthread_attr_t attr;
-	
+		
 		err = pthread_attr_init(&attr);
 		if (err) throw Exception("Error: couldn’t initialize drawing thread attributes", err);
 		

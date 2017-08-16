@@ -86,9 +86,9 @@ W::Window::Window(const size &_size, const char *_title)
 {
 	// Check window has not already been created
 	if (W::_window) {
-		char s[300];
-		sprintf(s, "Cannot create window: window has already been created (%p)", _window);
-		throw Exception(s);
+		std::stringstream ss;
+		ss << "Cannot create window: window has already been created (" << _window << ")";
+		throw Exception(ss.str());
 	}
 	
 	_objs = new NativeObjs();

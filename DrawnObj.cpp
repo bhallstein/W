@@ -26,7 +26,11 @@ W::DrawnImage::DrawnImage(View *_view, const position &_p, const size &_s, Textu
 	DrawnObj(_view, IMAGE, _p, _s),
 	texture(_texture), rot(_rot), new_rot(_rot), opac(_opac), new_opac(_opac)
 {
-	// hai spritey
+	new_chunkA = chunkA = 0;
+	new_chunkB = chunkB = 0;
+	new_chunkC = chunkC = texture->imageWidthProportion();
+	new_chunkD = chunkD = texture->imageHeightProportion();
+	
 	texture->incrementUsageCount();
 	use_placeholder_texture = !texture->_uploaded;
 }

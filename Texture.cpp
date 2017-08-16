@@ -113,7 +113,7 @@ void W::Texture::upload() {
 }
 
 void W::Texture::createPlaceholderTexture() {
-	// Create a transparent, 8 x 8 texture to use as a placeholder
+	// Create a transparent 8 x 8 texture to use as a placeholder
 	int sz = NCHANNELS * 8 * 8;
 	unsigned char *tdata = (unsigned char *) calloc(sz, sizeof(unsigned char));
 	if (!tdata)

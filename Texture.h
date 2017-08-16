@@ -26,8 +26,13 @@ namespace W {
 		void decrementUsageCount() { --usageCount; }
 		
 		inline unsigned int getTexId() { return glTexId; }
-		inline float getFloatW() { return float(imageWidth) / float(textureWidth); }
-		inline float getFloatH() { return float(imageHeight) / float(textureHeight); }
+		
+		float imageWidthProportion() { return float(imageWidth) / float(textureWidth); }
+		float imageHeightProportion() { return float(imageHeight) / float(textureHeight); }
+			// Get the proportion of the texture covered by the image itself
+		float floatCoordX(int x) { return float(x) / float(textureWidth); }
+		float floatCoordY(int y) { return float(y) / float(textureHeight); }
+			// Convert a pixel coord to a proportional value (% of the texture size)
 		
 		void upload();
 			// Must be called from thread for which the OpenGL
@@ -42,11 +47,12 @@ namespace W {
 	protected:
 		Texture(unsigned int _glTexId, W::size _imsize, W::size _texsize);
 		unsigned int glTexId;
-		int imageWidth, imageHeight;
-		int textureWidth, textureHeight;
 			// If the image’s dimensions aren’t powers of two, the
 			// texture will be larger than the loaded image.
 		unsigned char *p2imagedata;
+		
+		int imageWidth, imageHeight;
+		int textureWidth, textureHeight;
 		
 		std::string filename;
 		

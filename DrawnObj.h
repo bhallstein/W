@@ -109,14 +109,27 @@ namespace W {
 		~DrawnImage();
 		void setRot(float _rotation) { new_rot = _rotation; _setDirty(); }
 		void setOpacity(float _opacity) { new_opac = _opacity; _setDirty(); }
+		void setChunk(int a, int b, int c, int d) {
+			new_chunkA = texture->floatCoordX(a);
+			new_chunkB = texture->floatCoordY(b);
+			new_chunkC = texture->floatCoordX(c);
+			new_chunkD = texture->floatCoordY(d);
+			_setDirty();
+		}
 		
 		void updateValues() {
 			rot = new_rot;
 			opac = new_opac;
+			chunkA = new_chunkA;
+			chunkB = new_chunkB;
+			chunkC = new_chunkC;
+			chunkD = new_chunkD;
 		}
 		
 		float rot, new_rot;
 		float opac, new_opac;
+		float chunkA, chunkB, chunkC, chunkD;
+		float new_chunkA, new_chunkB, new_chunkC, new_chunkD;
 		
 		Texture* getTex();
 		

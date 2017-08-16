@@ -112,10 +112,16 @@ void W::View::_draw(const size &winSz) {
 				drawText(objPos.x + pos.x + _offset.x, objPos.y + pos.y + _offset.y, dtext->col, dtext->txt.c_str(), dtext->r_align);
 			}
 			else if (obj->type == DrawnObj::IMAGE) {
-				DrawnImage *dimg = (DrawnImage*) obj;
-				position &objPos = dimg->rct.pos;
-				size &objSz = dimg->rct.sz;
-				drawImage(objPos.x + pos.x + _offset.x, objPos.y + pos.y + _offset.y, objSz.width, objSz.height, dimg->getTex(), dimg->opac);
+				DrawnImage &dimg = *((DrawnImage*) obj);
+				position &objPos = dimg.rct.pos;
+				size &objSz = dimg.rct.sz;
+				Texture &tex = *dimg.getTex();
+				drawImage(
+					objPos.x + pos.x + _offset.x, objPos.y + pos.y + _offset.y,
+					objSz.width, objSz.height,
+					dimg.chunkA, dimg.chunkB, dimg.chunkC, dimg.chunkD,
+					tex.getTexId()
+				);
 			}
 		}
 	}
