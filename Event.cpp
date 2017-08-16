@@ -15,8 +15,8 @@ W::Event::Event(EventType::T _type, bool _treat_as_mouse_event) :
 {
 	
 }
-W::Event::Event(EventType::T _type, int _x, int _y, bool _treat_as_mouse_event) :
-	type(_type), treat_as_mouse_event(_treat_as_mouse_event), pos(_x, _y)
+W::Event::Event(EventType::T _type, const position &_pos, bool _treat_as_mouse_event) :
+	type(_type), treat_as_mouse_event(_treat_as_mouse_event), pos(_pos)
 {
 	
 }

@@ -13,7 +13,7 @@ namespace W {
 	
 	class Button : public MappedObj {
 	public:
-		Button(int _x, int _y, int _w, int _h, const char *_action);
+		Button(const W::rect &, const char *_action);
 		~Button();
 		
 		// Methods

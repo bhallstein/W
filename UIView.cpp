@@ -8,15 +8,12 @@
 
 #include <iostream>
 
-W::Button::Button(int _x, int _y, int _width, int _height, const char *_action) :
+W::Button::Button(const rect &_r, const char *_action) :
 	_col(Colour::TransparentBlack), _hovcol(Colour::Red), hover(false)
 {
-	pos.x = _x, pos.y = _y;
+	pos = _r.pos;
 	plan.resize(1);
-	rect *r = &plan[0];
-	r->pos.x = r->pos.y = 0;
-	r->sz.width = _width;
-	r->sz.height = _height;
+	plan[0].sz = _r.sz;
 	event.setType(EventType::BUTTONCLICK);
 	event.setPayload(new std::string(_action));
 }

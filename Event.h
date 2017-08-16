@@ -47,7 +47,7 @@ namespace W {
 	public:
 		Event(bool _treat_as_mouse_event = false);
 		Event(W::EventType::T, bool _treat_as_mouse_event = false);
-		Event(W::EventType::T, int _x, int _y, bool _treat_as_mouse_event = true);
+		Event(W::EventType::T, const W::position &, bool _treat_as_mouse_event = true);
 		Event(W::EventType::T, W::KeyCode::T);
 		
 		void setPos(W::position &_pos)      { pos = _pos; }
