@@ -15,6 +15,8 @@
 #include "StorageObj.h"
 #include "TextureAtlas.h"
 
+//#define __W_DEBUG
+#include "DebugMacro.h"
 
 /*** rect coord fns ***/
 
@@ -176,7 +178,10 @@ void W::DTexturedShape::setBlendMode(BlendMode::T _mode) {
 	
 	recopyAll();
 }
-void W::DTexturedShape::recopyT() { for (int i=0; i < length; ++i) tptr[i] = t_array[i]; }
+void W::DTexturedShape::recopyT() {
+	for (int i=0; i < length; ++i)
+		tptr[i] = t_array[i];
+}
 void W::DTexturedShape::recopyAll() {
 	recopyV();
 	recopyC();
@@ -195,7 +200,13 @@ W::DSprite::DSprite(View *_v, Texture *_t, const v2f &_p, const v2f &_sc, float 
 	regenAndCopyTexCoords();
 }
 void W::DSprite::setPosScaleRot(const v2f &p, const v2f &sc, float r) {
-	generateRectCoords(p + sc * 0.5, v2f(tex->getSize()) - sc, r, v_array);
+	const v2i &tSz = tex->getSize();
+	generateRectCoords(p + sc * 0.5, v2f(tSz.a * sc.a, tSz.b * sc.b) - sc, r, v_array);
+	#ifdef __W_DEBUG
+		std::cout << "DSprite::setPosScaleRot():\n";
+		for (int i=0; i < length; ++i)
+			std::cout << " " << v_array[i].str() << "\n";
+	#endif
 	recopyV();
 }
 void W::DSprite::setOpac(float _opac) {
@@ -253,14 +264,14 @@ void generateRectCoords(
 	
 	v1.c = v2.c = v3.c = v4.c = v5.c = v6.c = 0;
 	
-//	v1.x = 0,                v1.y = 0;
-//	v2.x = 0,                v2.y = nativeSize.height;
-//	v3.x = nativeSize.width, v3.y = nativeSize.height;
-//	v5.x = nativeSize.width, v5.y = 0;
-	v1.a = 0.5,            v1.b = 0.5;
-	v2.a = 0.5,            v2.b = sz.b - 0.5;
-	v3.a = sz.a - 0.5,     v3.b = sz.b - 0.5 ;
-	v5.a = sz.a - 0.5,     v5.b = 0.5;
+	v1.a = 0,       v1.b = 0;
+	v2.a = 0,       v2.b = sz.b;
+	v3.a = sz.a,    v3.b = sz.b;
+	v5.a = sz.a,    v5.b = 0;
+//	v1.a = 0.5,            v1.b = 0.5;
+//	v2.a = 0.5,            v2.b = sz.b - 0.5;
+//	v3.a = sz.a - 0.5,     v3.b = sz.b - 0.5 ;
+//	v5.a = sz.a - 0.5,     v5.b = 0.5;
 	
 	if (rotation != 0.0) {
 		float rot = rotation * DEG2RAD;
