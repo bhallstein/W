@@ -4,6 +4,8 @@
 #include "MappedObj.h"
 #include "Colour.h"
 
+#include <map>
+
 #define MR_CURRENCY '$'
 
 namespace W {
@@ -12,6 +14,7 @@ namespace W {
 	class Event;
 	class Positioner;
 	class GameState;
+	class DrawnObj;
 	
 	class View : public MappedObj {
 	public:
@@ -22,19 +25,35 @@ namespace W {
 		
 		void _updatePosition(const size &winsize);
 		
-		void _draw();					// Wrapper: prepares W for drawing the view, then calls draw()
-		virtual void draw();			// Override to implement your subclass’s drawing behaviour
-		void drawRect(int x, int y, int w, int h, const W::Colour &, float rotationInDegrees = 0);
-		void drawText(float x, float y, W::Colour &, const char *text, bool rAlign = false);
-		
 		void receiveEvent(Event *);					// Converts event to view’s coordinates, and calls processMouseEvent()
 		virtual void processMouseEvent(Event *) { }	// Override to do something with mouse events
 		
-		void _setGameState(GameState *g) { _gamestate = g; }
-		
+		// Drawn Object methods
+		void addDO(DrawnObj *, int layer = 1);
+		void removeDO(DrawnObj *);
+		void _markDOAsDirty(DrawnObj *);
+		void _updateDOs();
+			// Update status of all drawn objects.
+			// Must be called after locking the graphics mutex.
+
+		void _draw(const W::size &winSz);
 	protected:
 		Positioner *_positioner;
-		GameState *_gamestate;
+		
+		// Drawn Object vectors
+		typedef std::vector<DrawnObj*> DO_list;
+		std::map<int, DO_list> scene;
+		DO_list
+			deletedDOs,
+			dirtyDOs;
+		struct DOAndLayer {
+			DOAndLayer(DrawnObj *_DO, int _layer) : DO(_DO), layer(_layer) { }
+			DrawnObj *DO;
+			int layer;
+		};
+		std::vector<DOAndLayer> newDOs;
+
+		void _removeDO(DrawnObj *);
 		
 		virtual void updatePosition(const size &winsize) { }	// Let subsclasses perform own position update behaviours
 		

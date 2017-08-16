@@ -14,10 +14,10 @@
 @end
 
 
-@interface W_Demon : NSObject {
-	NSTimer *gametimer;
+@interface UpdateTimer : NSObject {
+	NSTimer *t;
 }
--(void)gametimerStart;
--(void)gametimerStop;
--(void)gametimerFire:(NSTimer*)t;
+-(void)start;
+-(void)stop;
+-(void)callback:(NSTimer*)_t;
 @end

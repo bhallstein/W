@@ -10,6 +10,8 @@
 	//#include "shlobj.h"
 #endif
 
+#include "texture.h"
+
 #include <iostream>
 
 struct W::Window::NativeObjs {
@@ -72,7 +74,7 @@ struct W::Window::NativeObjs {
 #endif
 
 
-W::Window::Window()
+W::Window::Window(const size &_size, const char *_title)
 {
 	// Check window has not already been created
 	if (W::_window) {
@@ -84,17 +86,17 @@ W::Window::Window()
 	_objs = new NativeObjs();
 	
 	// Create window
-	_createWindow();
-	
-	// Set W::_window
-	W::_window = this;
+	createWindow(_size, _title);
 }
-W::Window::~Window() {
+W::Window::~Window()
+{
+	closeWindow();
 	delete _objs;
-	// Unset W::_window
-	W::_window = NULL;
 }
 
+void W::Window::setTitle(const std::string &t) {
+	setTitle(t.c_str());
+}
 void W::Window::setTitle(const char *t) {
 	#ifdef __APPLE__
 		[_objs->window setTitle:[NSString stringWithUTF8String:t]];
@@ -103,7 +105,7 @@ void W::Window::setTitle(const char *t) {
 	#endif
 }
 
-void W::Window::_generateMouseMoveEvent() {
+void W::Window::generateMouseMoveEvent() {
 	int scrollmargin = 20;
 	// TODO: check if mouse is within window bounds (plus some margin, for ease of scroll?)
 	#ifdef __APPLE__
@@ -120,7 +122,7 @@ void W::Window::_generateMouseMoveEvent() {
 		W::_addEvent(ev);
 	#endif
 	// Generate screenedge events, useful for scrolling the map
-	size s = _getDimensions();
+	size s = getDimensions(this);
 	int w = s.width, h = s.height;
 	if (ev.pos.x < scrollmargin)           W::_addEvent(Event(EventType::SCREENEDGE_LEFT));
 	else if (ev.pos.x >= w - scrollmargin) W::_addEvent(Event(EventType::SCREENEDGE_RIGHT));
@@ -128,10 +130,16 @@ void W::Window::_generateMouseMoveEvent() {
 	else if (ev.pos.y >= h - scrollmargin) W::_addEvent(Event(EventType::SCREENEDGE_BOTTOM));
 }
 
-void W::Window::_createWindow() {
+void W::Window::createWindow(const size &_size, const char *_title) {
 	#ifdef __APPLE__
 		// Create OpenGL context
-		NSOpenGLPixelFormatAttribute attrs[] = { NSOpenGLPFADoubleBuffer, 0 };
+		NSOpenGLPixelFormatAttribute attrs[] = {
+			NSOpenGLPFAMultisample,
+			NSOpenGLPFASampleBuffers, (NSOpenGLPixelFormatAttribute)1,
+			NSOpenGLPFASamples, (NSOpenGLPixelFormatAttribute)4,
+			NSOpenGLPFADoubleBuffer,
+			0
+		};
 		_objs->pf = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
 		if (_objs->pf == nil)
 			throw Exception("Couldn't get an appropriate pixel format");
@@ -144,7 +152,8 @@ void W::Window::_createWindow() {
 		int vsync = 1;
 		[_objs->context setValues:&vsync forParameter:NSOpenGLCPSwapInterval];
 		
-		NSRect frame = NSMakeRect(0, 0, 800, 600);
+		// Create Window
+		NSRect frame = NSMakeRect(0, 0, _size.width, _size.height);
 		_objs->window = [[NSWindow alloc] initWithContentRect:frame
 												   styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask /*| NSResizableWindowMask*/
 													 backing:NSBackingStoreBuffered
@@ -155,14 +164,14 @@ void W::Window::_createWindow() {
 		
 		[_objs->window center];
 		
+		// Add view to window
 		NSRect viewRect = NSMakeRect(0, 0, frame.size.width, frame.size.height);
 		_objs->view = [[W_View alloc] initWithFrame:viewRect];
+		[_objs->window setContentView:_objs->view];
+		[_objs->context setView:_objs->view];		// Set view as context’s drawable object
 		
-		[_objs->window setContentView:_objs->view];	// Add view to window
-		
-		[_objs->context setView:_objs->view];			// Set view as context’s drawable object
-		
-		_objs->windowDelegate = [[W_WindowDelegate alloc] init];	// Create delegate to handle window close
+		// Create window delegate
+		_objs->windowDelegate = [[W_WindowDelegate alloc] init];
 		[_objs->window setDelegate:_objs->windowDelegate];
 		
 		[_objs->window makeKeyAndOrderFront:NSApp];
@@ -183,8 +192,8 @@ void W::Window::_createWindow() {
 		// Create window
 		_objs->windowHandle = CreateWindowEx(
 			extendedWindowStyle,
-			"W_Window",						// window class
-			"My Sexy W Application",		// title
+			"W_Window",				// window class
+			"My W Application",		// title
 			windowStyle,
 			0, 0,			// position
 			rect.right - rect.left,
@@ -198,12 +207,12 @@ void W::Window::_createWindow() {
 			DWORD err = GetLastError();
 			char errorMsg[200];
 			wsprintf(errorMsg, "Error creating window. Error code: %d, %X.", err, err);
-			_closeWindow();
+			closeWindow();
 			throw Exception(errorMsg);
 		}
 		// Get device context
 		if (!(_objs->deviceContext = GetDC(_objs->windowHandle))) {
-			_closeWindow();
+			closeWindow();
 			throw Exception("Error creating an OpenGL device context");
 		}
 		// Create pixel format
@@ -227,32 +236,28 @@ void W::Window::_createWindow() {
 			0, 0, 0					// Layer Masks Ignored
 		};
 		if (!(pf = ChoosePixelFormat(_objs->deviceContext, &pfd))) {
-			_closeWindow();
+			closeWindow();
 			throw Exception("Unable to get a suitable pixel format");
 		}
 		if(!SetPixelFormat(_objs->deviceContext, pf, &pfd)) {
-			_closeWindow();
+			closeWindow();
 			throw Exception("Unable to set the pixel format");
 		}
 		// Create rendering context
 		if (!(_objs->renderingContext = wglCreateContext(_objs->deviceContext))) {
-			_closeWindow();
+			closeWindow();
 			throw Exception("Error creating a rendering context");
-		}
-		// Make rendering context current
-		if (!wglMakeCurrent(_objs->deviceContext, _objs->renderingContext)) {
-			_closeWindow();
-			throw Exception("Error activating the rendering context");
 		}
 		
 		ShowWindow(_objs->windowHandle, SW_SHOW);
 		SetForegroundWindow(_objs->windowHandle);
 		SetFocus(_objs->windowHandle);
 	#endif
-
-	_setUpOpenGL();
+	
+	setTitle(_title);
+	setUpOpenGL();
 }
-void W::Window::_closeWindow() {
+void W::Window::closeWindow() {
 	#ifdef __APPLE__
 		[_objs->context clearDrawable];
 		[_objs->window release];
@@ -277,85 +282,59 @@ void W::Window::_closeWindow() {
 	#endif
 }
 
-void W::Window::_setUpOpenGL() {
-	#ifdef __APPLE__
-		[_objs->context makeCurrentContext];
-	#endif
-		{
-			glDisable(GL_DEPTH_TEST);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glEnable(GL_SCISSOR_TEST);
-		}
-	#ifdef __APPLE__
-		[NSOpenGLContext clearCurrentContext];
-	#endif
-}
-
-void W::Window::_startDrawing() {
-	#ifdef __APPLE__
-		[_objs->context makeCurrentContext];
-	#endif
-	
-	size s = _getDimensions();
-	int w = s.width, h = s.height;
-	
-	_current_drawn_view = NULL;
-	glScissor(0, 0, w, h);
-	
-	glViewport(0, 0, w, h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, w, h, 0, -1, 1);
-	glMatrixMode(GL_MODELVIEW);
-	
-	glClearColor(0.525, 0.187, 0.886, 1);
-	glClear(GL_COLOR_BUFFER_BIT);
-}
-void W::Window::_finishDrawing() {
-	#ifdef __APPLE__
-		[NSOpenGLContext clearCurrentContext];
-		[_objs->context flushBuffer];
-	#elif defined WIN32 || WIN64
-		SwapBuffers(_objs->deviceContext);
-	#endif
-}
-void W::Window::_setUpDrawingForView(View *v) {
-	_current_drawn_view = v;
-	size winsize = _getDimensions();
-	int h = winsize.height;
-	size viewsize = v->plan[0].sz;
-	glScissor(v->pos.x, h - v->pos.y - viewsize.height, viewsize.width, viewsize.height);
-}
-
-void W::Window::_drawRect(float x, float y, float w, float h, const W::Colour &col, float rot) {
-	if (_current_drawn_view != NULL)
-		x += _current_drawn_view->pos.x, y += _current_drawn_view->pos.y;
-	
-	glColor4f(col.r, col.g, col.b, col.a);
-	
-	glLoadIdentity();
-	glTranslatef(x + w/2, y + h/2, 0);
-	glRotatef(rot, 0, 0, 1);
-	glBegin(GL_QUADS);
+void W::Window::setUpOpenGL() {
+	setOpenGLThreadAffinity();
 	{
-		glVertex2f(-w/2, -h/2);
-		glVertex2f(w/2, -h/2);
-		glVertex2f(w/2, h/2);
-		glVertex2f(-w/2, h/2);
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_SCISSOR_TEST);
 	}
-	glEnd();
+	Texture::createPlaceholderTexture();
+	clearOpenGLThreadAffinity();
 }
 
-W::size W::Window::_getDimensions() {
+void W::Window::setOpenGLThreadAffinity() {
+	// Make opengl context current on the calling thread
 	#ifdef __APPLE__
-		NSSize bounds = [_objs->view bounds].size;
-	//	CGSize bounds = [_objs->view bounds].size;
+		[_objs->context makeCurrentContext];
+	#elif defined __WIN32 || __WIN64
+		if (!wglMakeCurrent(_objs->deviceContext, _objs->renderingContext)) {
+			closeWindow();
+			throw Exception("Error activating the rendering context");
+		}
+	#endif
+}
+void W::Window::clearOpenGLThreadAffinity() {
+	// Unmake opengl context current on the calling thread
+	#ifdef __APPLE__
+		[NSOpenGLContext clearCurrentContext];
+	#elif defined __WIN32 || __WIN64
+		if (!wglMakeCurrent(_objs->deviceContext, NULL)) throw Exception(
+			"Error deactivating the rendering context"
+		);
+	#endif
+}
+
+W::size W::Window::getDimensions(W::Window *w) {
+	if (w == NULL) return size(800, 600);
+	NativeObjs *ob = w->_objs;
+	#ifdef __APPLE__
+		NSSize bounds = [ob->view bounds].size;
+	//	CGSize bounds = [ob->view bounds].size;
 		return size((int)bounds.width, (int)bounds.height);
 	#elif defined WIN32 || WIN64
 		RECT rect;
-		GetClientRect(_objs->windowHandle, &rect);
+		GetClientRect(ob->windowHandle, &rect);
 		return size(rect.right - rect.left, rect.bottom - rect.top);
+	#endif
+}
+
+void W::Window::swapBuffers() {
+	#ifdef __APPLE__
+		[_objs->context flushBuffer];
+	#elif defined __WIN32 || __WIN64
+		SwapBuffers(_objs->deviceContext);
 	#endif
 }
 

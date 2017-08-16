@@ -62,20 +62,20 @@
 @end
 
 
-@implementation W_Demon
+@implementation UpdateTimer
 
--(void)gametimerStart {
-	gametimer = [NSTimer scheduledTimerWithTimeInterval:1./40.
-												 target:self
-											   selector:@selector(gametimerFire:)
-											   userInfo:nil
-												repeats:YES];
+-(void)start {
+	t = [NSTimer scheduledTimerWithTimeInterval:1./40.
+										 target:self
+									   selector:@selector(callback:)
+									   userInfo:nil
+										repeats:YES];
 }
--(void)gametimerStop {
-	[gametimer invalidate];
+-(void)stop {
+	[t invalidate];
 }
--(void)gametimerFire:(NSTimer*)t {
-	W::_runGameLoop();
+-(void)callback:(NSTimer*)_t {
+	W::_update();
 }
 
 @end

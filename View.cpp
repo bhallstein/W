@@ -1,11 +1,15 @@
 #include "W.h"
+#include "DrawnObj.h"
+#include "oglDrawHelpers.h"
+
+#include <OpenGL/gl.h>
 
 W::View::View(Positioner *_pos) :
-	_positioner(_pos), _gamestate(NULL)
+	_positioner(_pos)
 {
 	plan.resize(1);
 	if (_positioner)
-		_updatePosition(_window->_getDimensions());
+		_updatePosition(Window::getDimensions(_window));
 }
 W::View::~View()
 {
@@ -21,330 +25,78 @@ void W::View::_updatePosition(const size &winsize) {
 	updatePosition(winsize);
 }
 
-void W::View::_draw() {
-	_window->_setUpDrawingForView(this);
-	draw();
-}
-void W::View::draw() {
-	size *viewsize = &plan[0].sz;
-	drawRect(0, 0, viewsize->width, viewsize->height, W::Colour::White);
-	// Everybody loves a checkerboard pattern
-	for (int i=0; i < viewsize->width; i += 20)
-		for (int j=0; j < viewsize->height; j += 20)
-			if ((j/20)%2) {
-				if ((i/20)%2) drawRect(i, j, 20, 20, W::Colour::Black);
-			}
-			else {
-				if (!((i/20)%2)) drawRect(i, j, 20, 20, W::Colour::Black);
-			}
-}
-void W::View::drawRect(int x, int y, int w, int h, const Colour &col, float rot) {
-	_window->_drawRect(x, y, w, h, col, rot);
-}
-
 void W::View::receiveEvent(Event *ev) {
 	ev->pos.x -= pos.x;
 	ev->pos.y -= pos.y;
 	processMouseEvent(ev);
 }
 
-void W::View::drawText(float x, float y, Colour &col, const char *text, bool rAlign) {
-	int char_width = 14;
-	// work out total width & hence position
-	int tw = 0, c;
-	for (int i=0; (c = text[i]); i++)
-		if (c == 'I' | c == 'i' || c == '1' || c == ':' || c == '!' || c == '.' || c == '\'') tw += char_width - 4;
-		else if (c == 'L' || c == 'l') tw += char_width - 2;
-		else tw += char_width;
-	if (rAlign) x -= tw;
+void W::View::addDO(DrawnObj *_obj, int layer) {
+	newDOs.push_back(DOAndLayer(_obj, layer));
+}
+void W::View::removeDO(DrawnObj *_obj) {
+	deletedDOs.push_back(_obj);
+}
+void W::View::_markDOAsDirty(DrawnObj *_obj) {
+	dirtyDOs.push_back(_obj);
+}
+void W::View::_updateDOs() {
+	// Remove deleted D.O.s
+	for (DO_list::iterator it = deletedDOs.begin(); it < deletedDOs.end(); it++)
+		_removeDO(*it);
+	deletedDOs.clear();
 	
-	for (int i=0; text[i] != '\0'; i++) {
-		char c = text[i];
-		switch(c) {
-			case 'A' : case 'a' : {
-				drawRect(x, y, 10, 2, col, 0);
-				drawRect(x, y+2, 2, 8, col, 0);
-				drawRect(x+2, y+4, 6, 2, col, 0);
-				drawRect(x+8, y+2, 2, 8, col, 0);
-				break;
+	// Add new D.O.s
+	for (std::vector<DOAndLayer>::iterator it = newDOs.begin(); it < newDOs.end(); it++)
+		scene[it->layer].push_back(it->DO);
+	newDOs.clear();
+	
+	// Update dirty D.O.s
+	for (DO_list::iterator it = dirtyDOs.begin(); it < dirtyDOs.end(); it++)
+		(*it)->_updateValues();
+	dirtyDOs.clear();
+}
+
+void W::View::_removeDO(DrawnObj *_obj) {
+	for (std::map<int, DO_list>::iterator it = scene.begin(); it != scene.end(); ) {
+		DO_list *vec = &it->second;
+		for (DO_list::iterator itv = vec->begin(); itv < vec->end(); )
+			if (*itv == _obj) {
+				delete *itv;
+				itv = vec->erase(itv);
 			}
-			case 'B' : case 'b' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+2, y, 6, 2, col, 0);
-				drawRect(x+2, y+4, 6, 2, col, 0);
-				drawRect(x+2, y+8, 6, 2, col, 0);
-				drawRect(x+8, y+2, 2, 8, col, 0);
-				break;
+			else it++;
+		if (!vec->size())
+			scene.erase(it++);
+		else
+			++it;
+	}
+}
+
+void W::View::_draw(const size &winSz) {
+	size &sz = plan[0].sz;
+	glScissor(pos.x, winSz.height - pos.y - sz.height, sz.width, sz.height);
+	
+	// Draw all DOs
+	for (std::map<int, DO_list>::iterator itm = scene.begin(); itm != scene.end(); itm++) {
+		DO_list &vec = itm->second;
+		for (DO_list::iterator itv = vec.begin(); itv != vec.end(); itv++) {
+			DrawnObj *obj = *itv;
+			if (obj->type == DrawnObj::RECT) {
+				DrawnRect *drect = (DrawnRect*) obj;
+				rect &objPosn = drect->getPosn();
+				drawRect(objPosn.pos.x, objPosn.pos.y, objPosn.sz.width, objPosn.sz.height, drect->getCol(), drect->getRot());
 			}
-			case 'C' : case 'c' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+2, y, 7, 2, col, 0);
-				drawRect(x+2, y+8, 7, 2, col, 0);
-				break;
+			else if (obj->type == DrawnObj::TEXT) {
+				DrawnText *dtext = (DrawnText*) obj;
+				rect &objPosn = dtext->getPosn();
+				drawText(objPosn.pos.x, objPosn.pos.y, dtext->getCol(), dtext->getText().c_str());
 			}
-			case 'D': case 'd' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+8, y+2, 2, 8, col, 0);
-				drawRect(x+2, y, 6, 2, col, 0);
-				drawRect(x+2, y+8, 6, 2, col, 0);
-				break;
+			else if (obj->type == DrawnObj::IMAGE) {
+				DrawnImage *dimg = (DrawnImage*) obj;
+				rect &objPosn = dimg->getPosn();
+				drawImage(objPosn.pos.x, objPosn.pos.y, objPosn.sz.width, objPosn.sz.height, dimg->getTex(), dimg->getOpacity());
 			}
-			case 'E' : case 'e' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+2, y, 7, 2, col, 0);
-				drawRect(x+2, y+4, 5, 2, col, 0);
-				drawRect(x+2, y+8, 7, 2, col, 0);
-				break;
-			}
-			case 'F' : case 'f' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+2, y, 7, 2, col, 0);
-				drawRect(x+2, y+4, 5, 2, col, 0);
-				break;
-			}
-			case 'G' : case 'g' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+2, y, 8, 2, col, 0);
-				drawRect(x+2, y+8, 8, 2, col, 0);
-				drawRect(x+8, y+4, 2, 4, col, 0);
-				break;
-			}
-			case 'H' : case 'h' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+8, y, 2, 10, col, 0);
-				drawRect(x+2, y+4, 6, 2, col, 0);
-				break;
-			}
-			case '1' : {
-				drawRect(x, y, 2, 2, col, 0);
-			}
-			case 'I' : case 'i' : {
-				drawRect(x+2, y, 2, 10, col, 0);
-				break;
-			}
-			case 'J' : case 'j' : {
-				drawRect(x+6, y, 2, 10, col, 0);
-				drawRect(x, y+8, 6, 2, col, 0);
-				break;
-			}
-			case 'K' : case 'k' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+2, y+4, 5, 2, col, 0);
-				drawRect(x+7, y, 2, 4, col, 0);
-				drawRect(x+7, y+6, 2, 4, col, 0);
-				break;
-			}
-			case 'L' : case 'l' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+2, y+8, 6, 2, col, 0);
-				break;
-			}
-			case 'M' : case 'm' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+2, y+2, 2, 2, col, 0);
-				drawRect(x+4, y+4, 2, 2, col, 0);
-				drawRect(x+6, y+2, 2, 2, col, 0);
-				drawRect(x+8, y, 2, 10, col, 0);
-				break;
-			}
-			case 'N' : case 'n' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+2, y+2, 2, 2, col, 0);
-				drawRect(x+4, y+4, 2, 2, col, 0);
-				drawRect(x+6, y+6, 2, 2, col, 0);
-				drawRect(x+8, y, 2, 10, col, 0);
-				break;
-			}
-			case '0' : {
-				drawRect(x+4, y+4, 2, 2, col, 0);
-			}
-			case 'O' : case 'o' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+8, y, 2, 10, col, 0);
-				drawRect(x+2, y, 6, 2, col, 0);
-				drawRect(x+2, y+8, 6, 2, col, 0);
-				break;
-			}
-			case 'P' : case 'p' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+2, y, 6, 2, col, 0);
-				drawRect(x+2, y+4, 6, 2, col, 0);
-				drawRect(x+8, y, 2, 6, col, 0);
-				break;
-			}
-			case 'Q' : case 'q' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+8, y, 2, 10, col, 0);
-				drawRect(x+2, y, 6, 2, col, 0);
-				drawRect(x+2, y+8, 6, 2, col, 0);
-				drawRect(x+6, y+10, 2, 2, col, 0);
-				break;
-			}
-			case 'R' : case 'r' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+2, y, 6, 2, col, 0);
-				drawRect(x+2, y+4, 6, 2, col, 0);
-				drawRect(x+8, y, 2, 6, col, 0);
-				drawRect(x+6, y+6, 2, 2, col, 0);
-				drawRect(x+8, y+8, 2, 2, col, 0);
-				break;
-			}
-			case 'S' : case 's' : case '5' : {
-				drawRect(x, y, 10, 2, col, 0);
-				drawRect(x, y+4, 10, 2, col, 0);
-				drawRect(x, y+8, 10, 2, col, 0);
-				drawRect(x, y+2, 2, 2, col, 0);
-				drawRect(x+8, y+6, 2, 2, col, 0);
-				break;
-			}
-			case 'T' : case 't' : {
-				drawRect(x, y, 10, 2, col, 0);
-				drawRect(x+4, y+2, 2, 8, col, 0);
-				break;
-			}
-			case 'U' : case 'u' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+8, y, 2, 10, col, 0);
-				drawRect(x+2, y+8, 6, 2, col, 0);
-				break;
-			}
-			case 'V' : case 'v' : {
-				drawRect(x, y, 2, 6, col, 0);
-				drawRect(x+2, y+6, 2, 2, col, 0);
-				drawRect(x+4, y+8, 2, 2, col, 0);
-				drawRect(x+6, y+6, 2, 2, col, 0);
-				drawRect(x+8, y, 2, 6, col, 0);
-				break;
-			}
-			case 'W' : case 'w' : {
-				drawRect(x, y, 2, 8, col, 0);
-				drawRect(x+4, y, 2, 8, col, 0);
-				drawRect(x+8, y, 2, 8, col, 0);
-				drawRect(x+2, y+8, 2, 2, col, 0);
-				drawRect(x+6, y+8, 2, 2, col, 0);
-				break;
-			}
-			case 'X' : case 'x' : {
-				drawRect(x, y, 2, 2, col, 0);
-				drawRect(x+2, y+2, 2, 2, col, 0);
-				drawRect(x+4, y+4, 2, 2, col, 0);
-				drawRect(x+6, y+6, 2, 2, col, 0);
-				drawRect(x+8, y+8, 2, 2, col, 0);
-				drawRect(x+8, y, 2, 2, col, 0);
-				drawRect(x+6, y+2, 2, 2, col, 0);
-				drawRect(x+2, y+6, 2, 2, col, 0);
-				drawRect(x, y+8, 2, 2, col, 0);
-				break;
-			}
-			case 'Y' : case 'y' : {
-				drawRect(x+8, y, 2, 10, col, 0);
-				drawRect(x, y, 2, 2, col, 0);
-				drawRect(x+2, y+2, 2, 2, col, 0);
-				drawRect(x+4, y+4, 4, 2, col, 0);
-				break;
-			}
-			case 'Z' : case 'z' : {
-				drawRect(x, y, 10, 2, col, 0);
-				drawRect(x, y+8, 10, 2, col, 0);
-				drawRect(x+6, y+2, 2, 2, col, 0);
-				drawRect(x+4, y+4, 2, 2, col, 0);
-				drawRect(x+2, y+6, 2, 2, col, 0);
-				break;
-			}
-			case '2' : {
-				drawRect(x, y, 2, 4, col, 0);
-				drawRect(x+2, y, 8, 2, col, 0);
-				drawRect(x+8, y+2, 2, 2, col, 0);
-				drawRect(x+2, y+4, 8, 2, col, 0);
-				drawRect(x, y+6, 2, 4, col, 0);
-				drawRect(x+2, y+8, 8, 2, col, 0);
-				break;
-			}
-			case '3' : {
-				drawRect(x+8, y, 2, 10, col, 0);
-				drawRect(x, y, 8, 2, col, 0);
-				drawRect(x, y+8, 8, 2, col, 0);
-				drawRect(x+2, y+4, 6, 2, col, 0);
-				break;
-			}
-			case '4' : {
-				drawRect(x+8, y, 2, 10, col, 0);
-				drawRect(x, y, 2, 4, col, 0);
-				drawRect(x, y+4, 8, 2, col, 0);
-				break;
-			}
-			case '6' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+2, y, 8, 2, col, 0);
-				drawRect(x+2, y+4, 8, 2, col, 0);
-				drawRect(x+2, y+8, 8, 2, col, 0);
-				drawRect(x+8, y+6, 2, 2, col, 0);
-				break;
-			}
-			case '7' : {
-				drawRect(x, y, 10, 2, col, 0);
-				drawRect(x+8, y+2, 2, 2, col, 0);
-				drawRect(x+6, y+4, 2, 2, col, 0);
-				drawRect(x+4, y+6, 2, 2, col, 0);
-				drawRect(x+2, y+8, 2, 2, col, 0);
-				break;
-			}
-			case '8' : {
-				drawRect(x, y, 2, 10, col, 0);
-				drawRect(x+8, y, 2, 10, col, 0);
-				drawRect(x+2, y, 6, 2, col, 0);
-				drawRect(x+2, y+4, 6, 2, col, 0);
-				drawRect(x+2, y+8, 6, 2, col, 0);
-				break;
-			}
-			case '9' : {
-				drawRect(x+8, y, 2, 10, col, 0);
-				drawRect(x, y, 8, 2, col, 0);
-				drawRect(x, y+4, 8, 2, col, 0);
-				drawRect(x, y+2, 2, 2, col, 0);
-				drawRect(x, y+8, 8, 2, col, 0);
-				break;
-			}
-				//			case '$' : {
-				//				drawRect(x, y, 10, 2, col, 0);
-				//				drawRect(x, y+4, 10, 2, col, 0);
-				//				drawRect(x, y+8, 10, 2, col, 0);
-				//				drawRect(x, y+2, 2, 2, col, 0);
-				//				drawRect(x+8, y+6, 2, 2, col, 0);
-				//				drawRect(x+4, y-1, 2, 12, col, 0);
-				//				break;
-				//			}
-			case MR_CURRENCY /* £ */ : {
-				drawRect(x+4, y, 6, 2, col, 0);
-				drawRect(x+2, y+2, 2, 2, col, 0);
-				drawRect(x, y+4, 8, 2, col, 0);
-				drawRect(x+2, y+6, 2, 4, col, 0);
-				drawRect(x, y+8, 10, 2, col, 0);
-				break;
-			}
-			case ':' : {
-				drawRect(x+2, y+4, 2, 2, col, 0);
-				drawRect(x+2, y+8, 2, 2, col, 0);
-				break;
-			}
-			case '!' : {
-				drawRect(x+2, y, 2, 6, col, 0);
-				drawRect(x+2, y+8, 2, 2, col, 0);
-				break;
-			}
-			case '.' : {
-				drawRect(x+2, y+8, 2, 2, col, 0);
-				break;
-			}
-			case '\'' : {
-				drawRect(x+2, y, 2, 2, col, 0);
-				drawRect(x+3, y-2, 2, 2, col, 0);
-				break;
-			}
-			default: break;
 		}
-		if (c == 'I' | c == 'i' || c == '1' || c == ':' || c == '!' || c == '.' || c == '\'') x += char_width - 4;
-		else if (c == 'L' || c == 'l')                   x += char_width - 2;
-		else                                             x += char_width;
 	}
 }

@@ -16,7 +16,6 @@ W::GameState::~GameState()
 
 void W::GameState::addView(View *v) {
 	_vlist.push_back(v);
-	v->_setGameState(this);
 	Messenger::subscribeToMouseEvents(Callback(&View::receiveEvent, v));
 }
 void W::GameState::removeView(View *v) {

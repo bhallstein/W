@@ -25,7 +25,7 @@ W::UIView::UIView(const std::string &viewname) :
 			string("Error creating UIView '") + string(viewname) +
 			string("' - see log file for further details")
 		);
-	updatePosition(_window->_getDimensions());
+	updatePosition(_window->getDimensions());
 }
 
 W::UIView::~UIView()
@@ -37,7 +37,7 @@ void W::UIView::processMouseEvent(Event *ev) {
 	if (dragloop) {
 		if (ev->type == EventType::MOUSEMOVE) {
 			cur_positioner->nudge(ev->pos - drag_initial);
-			_updatePosition(_window->_getDimensions());
+			_updatePosition(_window->getDimensions());
 		}
 		else if (ev->type == EventType::LEFTMOUSEUP) {
 			Messenger::relinquishPrivilegedEventResponderStatus(this);

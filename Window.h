@@ -15,33 +15,31 @@ namespace W {
 	
 	class Window {
 	public:
-		Window();
+		Window(const W::size &, const char *_title);
 		~Window();
 		
+		static W::size getDimensions(W::Window *);
+		
+		void setTitle(const std::string &);
 		void setTitle(const char *);
-		void _generateMouseMoveEvent();
+		void generateMouseMoveEvent();
 		
-		void _startDrawing();
-		void _finishDrawing();
-		void _setUpDrawingForView(View *);
+		void setOpenGLThreadAffinity();
+		void clearOpenGLThreadAffinity();
 		
-		void _drawRect(float x, float y, float w, float h, const W::Colour &, float rot);
-
-		size _getDimensions();
 #if defined WIN32 || WIN64
 		LRESULT CALLBACK _WndProc(HWND, UINT, WPARAM, LPARAM);
 #endif
+		struct NativeObjs;
+		void swapBuffers();
 		
 	protected:
-		void _createWindow();
-		void _closeWindow();
+		void createWindow(const W::size &, const char *_title);
+		void closeWindow();
+		void setUpOpenGL();
 		
-		void _setUpOpenGL();
-		
-		struct NativeObjs;
 		struct NativeObjs *_objs;
-		View *_current_drawn_view;
-
+		
 #if defined WIN32 || WIN64
 		struct _initializer;
 		static _initializer *_init;

@@ -1,4 +1,23 @@
 #include "types.h"
+#include <sstream>
+
+/* Exception */
+
+W::Exception::Exception(const char *_msg, int _err)
+{
+	std::stringstream ss;
+	ss << _msg << " (error: " << _err << ")";
+	msg = ss.str();
+}
+W::Exception::Exception(const std::string &_msg, int _err)
+{
+	std::stringstream ss;
+	ss << _msg << " (error: " << _err << ")";
+	msg = ss.str();
+}
+
+
+/* Stringy functions */
 
 bool W::isNum(const char c) {
 	return (c >= '0' && c <= '9');
