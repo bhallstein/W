@@ -91,8 +91,6 @@ unsigned long W::Timer::getMicrosecondsCPU()
 #include <algorithm>
 //#include "OgreBitwise.h"
 
-using namespace Ogre;
-
 //-------------------------------------------------------------------------
 W::Timer::Timer()
 	: mTimerMask( 0 )
