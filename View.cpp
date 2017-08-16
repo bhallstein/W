@@ -1,5 +1,5 @@
 #include "W.h"
-#include "DrawnObj.h"
+#include "DObj.h"
 #include "Controller.h"
 
 #ifdef __APPLE__

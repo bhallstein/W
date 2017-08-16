@@ -1,4 +1,4 @@
-#include "DrawnObj.h"
+#include "DObj.h"
 #include "GenericRetro.h"
 
 #define GEOM_LENGTH_FOR_RECT 6

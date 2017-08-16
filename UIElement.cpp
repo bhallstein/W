@@ -1,8 +1,7 @@
 #include "UIElement.h"
 #include "Messenger.h"
 #include "Callback.h"
-#include "DrawnObj.h"
-
+#include "DObj.h"
 
 W::UIElement::UIElement(const std::string &_name, W::Positioner *_pos, EvTypeMap &_evTypes) :
 	name(_name), positioner(_pos), evTypes(_evTypes)

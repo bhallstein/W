@@ -5,7 +5,7 @@
 #include "Messenger.h"
 #include "Positioner.h"
 #include "Window.h"
-#include "DrawnObj.h"
+#include "DObj.h"
 
 #include "LuaObj.h"
 

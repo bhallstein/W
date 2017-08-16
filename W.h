@@ -11,7 +11,7 @@
 #include "Controller.h"
 #include "Rand.h"
 #include "Colour.h"
-#include "DrawnObj.h"
+#include "DObj.h"
 #include "Event.h"
 #include "Window.h"
 #include "View.h"
