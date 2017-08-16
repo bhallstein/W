@@ -20,11 +20,6 @@
 
 namespace W {
 	
-	class DColouredShape;
-	class DTri;
-	class DRect;
-	class DSprite;
-	
 	class Triangle {
 	public:
 		Triangle(View *, const position &p1, const position &p2, const position &p3, const Colour &, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
@@ -46,7 +41,7 @@ namespace W {
 		Colour col;
 		
 	private:
-		DTri *dTri;
+		void *dTri;
 		
 	};
 	
@@ -75,7 +70,7 @@ namespace W {
 		position p1, p2, p3;
 		void genTriProperties();
 			// Gen from public properties, save result in p1-3
-		DTri *dTri;
+		void *dTri;
 		
 	};
 	
@@ -104,7 +99,7 @@ namespace W {
 	private:
 		position p1, p2, p3;
 		void genTriProperties();
-		DTri *dTri;
+		void *dTri;
 		
 	};
 	
@@ -131,7 +126,7 @@ namespace W {
 		Colour col;
 		
 	protected:
-		DRect *dRect;
+		void *dRect;
 
 	};
 	
@@ -184,7 +179,7 @@ namespace W {
 		float opac;
 		
 	private:
-		DSprite *dSprite;
+		void *dSprite;
 	};
 
 	

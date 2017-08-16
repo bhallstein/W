@@ -38,26 +38,26 @@ W::Triangle::Triangle(View *_v, const position &_p1, const position &_p2, const 
 }
 W::Triangle::~Triangle()
 {
-	delete dTri;
+	delete ((DTri*) dTri);
 }
-void W::Triangle::setP1(const position &x){ dTri->setP123(p1 = x, p2, p3); }
-void W::Triangle::setP2(const position &x){ dTri->setP123(p1, p2 = x, p3); }
-void W::Triangle::setP3(const position &x){ dTri->setP123(p1, p2, p3 = x); }
+void W::Triangle::setP1(const position &x){ ((DTri*) dTri)->setP123(p1 = x, p2, p3); }
+void W::Triangle::setP2(const position &x){ ((DTri*) dTri)->setP123(p1, p2 = x, p3); }
+void W::Triangle::setP3(const position &x){ ((DTri*) dTri)->setP123(p1, p2, p3 = x); }
 void W::Triangle::setP123(const position &_p1, const position &_p2, const position &_p3) {
-	dTri->setP123(p1 = _p1, p2 = _p2, p3 = _p3);
+	((DTri*) dTri)->setP123(p1 = _p1, p2 = _p2, p3 = _p3);
 }
 void W::Triangle::nudge(const position &delta) {
 	p1 += delta, p2 += delta, p3 += delta;
-	dTri->setP123(p1, p2, p3);
+	((DTri*) dTri)->setP123(p1, p2, p3);
 }
 void W::Triangle::setCol(const Colour &c) {
-	dTri->setCol(col = c);
+	((DTri*) dTri)->setCol(col = c);
 }
 void W::Triangle::setLayer(int l) {
-	dTri->setLayer(l);
+	((DTri*) dTri)->setLayer(l);
 }
 void W::Triangle::setBlendMode(BlendMode::T m) {
-	dTri->setBlendMode(m);
+	((DTri*) dTri)->setBlendMode(m);
 }
 
 
@@ -74,31 +74,31 @@ W::EqTriangle::EqTriangle(View *_v, const position &_p, float _rad, const Colour
 }
 W::EqTriangle::~EqTriangle()
 {
-	delete dTri;
+	delete ((DTri*) dTri);
 }
 void W::EqTriangle::setPosition(const position &_p) {
 	pos = _p;
 	genTriProperties();
-	dTri->setP123(p1, p2, p3);
+	((DTri*) dTri)->setP123(p1, p2, p3);
 }
 void W::EqTriangle::setRadius(float _rad) {
 	radius = _rad;
 	genTriProperties();
-	dTri->setP123(p1, p2, p3);
+	((DTri*) dTri)->setP123(p1, p2, p3);
 }
 void W::EqTriangle::nudge(const position &delta) {
 	pos += delta;
 	p1 += delta, p2 += delta, p3 += delta;
-	dTri->setP123(p1, p2, p3);
+	((DTri*) dTri)->setP123(p1, p2, p3);
 }
 void W::EqTriangle::setCol(const Colour &_col) {
-	dTri->setCol(col = _col);
+	((DTri*) dTri)->setCol(col = _col);
 }
 void W::EqTriangle::setLayer(int l) {
-	dTri->setLayer(l);
+	((DTri*) dTri)->setLayer(l);
 }
 void W::EqTriangle::setBlendMode(BlendMode::T m) {
-	dTri->setBlendMode(m);
+	((DTri*) dTri)->setBlendMode(m);
 }
 void W::EqTriangle::genTriProperties() {
 	float sideLength = radius * ROOT3;
@@ -145,31 +145,31 @@ col(_col)
 }
 W::IsoTriangle::~IsoTriangle()
 {
-	delete dTri;
+	delete ((DTri*) dTri);
 }
 void W::IsoTriangle::setPosition(const position &_p) {
 	pos = _p;
 	genTriProperties();
-	dTri->setP123(p1, p2, p3);
+	((DTri*) dTri)->setP123(p1, p2, p3);
 }
 void W::IsoTriangle::setSize(const size &_sz) {
 	sz = _sz;
 	genTriProperties();
-	dTri->setP123(p1, p2, p3);
+	((DTri*) dTri)->setP123(p1, p2, p3);
 }
 void W::IsoTriangle::nudge(const position &delta) {
 	pos += delta;
 	p1 += delta, p2 += delta, p3 += delta;
-	dTri->setP123(p1, p2, p3);
+	((DTri*) dTri)->setP123(p1, p2, p3);
 }
 void W::IsoTriangle::setCol(const Colour &_col) {
-	dTri->setCol(col = _col);
+	((DTri*) dTri)->setCol(col = _col);
 }
 void W::IsoTriangle::setLayer(int l) {
-	dTri->setLayer(l);
+	((DTri*) dTri)->setLayer(l);
 }
 void W::IsoTriangle::setBlendMode(BlendMode::T m) {
-	dTri->setBlendMode(m);
+	((DTri*) dTri)->setBlendMode(m);
 }
 void W::IsoTriangle::genTriProperties() {
 	float halfWidth = sz.width * 0.5;
@@ -224,32 +224,32 @@ W::Rectangle::Rectangle(
 }
 W::Rectangle::~Rectangle()
 {
-	delete dRect;
+	delete ((DRect*) dRect);
 }
 void W::Rectangle::setPos(const position &_p) {
-	dRect->setPosSzRot(pos = _p, sz, rot);
+	((DRect*) dRect)->setPosSzRot(pos = _p, sz, rot);
 }
 void W::Rectangle::setSz(const size &_s) {
-	dRect->setPosSzRot(pos, sz = _s, rot);
+	((DRect*) dRect)->setPosSzRot(pos, sz = _s, rot);
 }
 void W::Rectangle::setRot(float _r) {
-	dRect->setPosSzRot(pos, sz, rot = _r);
+	((DRect*) dRect)->setPosSzRot(pos, sz, rot = _r);
 }
 void W::Rectangle::setAll(const position &_p, const size &_s, float _r) {
-	dRect->setPosSzRot(pos = _p, sz = _s, rot = _r);
+	((DRect*) dRect)->setPosSzRot(pos = _p, sz = _s, rot = _r);
 }
 void W::Rectangle::nudge(const position &delta) {
 	pos += delta;
-	dRect->setPosSzRot(pos, sz, rot);
+	((DRect*) dRect)->setPosSzRot(pos, sz, rot);
 }
 void W::Rectangle::setCol(const Colour &_c) {
-	dRect->setCol(col = _c);
+	((DRect*) dRect)->setCol(col = _c);
 }
 void W::Rectangle::setLayer(int l) {
-	dRect->setLayer(l);
+	((DRect*) dRect)->setLayer(l);
 }
 void W::Rectangle::setBlendMode(BlendMode::T m) {
-	dRect->setBlendMode(m);
+	((DRect*) dRect)->setBlendMode(m);
 }
 
 
@@ -340,32 +340,32 @@ W::Sprite::Sprite(
 }
 W::Sprite::~Sprite()
 {
-	delete dSprite;
+	delete ((DSprite*) dSprite);
 }
 void W::Sprite::setPos(const position &_p) {
-	dSprite->setPosSzRot(pos = _p, sz, rot);
+	((DSprite*) dSprite)->setPosSzRot(pos = _p, sz, rot);
 }
 void W::Sprite::setSz(const size &_s) {
-	dSprite->setPosSzRot(pos, sz = _s, rot);
+	((DSprite*) dSprite)->setPosSzRot(pos, sz = _s, rot);
 }
 void W::Sprite::setRot(float _r) {
-	dSprite->setPosSzRot(pos, sz, rot = _r);
+	((DSprite*) dSprite)->setPosSzRot(pos, sz, rot = _r);
 }
 void W::Sprite::setAll(const position &_p, const size &_s, float _r) {
-	dSprite->setPosSzRot(pos = _p, sz = _s, rot = _r);
+	((DSprite*) dSprite)->setPosSzRot(pos = _p, sz = _s, rot = _r);
 }
 void W::Sprite::nudge(const position &delta) {
 	pos += delta;
-	dSprite->setPosSzRot(pos, sz, rot);
+	((DSprite*) dSprite)->setPosSzRot(pos, sz, rot);
 }
 void W::Sprite::setOpacity(float _o) {
-	dSprite->setOpac(_o);
+	((DSprite*) dSprite)->setOpac(_o);
 }
 void W::Sprite::setLayer(int l) {
-	dSprite->setLayer(l);
+	((DSprite*) dSprite)->setLayer(l);
 }
 void W::Sprite::setBlendMode(BlendMode::T m) {
-	dSprite->setBlendMode(m);
+	((DSprite*) dSprite)->setBlendMode(m);
 }
 
 ///******************************/
