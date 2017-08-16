@@ -41,7 +41,7 @@
     if ((self = [super initWithFrame:frame])) {
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
         
-		self.contentScaleFactor = 2.0;	// We want the pixel size
+		self.contentScaleFactor = [UIScreen mainScreen].scale;
 		
         eaglLayer.opaque = TRUE;
         eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys: [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
