@@ -12,7 +12,7 @@ namespace W {
 		position pos;
 		std::vector<rect> plan;
 		
-		bool overlapsWith(int x, int y);
+		bool overlapsWith(const W::position &);
 		
 		virtual void _cplusplusisbollocks() { }
 	};
