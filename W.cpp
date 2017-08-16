@@ -36,7 +36,7 @@ struct W::_init {
 		#ifdef __APPLE__
 			p = "/dev/null";
 		#elif defined WIN32 || WIN64
-			p = "\Device\Null";
+			p = "\\Device\\Null";
 		#endif
 		setLogFile(p.c_str());
 		
@@ -183,7 +183,7 @@ void W::_updateAllViewPositions() {
 			size s = itwv->first->_getDimensions();
 			std::list<View*> *l = &itwv->second;
 			for (std::list<View*>::iterator itl = l->begin(); itl != l->end(); itl++)
-				(*itl)->_updatePosition(&s);
+				(*itl)->_updatePosition(s);
 		}
 	}
 }

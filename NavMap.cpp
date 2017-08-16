@@ -7,7 +7,7 @@ namespace W {
 	{
 		// hai nodey
 	}
-
+	
 	void NavNode::addNeighbour(NavNode *n) {
 		removeNeighbour(n);
 		neighbours.push_back(n);
@@ -30,8 +30,8 @@ namespace W {
 	void NavNode::setComparand(float _min_dist) {
 		min_dist = _min_dist;
 	}
-
-
+	
+	
 	NavMap::NavMap(int _w, int _h) : open_nodes(_w * _h)
 	{
 		w = _w, h = _h;
@@ -57,7 +57,7 @@ namespace W {
 	{
 		
 	}
-
+	
 	void NavMap::makeImpassable(MappedObj *obj) {
 		int objx = obj->pos.x, objy = obj->pos.y;
 		for (std::vector<rect>::iterator it = obj->plan.begin(); it < obj->plan.end(); it++) {

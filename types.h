@@ -2,6 +2,8 @@
 #define W_types_h
 
 #include <string>
+#include <sstream>
+#include <vector>
 
 namespace W {
 
@@ -27,14 +29,26 @@ namespace W {
 	/* Exceptions */
 	class Exception : public std::exception {
 	public:
-		Exception(const char *s) : msg(s) { }
+		Exception(const char *_msg) : msg(_msg) { }
+		Exception(const std::string &_msg) : msg(_msg) { }
 		~Exception() throw() { }
-		virtual const char* what() {
+		const char* what() {
 			return msg.c_str();
 		}
 	private:
 		std::string msg;
 	};
+	
+	/* String-related helper functions */
+	bool isNum(const char c);
+	
+	void strSplit(const std::string &s, std::vector<std::string> &v, char delim);
+	
+	template <typename T>
+	bool strToT(T &t, const std::string &s) {	// Convert (first part of) string to numeric type
+		std::istringstream ss(s);
+		return !(ss >> t).fail();
+	}
 	
 }
 

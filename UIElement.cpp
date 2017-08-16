@@ -3,19 +3,24 @@
 #include "Callback.h"
 
 
-W::UIElement::UIElement(const char *_name, evTypeMap &_evTypes) :
-	name(_name), evTypes(_evTypes)
+W::UIElement::UIElement(const std::string &_name, W::Positioner *_pos, EvTypeMap &_evTypes) :
+	name(_name), positioner(_pos), evTypes(_evTypes)
 {
-	// 
+	//
 }
 W::UIElement::~UIElement()
 {
-	// 
+	delete positioner;
 }
 
+void W::UIElement::update(const W::size &_s) {
+	rect &r = positioner->refresh(_s);
+	pos = r.pos;
+	plan[0].sz = r.sz;
+}
 
-W::Button::Button(const char *_name, evTypeMap &_evTypes) :
-	UIElement(_name, _evTypes),
+W::Button::Button(const std::string &_name, W::Positioner *_pos, EvTypeMap &_evTypes) :
+	UIElement(_name, _pos, _evTypes),
 	hover(false), active(false)
 {
 	buttonClickEvent.setType(EventType::BUTTONCLICK);
