@@ -43,6 +43,8 @@ struct W::Window::NativeObjs {
 		return win ? win->_WndProc(windowHandle, msg, wParam, lParam) : DefWindowProc(windowHandle, msg, wParam, lParam);
 	}
 
+	std::map<UINT, W::EventType::T> W::Window::_win_event_type_map;
+
 	struct W::Window::_initializer {
 		_initializer() {
 			// Set appInstance ref
@@ -68,6 +70,12 @@ struct W::Window::NativeObjs {
 
 			if (!RegisterClassEx(&wc))
 				throw Exception("Failed to register window class.");
+
+			// Set translation map for windows events to W events
+			_win_event_type_map[WM_LBUTTONDOWN] = W::EventType::LEFTMOUSEDOWN;
+			_win_event_type_map[WM_RBUTTONDOWN] = W::EventType::RIGHTMOUSEDOWN;
+			_win_event_type_map[WM_LBUTTONUP]   = W::EventType::LEFTMOUSEUP;
+			_win_event_type_map[WM_RBUTTONUP]   = W::EventType::RIGHTMOUSEUP;
 		}
 	};
 	struct W::Window::_initializer *W::Window::_init = new W::Window::_initializer();
@@ -338,50 +346,32 @@ void W::Window::swapBuffers() {
 }
 
 #if defined WIN32 || WIN64
-void W::Window::_convertToWEvent(W::Event &ev, UINT msg, WPARAM wParam, LPARAM lParam) {
-	if (msg == WM_LBUTTONUP) {
-		ev.treat_as_mouse_event = true;
-		ev.type = W::EventType::LEFTMOUSEUP;
-		ev.pos.x = LOWORD(lParam);
-		ev.pos.y = HIWORD(lParam);
-	}
-	else if (msg == WM_LBUTTONDOWN) {
-		ev.treat_as_mouse_event = true;
-		ev.type = W::EventType::LEFTMOUSEDOWN;
-		ev.pos.x = LOWORD(lParam);
-		ev.pos.y = HIWORD(lParam);
-	}
-	else if (msg == WM_RBUTTONUP) {
-		ev.treat_as_mouse_event = true;
-		ev.type = W::EventType::RIGHTMOUSEUP;
-		ev.pos.x = LOWORD(lParam);
-		ev.pos.y = HIWORD(lParam);
+LRESULT CALLBACK W::Window::_WndProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM lParam) {
+	if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP || msg == WM_RBUTTONDOWN || msg == WM_RBUTTONUP) {
+		W::_addEvent(W::Event(
+			Window::_win_event_type_map[msg],
+			W::position((int)LOWORD(lParam), (int)HIWORD(lParam))
+		));
+		return 0;
 	}
 	else if (msg == WM_CHAR) {
-		ev.type = W::EventType::KEYPRESS;
-		ev.key = W::Event::charToKeycode(wParam);
+		W::_addEvent(W::Event(W::EventType::KEYPRESS, W::Event::charToKeycode(wParam)));
+		return 0;
 	}
-	else if (msg == WM_KEYDOWN) {
-		ev.type = EventType::KEYPRESS;
-		if (wParam == VK_LEFT)			ev.key = KeyCode::LEFT_ARROW;
-		else if (wParam == VK_RIGHT)	ev.key = KeyCode::RIGHT_ARROW;
-		else if (wParam == VK_UP)		ev.key = KeyCode::UP_ARROW;
-		else if (wParam == VK_DOWN)		ev.key = KeyCode::DOWN_ARROW;
-		else if (wParam == VK_HOME)		ev.key = KeyCode::HOME;
-		else if (wParam == VK_END)		ev.key = KeyCode::END;
-		else if (wParam == VK_DELETE)	ev.key = KeyCode::_DELETE;
-		else ev.key = KeyCode::K_OTHER;
+	else if  (msg == WM_KEYDOWN) {
+		W::KeyCode::T k = KeyCode::K_OTHER;
+		if (wParam == VK_LEFT)        k = KeyCode::LEFT_ARROW;
+		else if (wParam == VK_RIGHT)  k = KeyCode::RIGHT_ARROW;
+		else if (wParam == VK_UP)	  k = KeyCode::UP_ARROW;
+		else if (wParam == VK_DOWN)	  k = KeyCode::DOWN_ARROW;
+		else if (wParam == VK_HOME)	  k = KeyCode::HOME;
+		else if (wParam == VK_END)	  k = KeyCode::END;
+		else if (wParam == VK_DELETE) k = KeyCode::_DELETE;
+		W::_addEvent(W::Event(W::EventType::KEYPRESS, k));
+		return 0;
 	}
-	else if (msg == WM_CLOSE)
-		ev.type = EventType::CLOSED;
-	else
-		ev.type = EventType::UNKNOWN;
-}
-LRESULT CALLBACK W::Window::_WndProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM lParam) {
-	if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP || msg == WM_RBUTTONUP || msg == WM_CHAR || msg == WM_KEYDOWN || msg ==  WM_CLOSE) {
-		Event ev;
-		_convertToWEvent(ev, msg, wParam, lParam);
-		W::_addEvent(ev);
+	else if (msg ==  WM_CLOSE) {
+		W::_addEvent(W::Event(W::EventType::CLOSED));
 		return 0;
 	}
 	else if (msg == WM_KEYUP) {
@@ -400,8 +390,9 @@ LRESULT CALLBACK W::Window::_WndProc(HWND windowHandle, UINT msg, WPARAM wParam,
 		bool active = HIWORD(wParam) ? false : true;	// May want to un/pause the game loop
 		return 0;
 	}
-	if (msg == WM_SYSCOMMAND && (wParam == SC_SCREENSAVE || wParam == SC_MONITORPOWER))
-		return 0;		// Prevent these from happening
+	if (msg == WM_SYSCOMMAND && (wParam == SC_SCREENSAVE || wParam == SC_MONITORPOWER)) {
+		return 0;	// Prevent these from happening
+	}
 
 	return DefWindowProc(windowHandle, msg, wParam, lParam);
 }

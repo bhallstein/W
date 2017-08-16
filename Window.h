@@ -7,6 +7,7 @@
 
 #if defined WIN32 || WIN64
 	#include "Windows.h"
+	#include <map>
 #endif
 
 namespace W {
@@ -44,7 +45,7 @@ namespace W {
 		struct _initializer;
 		static _initializer *_init;
 		static HINSTANCE _appInstance;
-		void _convertToWEvent(W::Event &, UINT, WPARAM, LPARAM);
+		static std::map<UINT, W::EventType::T> _win_event_type_map;
 #endif
 	};
 
