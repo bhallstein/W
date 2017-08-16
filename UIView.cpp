@@ -2,7 +2,7 @@
 
 #include "UIView.h"
 #include "Callback.h"
-#include "EventHandler.h"
+#include "Messenger.h"
 #include "Positioner.h"
 #include "Window.h"
 
@@ -34,10 +34,9 @@ W::Event* W::Button::getEvent() {
 }
 
 
-W::UIView::UIView(Positioner *_pos, Window *_win, EventHandler *_eh, Draggability _allowDrag) :
+W::UIView::UIView(Positioner *_pos, Window *_win, Draggability _allowDrag) :
 	View(_pos, _win),
-	eh(_eh), allowDrag(_allowDrag),
-	dragloop(false)
+	allowDrag(_allowDrag), dragloop(false)
 {
 	// Hai UIView
 }
@@ -56,7 +55,7 @@ void W::UIView::processMouseEvent(Event *ev) {
 			_updatePosition(&s);
 		}
 		else if (ev->type == EventType::LEFTMOUSEUP) {
-			eh->relinquishPrivilegedEventResponderStatus(this);
+			Messenger::relinquishPrivilegedEventResponderStatus(this);
 			dragloop = false;
 		}
 		return;
@@ -70,7 +69,7 @@ void W::UIView::processMouseEvent(Event *ev) {
 			b = c;
 	}
 	if (b == NULL) {
-		if (allowDrag && ev->type == EventType::LEFTMOUSEDOWN && eh->requestPrivilegedEventResponderStatus(Callback(&View::receiveEvent, (View*)this))) {
+		if (allowDrag && ev->type == EventType::LEFTMOUSEDOWN && Messenger::requestPrivilegedEventResponderStatus(Callback(&View::receiveEvent, (View*)this))) {
 			dragloop = true;
 			drag_initial = ev->pos;
 		}

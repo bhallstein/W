@@ -1,7 +1,7 @@
 #ifndef __W__GameState
 #define __W__GameState
 
-#include "EventHandler.h"
+#include "Messenger.h"
 #include <vector>
 #include <list>
 
@@ -34,8 +34,8 @@ namespace W {
 
 	class GameState {
 	public:
-		GameState(GameStateTranslucency _tr = GS_OPAQUE) : translucent(_tr) { }
-		virtual ~GameState() { }
+		GameState(GameStateTranslucency _tr = GS_OPAQUE);
+		virtual ~GameState();
 		
 		virtual void resume(Returny *) = 0;
 		virtual void update() = 0;
@@ -43,10 +43,7 @@ namespace W {
 		void addView(View *);
 		void removeView(View *);
 		
-		void handleEvent(Event *ev);		// Send the event on, via the gamestate's responderMap
 		virtual void handleCloseEvent();	// By default, initiates the killer returny tango: override to customise
-		
-//		void setResolution(int _w, int _h);
 		
 		bool isTranslucent() { return translucent; }
 		
@@ -56,7 +53,6 @@ namespace W {
 		
 	protected:
 		// Properties
-		EventHandler eh;
 		std::map<Window*, std::list<View*> > _wv;
 		bool translucent;	// If true, the previous state will be drawn too.
 	};

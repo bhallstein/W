@@ -70,7 +70,7 @@ namespace W {
 #include "View.h"
 #include "UIView.h"
 #include "Positioner.h"
-#include "EventHandler.h"
+#include "Messenger.h"
 #include "GameState.h"
 #include "Callback.h"
 #include "MisterHeapy.h"

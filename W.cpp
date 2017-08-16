@@ -9,6 +9,8 @@
 	#include "shlobj.h"
 #endif
 
+#include "Messenger.h"
+
 #define MAX_PATH 250
 
 std::string   W::logFilePath, W::logFileName;
@@ -73,6 +75,7 @@ void W::pushState(GameState *g) {
 		if (*it == g) return;
 //	if (!states.empty()) states.back()->pause();
 	_gs.push_back(g);
+	Messenger::_setActiveGamestate(g);
 }
 void W::popState(W::Returny &r) {
 	_gsShouldPop = true;
@@ -81,7 +84,9 @@ void W::popState(W::Returny &r) {
 void W::_performPop() {
 	do {
 		_gsShouldPop = false;
+		GameState *last_gs = _gs.back();
 		delete _gs.back();
+		Messenger::_gamestateDestroyed(last_gs);
 		_gs.pop_back();
 		if (_gs.size()) _gs.back()->resume(&_returny);
 	} while (_gsShouldPop && _gs.size());
@@ -119,7 +124,11 @@ void W::_runGameLoop() {
 	if (_gs.size()) {
 		g = _gs.back();
 		for (std::vector<Event>::iterator it = _evqueue.begin(); it < _evqueue.end(); it++) {
-			g->handleEvent(&*it);
+			Event &ev = *it;
+			if (ev.type == EventType::CLOSED)
+				g->handleCloseEvent();
+			else
+				Messenger::dispatchEvent(&ev);
 			if (_gsShouldPop) break;
 		}
 		_evqueue.clear();

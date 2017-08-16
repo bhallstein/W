@@ -34,7 +34,7 @@ namespace W {
 	
 	class UIView : public View {
 	public:
-		UIView(Positioner *, Window *, EventHandler *, Draggability _allowDrag = DISALLOW_DRAG);
+		UIView(Positioner *, Window *, Draggability _allowDrag = DISALLOW_DRAG);
 		~UIView();
 		
 		void processMouseEvent(Event *);
@@ -42,7 +42,6 @@ namespace W {
 		virtual void draw() { }
 		
 	protected:
-		EventHandler *eh;
 		bool allowDrag;
 		bool dragloop;
 		position drag_initial;
