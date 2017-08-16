@@ -17,6 +17,7 @@
 
 @interface EAGLView : UIView
 @property (strong, nonatomic) EAGLContext *context;
+@property void *w_window;
 -(id)initWithFrame:(CGRect)frame;
 -(void)setOpenGLThreadAffinity;
 -(void)clearOpenGLThreadAffinity;

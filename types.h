@@ -92,6 +92,7 @@ namespace W {
 		size(int _s) : width(_s), height(_s) { }
 		size(int _w, int _h) : width(_w), height(_h) { }
 		bool operator== (const size &sz) const { return (width == sz.width && height == sz.height); }
+		bool operator!= (const size &sz) const { return (width != sz.width || height != sz.height); }
 		size operator+  (const size &sz) const { return size(width+sz.width,height+sz.height); }
 		size operator-  (const size &sz) const { return size(width-sz.width,height-sz.height); }
 		void operator+= (const size &sz) { width += sz.width; height += sz.height; }

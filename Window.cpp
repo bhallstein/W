@@ -27,7 +27,8 @@
 
 W::Window::Window(const size &_sz, const std::string &_title) :
 	sz(_sz),
-	objs(NULL)
+	objs(NULL),
+	winSizeHasChanged(false)
 {
 	createWindow();
 	setTitle(_title);
@@ -106,11 +107,16 @@ void W::Window::generateMouseMoveEvent() {
 		}
 	}
 }
+void W::Window::updateSize(const W::size &_sz) {
+	if (sz != _sz) {
+		sz = _sz;
+		winSizeHasChanged = true;
+	}
+}
 
-
-/*****************************************/
-/*** Window: Mac-specific implemention ***/
-/*****************************************/
+/****************************************/
+/*** Mac-specific Window implemention ***/
+/****************************************/
 
 #ifdef WTARGET_MAC
 
@@ -172,7 +178,6 @@ struct W::Window::Objs {
 	UIWindow *window;
 	W_ViewController *vc;
 	EAGLView *view;
-	EAGLContext *context;
 };
 
 void W::Window::createWindow() {
@@ -184,7 +189,6 @@ void W::Window::createWindow() {
 	objs = new Objs();
 	
 	CGRect windowFrame = [[UIScreen mainScreen] bounds];
-	sz = size(windowFrame.size.width, windowFrame.size.height);
 	
 	objs->window = [[UIWindow alloc] initWithFrame:windowFrame];
 	if (objs->window == nil)
@@ -194,9 +198,9 @@ void W::Window::createWindow() {
 	[objs->window makeKeyAndVisible];
 	
 	objs->view = objs->vc.v;
-	objs->context = objs->view.context;
+	objs->view.w_window = this;
 	
-	sz *= objs->view.contentScaleFactor;
+	sz = size(objs->view.bounds.size.width, objs->view.bounds.size.height) * objs->view.contentScaleFactor;
 }
 void W::Window::closeWindow() {
 	if (objs) {

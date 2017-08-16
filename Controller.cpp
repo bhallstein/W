@@ -106,6 +106,12 @@ void W::Controller::update() {
 		firstUpdate = false;
 	}
 	
+	if (window->winSizeHasChanged) {
+		window->setUpViewport();
+		updateAllViewPositions();
+		window->winSizeHasChanged = false;
+	}
+	
 	if (!GameState::_gsStack.size()) {
 		quit();
 		return;
@@ -186,7 +192,7 @@ void W::Controller::update() {
 	
 	/* 5. Drawing */
 	
-	size window_size = window->getSize();
+	const size &window_size = window->getSize();
 	window->beginDrawing(window_size);
 	
 	if (int n = (int)GameState::_gsStack.size()) {

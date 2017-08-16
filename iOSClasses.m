@@ -18,6 +18,7 @@
 #import <OpenGLES/ES1/glext.h>
 
 #include "Event.h"
+#include "Window.h"
 #include <iostream>
 
 /*******************************/
@@ -33,7 +34,7 @@
 
 @implementation EAGLView
 
-@synthesize context;
+@synthesize context, w_window;
 
 +(Class)layerClass {
     return [CAEAGLLayer class];
@@ -45,6 +46,9 @@
         
 		self.contentScaleFactor = [UIScreen mainScreen].scale;
 		self.multipleTouchEnabled = YES;
+		
+//		self.autoresizesSubviews = YES;		// (this is the default)
+		self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		
         eaglLayer.opaque = TRUE;
         eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys: [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
@@ -90,6 +94,11 @@
 		NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
         return;
     }
+	
+	// Notify W::Window of new frame size
+	W::Window *win = (W::Window*)w_window;
+	if (win)
+		win->updateSize(W::size(self.bounds.size.width, self.bounds.size.height) * self.contentScaleFactor);
 }
 
 //-(IBAction)respondToTapGesture:(UITapGestureRecognizer *)recognizer {

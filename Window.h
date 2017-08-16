@@ -48,9 +48,13 @@ namespace W {
 		
 		void generateMouseMoveEvent();
 		
+		void updateSize(const W::size &);
+		
 		#if defined WTARGET_WIN
 			LRESULT CALLBACK _WndProc(HWND, UINT, WPARAM, LPARAM);
 		#endif
+		
+		bool winSizeHasChanged;
 		
 	private:
 		void createWindow();
