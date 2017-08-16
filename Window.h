@@ -10,7 +10,7 @@
  *
  */
 
-// `Window` encapsulates a Window on the device, and the View and OpenGL
+// Window encapsulates a window on the device, and the View and OpenGL
 // state associated with it.
 
 #ifndef __W_Window
@@ -71,6 +71,8 @@ namespace W {
 		struct Initializer;
 		static Initializer *init;
 	};
+	
+	extern bool Retina;
 	
 }
 

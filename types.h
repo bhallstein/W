@@ -38,61 +38,6 @@
 namespace W {
 
 	/* Coordinates & such */
-	struct position {
-		int x, y;
-		float a, b;
-		position() : x(0), y(0), a(0), b(0) { }
-		position(int _x, int _y) : x(_x), y(_y), a(0), b(0) { }
-		position(float _a, float _b) : x(0), y(0), a(_a), b(_b) { }
-		position(int _x, int _y, float _a, float _b) : x(_x), y(_y), a(_a), b(_b) { }
-		position operator+ (const position &pos2) const {
-			return position(
-				x + pos2.x, y + pos2.y,
-				a + pos2.a, b + pos2.b
-			);
-		}
-		void operator+= (const position &pos2) {
-			x += pos2.x, y += pos2.y;
-			a += pos2.a, b += pos2.b;
-		}
-		position operator- (const position &pos2) const {
-			return position(
-				x - pos2.x, y - pos2.y,
-				a - pos2.a, b - pos2.b
-			);
-		}
-		void operator-= (const position &pos2) {
-			x -= pos2.x, y -= pos2.y;
-			a -= pos2.a, b -= pos2.b;
-		}
-		bool operator== (const position &pos2) const {
-			return
-				x == pos2.x &&
-				y == pos2.y &&
-				a == pos2.a &&
-				b == pos2.b;
-		}
-		bool operator!= (const position &pos2) const {
-			return
-				x != pos2.x ||
-				y != pos2.y ||
-				a != pos2.a ||
-				b != pos2.b;
-		}
-		std::string xyStr() const {
-			std::stringstream ss;
-			ss << x << "," << y;
-			return ss.str();
-		}
-		std::string abStr() const {
-			std::stringstream ss;
-			ss << a << "," << b;
-			return ss.str();
-		}
-		std::string str() const {
-			return xyStr() + "[" + abStr() + "]";
-		}
-	};
 	struct size {
 		int width, height;
 		size() : width(0), height(0) { }
@@ -116,6 +61,74 @@ namespace W {
 			std::stringstream ss;
 			ss << width << "x" << height;
 			return ss.str();
+		}
+	};
+	struct position {
+		int x, y;
+		float a, b;
+		position() : x(0), y(0), a(0), b(0) { }
+		position(int _x, int _y) : x(_x), y(_y), a(0), b(0) { }
+		position(float _a, float _b) : x(0), y(0), a(_a), b(_b) { }
+		position(int _x, int _y, float _a, float _b) : x(_x), y(_y), a(_a), b(_b) { }
+		position operator+ (const position &pos2) const {
+			return position(
+							x + pos2.x, y + pos2.y,
+							a + pos2.a, b + pos2.b
+							);
+		}
+		void operator+= (const position &pos2) {
+			x += pos2.x, y += pos2.y;
+			a += pos2.a, b += pos2.b;
+		}
+		position operator- (const position &pos2) const {
+			return position(
+							x - pos2.x, y - pos2.y,
+							a - pos2.a, b - pos2.b
+							);
+		}
+		void operator-= (const position &pos2) {
+			x -= pos2.x, y -= pos2.y;
+			a -= pos2.a, b -= pos2.b;
+		}
+		bool operator== (const position &pos2) const {
+			return
+			x == pos2.x &&
+			y == pos2.y &&
+			a == pos2.a &&
+			b == pos2.b;
+		}
+		bool operator!= (const position &pos2) const {
+			return
+			x != pos2.x ||
+			y != pos2.y ||
+			a != pos2.a ||
+			b != pos2.b;
+		}
+		position operator+ (const size &sz) const {
+			return position(x + sz.width, y + sz.height);
+		}
+		void operator+= (const size &sz) {
+			x += sz.width, y += sz.height;
+		}
+		position operator- (const size &sz) const {
+			return position(x - sz.width, y - sz.height);
+		}
+		void operator-= ( const size &sz) {
+			x -= sz.width, y -= sz.height;
+		}
+		
+		std::string xyStr() const {
+			std::stringstream ss;
+			ss << x << "," << y;
+			return ss.str();
+		}
+		std::string abStr() const {
+			std::stringstream ss;
+			ss << a << "," << b;
+			return ss.str();
+		}
+		std::string str() const {
+			return xyStr() + "[" + abStr() + "]";
 		}
 	};
 	struct rect {

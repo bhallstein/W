@@ -181,6 +181,9 @@ inline W::position prevTouchLocInView(UITouch *t, UIView *v) {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+-(bool)deviceIsRetina {
+	return (v.contentScaleFactor == 2);
+}
 
 @end
 

@@ -143,6 +143,7 @@ bool W::Messenger::dispTouch(Event *ev, View *v) {
 		}
 		// Try positionally
 		if (dispPositionalInView(ev, v)) return true;
+
 		// As last resort, send to view underneath event
 		v->touchDown(ev);
 		return true;
@@ -184,7 +185,7 @@ bool W::Messenger::dispUI(W::Event *ev) {
 }
 
 bool W::Messenger::dispPositionalInView(Event *ev, View *v) {
-	// If view not in s.positionalSubs, return false
+	// If view does not have entry in s.positionalSubs, return false
 	map<View*, map<EventType::T, vector<cbAndRect*>>>::iterator itV = s->positionalSubs.find(v);
 	if (itV == s->positionalSubs.end())
 		return false;
@@ -198,6 +199,7 @@ bool W::Messenger::dispPositionalInView(Event *ev, View *v) {
 	// Call callbacks sub'd to this event type for this view, in reverse order
 	bool dispatched = false;
 	std::vector<cbAndRect*> &callbacks = itT->second;
+	int i = 0;
 	for (std::vector<cbAndRect*>::reverse_iterator it = callbacks.rbegin(); it != callbacks.rend(); ++it) {
 		cbAndRect &cnr = **it;
 		if (cnr.rct->overlapsWith(ev->pos)) {

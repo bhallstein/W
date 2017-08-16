@@ -15,6 +15,8 @@
 
 #include <iostream>
 
+#include "Event.h"
+
 namespace W {
 	
 	class Event;

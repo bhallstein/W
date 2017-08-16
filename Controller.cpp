@@ -149,7 +149,6 @@ void W::Controller::update() {
 			else if (ev->pos.x >= wSz.width) ev->pos.x = wSz.width - 1;
 			if (ev->pos.y < 0) ev->pos.y = 0;
 			else if (ev->pos.y >= wSz.height) ev->pos.y = wSz.height - 1;
-			
 			Messenger::dispatchEvent(ev);
 		}
 		delete *it;
@@ -201,8 +200,9 @@ void W::Controller::update() {
 		for (int i = first_to_draw; i < n; ++i) {
 			// Call _draw on all views
 			GameState::Viewlist &views = GameState::_gsStack[i]->_vlist;
-			for (GameState::Viewlist::iterator it = views.begin(); it != views.end(); ++it)
+			for (GameState::Viewlist::iterator it = views.begin(); it != views.end(); ++it) {
 				(*it)->_draw(window_size);
+			}
 		}
 	}
 	window->flushBuffer();

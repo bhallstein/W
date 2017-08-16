@@ -90,13 +90,13 @@ W::KeyCode::T W::Event::charToKeycode(unsigned int c) {
 	return W::KeyCode::K_OTHER;
 }
 void W::Event::_addEvent(W::Event *ev) {
-	#ifdef WTARGET_WIN
+	#if defined(WTARGET_WIN)
 		_mutex.lock();
 	#endif
 	
 	Event::_events.push_back(ev);
 	
-	#ifdef WTARGET_WIN
+	#if defined(WTARGET_WIN)
 		_mutex.unlock();
 	#endif
 }

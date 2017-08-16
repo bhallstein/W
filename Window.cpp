@@ -23,6 +23,8 @@
 
 #pragma mark Common implementation
 
+bool W::Retina;
+
 /*************************************/
 /*** Window: common implementation ***/
 /*************************************/
@@ -208,6 +210,8 @@ void W::Window::createWindow() {
 	objs->view.w_window = this;
 	
 	sz = size(objs->view.bounds.size.width, objs->view.bounds.size.height) * objs->view.contentScaleFactor;
+	
+	Retina = [objs->vc deviceIsRetina];
 }
 void W::Window::closeWindow() {
 	if (objs) {

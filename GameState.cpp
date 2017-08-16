@@ -69,7 +69,7 @@ void W::GameState::_popState() {
 	do {
 		_pop = false;
 		GameState *last_gs = _gsStack.back();
-		delete _gsStack.back();
+		delete last_gs;
 		Messenger::_gamestateDestroyed(last_gs);
 		_gsStack.pop_back();
 		if (_gsStack.size()) {

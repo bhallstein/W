@@ -29,6 +29,7 @@
 
 @interface W_ViewController : UIViewController
 @property (strong, nonatomic) EAGLView *v;
+-(bool)deviceIsRetina;
 @end
 
 

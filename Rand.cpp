@@ -12,6 +12,7 @@
 
 #include "Rand.h"
 #include <ctime>
+#include <iostream>
 
 #define A_BILLION 1000000000
 
@@ -23,8 +24,8 @@ struct W::Rand::Init {
 	}
 };
 
-W::Rand::Init *W::Rand::init = new W::Rand::Init();
 MTRand_int32 W::Rand::twister;
+W::Rand::Init *W::Rand::init = new W::Rand::Init();
 
 int W::Rand::intUpTo(int x) {
 	if (x <= 0) return 0;
