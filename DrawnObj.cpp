@@ -51,12 +51,16 @@ W::DObj::~DObj()
 	else nextDObj->prevDObj = prevDObj;
 	
 	view->_removeStorageForDObjOfLength(array_length);
+
+	if (has_set_recopy) view->_unsetNeedsRecopy(this);
+		// Otherwise, if the user updates the object and then deletes it, will crash
+		// when the view calls recopy() on a nonexistent DObj.
 }
 
 
-/********************************************/
+/***********************************/
 /*** _UniRectDObj implementation ***/
-/********************************************/
+/***********************************/
 
 W::_UniRectDObj::_UniRectDObj(View *_view, const position &_pos, const size &_sz, const Colour &_col, Texture *_tex, float _rot) :
 	DObj(_view, _pos, GEOM_LENGTH_FOR_RECT),

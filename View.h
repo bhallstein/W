@@ -43,6 +43,11 @@ namespace W {
 		
 		void _updateDObjs(); // Call recopy() on _DObjs_needing_recopy, clear
 		void _setNeedsRecopy(DObj *_d) { _DObjs_needing_recopy.push_back(_d); }
+		void _unsetNeedsRecopy(DObj *_d) {
+			for (std::vector<DObj*>::iterator it = _DObjs_needing_recopy.begin(); it < _DObjs_needing_recopy.end(); )
+				if (*it == _d) it = _DObjs_needing_recopy.erase(it);
+				else ++it;
+		}
 		
 	protected:
 		Positioner *_positioner;

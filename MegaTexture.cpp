@@ -115,9 +115,12 @@ bool W::MegaTexture::addTex(unsigned char *imagedata, const size &imageSz, W::Te
 	return true;
 }
 void W::MegaTexture::removeTex(MTNode *_n) {
+	// No need either to reupload the mt or alter its data in any way --
+	// can simply re-mark that part of the megatexture as available.
 	_n->tex = NULL;
-		// No need either to reupload the mt or alter its data in any way --
-		// can simply re-mark that part of the megatexture as available.
+	// Check if size should dynamically stretch to edge of Megatex
+	if (_n->rct.pos.x + _n->rct.sz.width == width())  _n->rct.sz.width = MTNODE_FULL_SIZE;
+	if (_n->rct.pos.y + _n->rct.sz.height == width()) _n->rct.sz.height = MTNODE_FULL_SIZE;
 }
 
 void W::MegaTexture::createMegaTex(int newTexPower) {
