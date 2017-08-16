@@ -35,9 +35,6 @@ namespace W {
 		bool orientation_check;
 		enum orientation_enum { O_LANDSCAPE, O_PORTRAIT };
 		
-		// - then in update code:
-		//     if (orientation_check)
-		//       orientation = (plan[0].sz.width > plan[0].sz.height ? O_L : O_P);
 		int cur_positioning_index;			// index of cur positioner in positioners vector
 		Positioner *cur_positioner;	
 		orientation_enum orientation;
@@ -52,9 +49,9 @@ namespace W {
 		// Initialization from Lua
 		bool initialize(const std::string &viewname);
 		
-		void addPositioner(const std::string limit, LHObj &, orientation_enum);
-		void addElements(const std::string limit, LHObj &, orientation_enum);
-		UIElement* createElement(const std::string limit, const std::string name, LHObj &, orientation_enum);
+		void addPositioner(const std::string &limit, LHObj &, orientation_enum);
+		void addElements(const std::string &limit, LHObj &, orientation_enum);
+		UIElement* createElement(const std::string &limit, const std::string &name, LHObj &, orientation_enum);
 			// These will throw, w/ useful error msg, if problem
 		
 		void createEvTypeMap();			// Translation table for event types subscribed

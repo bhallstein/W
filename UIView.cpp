@@ -75,7 +75,14 @@ void W::UIView::draw() {
 	// Draw background - subclass may override (otherwise, draws nothing)
 	drawCustomBackground();
 	// Draw elements
-	// DRAW ELEMENTS!
+	element_list *elvec = &(orientation == O_LANDSCAPE ?
+		landscape_elements :
+		portrait_elements)[cur_positioning_index];
+	for (element_list::iterator it = elvec->begin(); it < elvec->end(); it++) {
+		const position &pos = (*it)->pos;
+		const size &sz = (*it)->plan[0].sz;
+		drawRect(pos.x, pos.y, sz.width, sz.height, Colour::Black);
+	}
 }
 
 void W::UIView::updatePosition(const size &winsize) {
@@ -162,11 +169,14 @@ bool W::UIView::initialize(const std::string &viewname) {
 				return false;
 			}
 			for (LHObj::_descendantmap::iterator it = d2.begin(); it != d2.end(); it++) {
-				addPositioner(it->first, it->second, O_PORTRAIT);
-				addElements(it->first, it->second["elements"], O_PORTRAIT);
+				const std::string &descName = it->first;
+				LHObj &descendant = it->second;
+				addPositioner(descName, descendant, O_PORTRAIT);
+				addElements(descName, descendant["elements"], O_PORTRAIT);
 			}
 		}
 		else {
+			// Add all descendants from whichever orientation obj exists as positioners
 			LHObj *ob;
 			if (landscapeObj.isTable()) {
 				orientation = O_LANDSCAPE;
@@ -185,8 +195,10 @@ bool W::UIView::initialize(const std::string &viewname) {
 				return false;
 			}
 			for (LHObj::_descendantmap::iterator it = d.begin(); it != d.end(); it++) {
-				addPositioner(it->first, it->second, orientation);
-				addElements(it->first, it->second["elements"], orientation);
+				const std::string &descName = it->first;
+				LHObj &descendant = it->second;
+				addPositioner(descName, descendant, orientation);
+				addElements(descName, descendant["elements"], orientation);
 			}
 		}
 	}
@@ -199,7 +211,7 @@ bool W::UIView::initialize(const std::string &viewname) {
 	return true;
 }
 
-void W::UIView::addPositioner(const std::string limit, W::LHObj &lhobj, W::UIView::orientation_enum _or) {
+void W::UIView::addPositioner(const std::string &limit, W::LHObj &lhobj, W::UIView::orientation_enum _or) {
 	using std::string;
 	// Check limit is valid
 	int lim;
@@ -230,17 +242,22 @@ void W::UIView::addPositioner(const std::string limit, W::LHObj &lhobj, W::UIVie
 		);
 	}
 }
-void W::UIView::addElements(const std::string limit, W::LHObj &lhobj, W::UIView::orientation_enum _or) {
+void W::UIView::addElements(const std::string &limit, W::LHObj &lhobj, W::UIView::orientation_enum _or) {
 	// Add new element list to appropriate vector
 	std::vector<element_list> &l = (_or == O_LANDSCAPE ? landscape_elements : portrait_elements);
 	l.push_back(element_list());
+	element_list &elvec = l.back();
 	// For each descendant, create an element
 	LHObj::_descendantmap &d = lhobj.descendants;
 	for (LHObj::_descendantmap::iterator it = d.begin(); it != d.end(); it++) {
-		l.back().push_back(createElement(limit, it->first, it->second, _or));
+		const std::string &elName = it->first;
+		LHObj &elObj = it->second;
+		elvec.push_back(
+			createElement(limit, elName, elObj, _or)
+		);
 	}
 }
-W::UIElement* W::UIView::createElement(const std::string limit, const std::string name, W::LHObj &lhobj, W::UIView::orientation_enum _or) {
+W::UIElement* W::UIView::createElement(const std::string &limit, const std::string &name, W::LHObj &lhobj, W::UIView::orientation_enum _or) {
 	using std::string;
 	Positioner *pos;
 	try {

@@ -6,7 +6,7 @@
 W::UIElement::UIElement(const std::string &_name, W::Positioner *_pos, EvTypeMap &_evTypes) :
 	name(_name), positioner(_pos), evTypes(_evTypes)
 {
-	//
+	plan.resize(1);
 }
 W::UIElement::~UIElement()
 {
@@ -19,13 +19,18 @@ void W::UIElement::update(const W::size &_s) {
 	plan[0].sz = r.sz;
 }
 
+
+/**********/
+/* Button */
+/**********/
+
 W::Button::Button(const std::string &_name, W::Positioner *_pos, EvTypeMap &_evTypes) :
 	UIElement(_name, _pos, _evTypes),
 	hover(false), active(false)
 {
 	buttonClickEvent.setType(EventType::BUTTONCLICK);
 	buttonClickEvent.setPayload(new std::string(name));
-
+	
 	Callback cb(&Button::recEv, this);
 	Messenger::subscribeToEventType(evTypes[EventType::MOUSEMOVE], cb);
 	Messenger::subscribeToEventType(evTypes[EventType::LEFTMOUSEDOWN], cb);
