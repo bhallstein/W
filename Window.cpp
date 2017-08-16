@@ -253,7 +253,7 @@ struct W::Window::Objs {
 // Initialization
 
 LRESULT CALLBACK Window_WndProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM lParam) {
-	// If message if WM_NCCREATE, set pointer to MyWindow
+	// If message is WM_NCCREATE, set pointer to MyWindow
 	// (Since in CreateWindowEx we set lpParam to 'this', lParam is here a ptr to the window)
 	if (msg == WM_NCCREATE) {
 		LPCREATESTRUCT cs = (LPCREATESTRUCT) lParam;
