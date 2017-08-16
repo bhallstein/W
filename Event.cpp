@@ -25,6 +25,7 @@ W::EventType::T W::Event::registerType() {
 	return _typecounter++;
 }
 W::KeyCode::T W::Event::charToKeycode(unsigned int c) {
+	if (c == ' ') return W::KeyCode::SPACE;
 	if (c >= 'a' && c <= 'z') return (W::KeyCode::T) ((int)W::KeyCode::_A + c - 'a');
 	if (c >= 'A' && c <= 'Z') return (W::KeyCode::T) ((int)W::KeyCode::_A + c - 'A');
 	if (c >= '0' && c <= '9') return (W::KeyCode::T) ((int)W::KeyCode::_0 + c - '0');

@@ -38,7 +38,13 @@
 }
 -(void)keyDown:(NSEvent *)nsev {
 	W::_addEvent(W::Event(
-		W::EventType::KEYPRESS,
+		W::EventType::KEYDOWN,
+		W::Event::charToKeycode([[nsev characters] characterAtIndex:0])
+	));
+}
+-(void)keyUp:(NSEvent *)nsev {
+	W::_addEvent(W::Event(
+		W::EventType::KEYUP,
 		W::Event::charToKeycode([[nsev characters] characterAtIndex:0])
 	));
 }
