@@ -2,7 +2,7 @@
 #include "W.h"
 
 #ifdef __APPLE__
-	#include "ObjC-Classes.h"
+	#include "MacOSXClasses.h"
 	#include <OpenGL/gl.h>
 #elif defined _WIN32 || _WIN64
 	#include <gl\gl.h>
@@ -184,7 +184,7 @@ void W::Window::createWindow(const size &_size, const char *_title) {
 		
 		[_objs->window makeKeyAndOrderFront:NSApp];
 		[_objs->window makeFirstResponder:_objs->view];
-
+		
 	#elif defined _WIN32 || _WIN64
 		// Set window style & size
 		DWORD windowStyle = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
@@ -201,7 +201,7 @@ void W::Window::createWindow(const size &_size, const char *_title) {
 		_objs->windowHandle = CreateWindowEx(
 			extendedWindowStyle,
 			"W_Window",				// window class
-			"My W Application",		// title
+			"My W Application",		// window title
 			windowStyle,
 			0, 0,			// position
 			rect.right - rect.left,
@@ -298,11 +298,19 @@ void W::Window::setUpOpenGL() {
 	setOpenGLThreadAffinity();
 	
 	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_DITHER);
+	glDisable(GL_ALPHA_TEST);
+	glDisable(GL_STENCIL_TEST);
+	glDisable(GL_FOG);
+	
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_SCISSOR_TEST);
+	glEnable(GL_TEXTURE_2D);
 	
-	Texture::createPlaceholderTexture();
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	clearOpenGLThreadAffinity();
 }

@@ -1,23 +1,5 @@
 /*
- * DrawnObj.h
- *
- * DrawnObj (D.O.) is the base class for all drawn items in the game.
- * It has various subclasses for different types of drawn object, as below.
- * 
- * To draw to the screen, a user class should initialize an object of one of the below types:
- * 		myRect = new Rectangle(~);
- * Then, the object should be added to the appropriate View:
- * 		myView->addDO(myRect);
- * 
- * To update the D.O., e.g. to change its position, use the class’s property setters,
- * for example, setPosn().
- *
- * To remove the D.O., use:
- *		myview->removeDO(myRect)
- * The object will be deallocated automatically. Never manually deallocate a DrawnObj.
- * 
- * DrawnObjs are drawn on a different thread from user code. For thread safety reasons, changes
- * made to them take effect only at the end of an update cycle.
+ * DObj.h - user-facing drawn object classes
  *
  */
 
@@ -31,111 +13,121 @@
 
 namespace W {
 	
-	class DrawnObj {
+	class DObj {
 	public:
-		enum DOType {
-			RECT,
-			TEXT,
-			IMAGE
-		};
-		DrawnObj(View *, DOType _type, const W::position &, const W::size &);
-		virtual ~DrawnObj() { }
-		DOType type;
-		
-		void _updateValues() {
-			rct = new_rct;
-			updateValues();
+		DObj(View *_v, const W::position &, int _length);
+		virtual ~DObj();
+
+		void setNeedsRecopy() {
+			if (!has_set_recopy) {
+				view->_setNeedsRecopy(this);
+				has_set_recopy = true;
+			}
 		}
-		virtual void updateValues() = 0;
-		
-		void setPos(const W::position &_pos) { new_rct.pos = _pos; _setDirty(); }
-		void setSz(const W::size &_sz) { new_rct.sz = _sz; _setDirty(); }
-		void setRect(const W::rect &_rect) { new_rct = _rect; _setDirty(); }
-		
-		rect rct, new_rct;
-		
-	protected:
-		void _setDirty() {
-			view->_markDOAsDirty(this);
+		virtual void recopy(v3f *v, c4f *c, t2f *t) {
+			_recopy(v+array_start_index, c+array_start_index, t+array_start_index);
+			has_set_recopy = false;
 		}
+		virtual void _recopy(v3f*, c4f*, t2f*) = 0;
+			// Override to copy data into arrays
+
+		void setPos(const W::position &_p) { pos = _p; setNeedsRecopy(); }
+		W::position pos;
+
+	private:
+		DObj *prevDObj, *nextDObj;
 		View *view;
-	};
-	
-	/* Subclasses should implement setters for user-modifiable properties.
-	 * A setter for x should set a new_x counterpart of x, not x itself.
-	 * The setter should then call _setDirty().
-	 * An updateValues() override should then be provided which overwrites x with new_x.
-	 */
-	
-	class DrawnRect : public DrawnObj {
-	public:
-		DrawnRect(View *, const W::position &, const W::size &, const W::Colour &, float rotation = 0);
 		
-		void setCol(const Colour &_col) { new_col = _col; _setDirty(); }
-		void setRot(float _rotation) { new_rot = _rotation; _setDirty(); }
+		int array_start_index;
+		int array_length;
 		
-		void updateValues() {
-			col = new_col;
-			rot = new_rot;
+		void moveBackBy(int n) {
+			array_start_index -= n;
+			setNeedsRecopy();
+			if (nextDObj) nextDObj->moveBackBy(n);
 		}
 		
-		W::Colour col, new_col;
-		float rot, new_rot;
+		bool has_set_recopy;
 	};
 	
 	
-	class DrawnText : public DrawnObj {
+	/***
+		_UniRectDObj class does the work for most DO subclasses, which on
+		the back end manage a single textured, coloured rect.
+	***/
+	
+	class _UniRectDObj : public DObj {
 	public:
-		DrawnText(View *, const W::position &, const char *, const W::Colour &, bool r_align = false);
-		void setCol(Colour _col) { new_col = _col; _setDirty(); }
-		void setTxt(const char *_txt) { new_txt = _txt; _setDirty(); }
-		void setRAlign(bool _r_align) { new_r_align = _r_align; _setDirty(); }
+		_UniRectDObj(View *, const W::position &, const W::size &, const W::Colour &, W::Texture *, float rotation);
+		~_UniRectDObj();
+		void _recopy(v3f*, c4f*, t2f*);	// Recopy geom data into supplied arrays
 		
-		void updateValues() {
-			col = new_col;
-			txt = new_txt;
-			r_align = new_r_align;
-		}
+		void setSz(const W::size &_sz) { sz = _sz; setNeedsRecopy(); }
 		
-		std::string txt, new_txt;
-		W::Colour col, new_col;
-		bool r_align, new_r_align;
+		size sz;
+		Colour col;
+		Texture *tex;
+		float rotation;
+		int texA, texB, texC, texD;
+			// These are the integer coords of the drawn "chunk" of the texture
+			// in relation to it itself. Initially {0,0,tw,th}.
+			// The conversion to float coords of the MegaTexture is done by the
+			// GeometryChunk when generating GL array data.
 	};
 	
 	
-	class DrawnImage : public DrawnObj {
+	/***
+		DRect draws a single, coloured rect
+	 ***/
+	
+	class DRect : public _UniRectDObj {
 	public:
-		DrawnImage(View *, const W::position &, const W::size &, Texture *, float opacity = 1, float rotation = 0);
-		~DrawnImage();
-		void setRot(float _rotation) { new_rot = _rotation; _setDirty(); }
-		void setOpacity(float _opacity) { new_opac = _opacity; _setDirty(); }
+		DRect(View *, const W::position &, const W::size &, const W::Colour &, float rotation = 0);
+		void setCol(const Colour &_c) { col = _c; setNeedsRecopy(); }
+		void setRot(float _r) { rotation = _r; setNeedsRecopy(); }
+	};
+	
+	
+	/***
+		DImage draws an image
+	 ***/
+	
+	class DImage : public _UniRectDObj {
+	public:
+		DImage(View *, const W::position &, const W::size &, Texture *, float opacity = 1, float rotation = 0);
+		void setRot(float _r) { rotation = _r; setNeedsRecopy(); }
+		void setOpacity(float _o) { col.a = _o; setNeedsRecopy(); }
 		void setChunk(int a, int b, int c, int d) {
-			new_chunkA = texture->floatCoordX(a);
-			new_chunkB = texture->floatCoordY(b);
-			new_chunkC = texture->floatCoordX(c);
-			new_chunkD = texture->floatCoordY(d);
-			_setDirty();
+			texA = a, texB = b, texC = c, texD = d;
+			setNeedsRecopy();
 		}
+	};
+
+	
+	/***
+		DText draws... text
+	 ***/
+	
+	class DText : public DObj {
+	public:
+		DText(View *, const W::position &, const std::string &_txt, const W::Colour &, bool r_align = false);
+		~DText();
+		void _recopy(v3f*, c4f*, t2f*);
 		
-		void updateValues() {
-			rot = new_rot;
-			opac = new_opac;
-			chunkA = new_chunkA;
-			chunkB = new_chunkB;
-			chunkC = new_chunkC;
-			chunkD = new_chunkD;
-		}
+		void setPos(const W::position &_pos);
+		void setCol(Colour _c) { col = _c; setNeedsRecopy(); }
+		void setRAlign(bool _a) { r_align = _a; setNeedsRecopy(); }
+//		void setTxt(const char *_txt) { txt = _txt; _setDirty(); }
 		
-		float rot, new_rot;
-		float opac, new_opac;
-		float chunkA, chunkB, chunkC, chunkD;
-		float new_chunkA, new_chunkB, new_chunkC, new_chunkD;
+		std::string txt;
 		
-		Texture* getTex();
-		
-	protected:
-		Texture *texture;
-		bool use_placeholder_texture;
+		W::Colour col;
+		bool r_align;
+	private:
+		static int _geomLengthForText(const std::string &);
+		Texture *tex;
+		int texA, texB, texC, texD;
+		static int widthForChar(char c);
 	};
 	
 }

@@ -36,7 +36,7 @@ namespace W {
 		bool orientation_check;
 		enum orientation_enum { O_LANDSCAPE, O_PORTRAIT };
 		
-		int cur_positioning_index;			// index of cur positioner in positioners vector
+		int cur_positioning_index;		// index of cur positioner in positioners vector
 		Positioner *cur_positioner;	
 		orientation_enum orientation;
 		
@@ -60,7 +60,7 @@ namespace W {
 										// (Specific to the UIView, since buttons will subscribe
 										// to view-specific mousey events submitted in processMouseEvent)
 		
-		DrawnRect *bgDRect;
+		DRect *bgDRect;
 	};
 
 }

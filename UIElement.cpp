@@ -1,6 +1,7 @@
 #include "UIElement.h"
 #include "Messenger.h"
 #include "Callback.h"
+#include "DrawnObj.h"
 
 
 W::UIElement::UIElement(const std::string &_name, W::Positioner *_pos, EvTypeMap &_evTypes) :
@@ -26,10 +27,10 @@ void W::UIElement::_updatePosition(const W::size &_s) {
 W::Button::Button(View *_view, const std::string &_name, W::Positioner *_pos, EvTypeMap &_evTypes) :
 	UIElement(_name, _pos, _evTypes),
 	hover(false), active(false), view(_view),
-	buttonClickEvent(EventType::BUTTONCLICK)
+	buttonClickEvent(EventType::BUTTONCLICK),
+	btnrect(NULL)
 {
 	buttonClickEvent._payload = new std::string(name);
-	btnrect = new DrawnRect(view, rct.pos, rct.sz, Colour::Black);
 	
 	Callback cb(&Button::recEv, this);
 	Messenger::subscribeToPositionalEventType(evTypes[EventType::MOUSEMOVE], cb, &rct);
@@ -39,7 +40,7 @@ W::Button::Button(View *_view, const std::string &_name, W::Positioner *_pos, Ev
 W::Button::~Button()
 {
 	delete (std::string*)buttonClickEvent._payload;
-	delete btnrect;
+	if (btnrect) delete btnrect;
 	Messenger::unsubscribeFromPositionalEventType(evTypes[EventType::MOUSEMOVE], this);
 	Messenger::unsubscribeFromPositionalEventType(evTypes[EventType::LEFTMOUSEDOWN], this);
 	Messenger::unsubscribeFromPositionalEventType(evTypes[EventType::LEFTMOUSEUP], this);
@@ -77,11 +78,15 @@ W::EventPropagation::T W::Button::recEv(W::Event *ev) {
 	return EventPropagation::SHOULD_STOP;
 }
 void W::Button::updatePosition() {
-	btnrect->setRect(rct);		// Update D.O.
+	btnrect->setPos(rct.pos);		// Update D.O.
+	btnrect->setSz(rct.sz);
 }
 void W::Button::activate() {
-	view->addDO(btnrect);
+	btnrect = new DRect(view, rct.pos, rct.sz, Colour::Black);
 }
 void W::Button::deactivate() {
-	view->removeDO(btnrect);
+	if (btnrect) {
+		delete btnrect;
+		btnrect = NULL;
+	}
 }

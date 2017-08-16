@@ -59,10 +59,13 @@ namespace W {
 	struct size {
 		int width, height;
 		size() : width(0), height(0) { }
-		size(int _width, int _height) : width(_width), height(_height) { }
-		bool operator== (const size &s2) {
-			return width == s2.width && height == s2.height;
-		}
+		size(int _s) : width(_s), height(_s) { }
+		size(int _w, int _h) : width(_w), height(_h) { }
+		bool operator== (const size &sz) const { return (width == sz.width && height == sz.height); }
+		size operator+  (const size &sz) const { return size(width+sz.width,height+sz.height); }
+		size operator-  (const size &sz) const { return size(width-sz.width,height-sz.height); }
+		void operator+= (const size &sz) { width += sz.width; height += sz.height; }
+		void operator-= (const size &sz) { width -= sz.width; height -= sz.height; }
 		std::string str() const {
 			std::stringstream ss;
 			ss << width << "x" << height;
@@ -70,8 +73,8 @@ namespace W {
 		}
 	};
 	struct rect {
-		struct position pos;
-		struct size sz;
+		W::position pos;
+		W::size sz;
 		rect() { }
 		rect(position _pos, size _sz) : pos(_pos), sz(_sz) { }
 		void setPos(const W::position &_pos) { pos = _pos; }
@@ -112,6 +115,32 @@ namespace W {
 		std::istringstream ss(s);
 		return !(ss >> t).fail();
 	}
+	
+	// Vertexy stuff
+	struct v3f {
+		float x, y, z;
+		std::string str() {
+			std::stringstream ss;
+			ss << '{' << x << ',' << y << ',' << z << '}';
+			return ss.str();
+		}
+	};
+	struct c4f {
+		float r, g, b, a;
+		std::string str() {
+			std::stringstream ss;
+			ss << "{r:" << r << ",b:" << b << ",g:" << g << ",a:" << a << "}";
+			return ss.str();
+		}
+	};
+	struct t2f {
+		float x, y;
+		std::string str() {
+			std::stringstream ss;
+			ss << '{' << x << ',' << y << '}';
+			return ss.str();
+		}
+	};
 	
 }
 

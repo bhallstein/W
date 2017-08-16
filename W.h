@@ -109,15 +109,13 @@ namespace W {
 	#endif
 	
 	/* Bollocks */
-	extern int W_MAXPATH;
-	
 	bool isValidDir(const std::string &path);
 	bool isValidDir(const char *path);
 	bool createDir(const std::string &path);
 	bool createDir(const char *path);
 	
-	struct _init;
-	extern _init *_initializer;
+	struct _wInit;
+	extern _wInit *_initializer;
 
 }
 

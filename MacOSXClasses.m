@@ -1,7 +1,10 @@
-#import "ObjC-Classes.h"
+#import "MacOSXClasses.h"
 #include "W.h"
 #include "Event.h"
 
+/*****************************/
+/*** W_View implementation ***/
+/*****************************/
 
 @implementation W_View
 
@@ -58,6 +61,10 @@
 @end
 
 
+/****************************************/
+/*** W_Window Delegate implementation ***/
+/****************************************/
+
 @implementation W_WindowDelegate
 
 -(bool)windowShouldClose:(id)sender {
@@ -67,6 +74,10 @@
 
 @end
 
+
+/**********************************/
+/*** UpdateTimer implementation ***/
+/**********************************/
 
 @implementation UpdateTimer
 

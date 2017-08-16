@@ -9,13 +9,16 @@
 #include "types.h"
 #include "Event.h"
 #include "Positioner.h"
-#include "DrawnObj.h"
+#include "Callback.h"
 
 #include <string>
 #include <map>
 
 namespace W {
 
+	class View;
+	class DRect;
+	
 	class UIElement {
 	public:
 		typedef std::map<EventType::T, EventType::T> EvTypeMap;
@@ -50,7 +53,7 @@ namespace W {
 		bool hover;
 		bool active;
 		Event buttonClickEvent;
-		DrawnRect *btnrect;
+		DRect *btnrect;
 		View *view;
 	};
 

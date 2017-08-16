@@ -10,53 +10,43 @@
 
 namespace W {
 	
+	class MTNode;
+	
 	class Texture {
 	public:
 		Texture(const std::string &_filename);
 		~Texture();
 			// Must be called from the thread on which the OpenGL context is current
 		
-		void destroy();
-			// User should not call a texture’s destructor, but call destroy().
-			// The texture will then be deallocated from the appropriate thread.
-			// Before destroying the texture, all DrawnImgs using the texture
-			// should be deallocated.
-		
 		void incrementUsageCount() { ++usageCount; }
 		void decrementUsageCount() { --usageCount; }
 		
-		inline unsigned int getTexId() { return glTexId; }
+		MTNode *mtNode;
+		int mtA, mtB;	// Pixel coordinates of the Texture within the MegaTexture
+		size sz;		// Set by MT in addTex()
 		
-		float imageWidthProportion() { return float(imageWidth) / float(textureWidth); }
-		float imageHeightProportion() { return float(imageHeight) / float(textureHeight); }
-			// Get the proportion of the texture covered by the image itself
-		float floatCoordX(int x) { return float(x) / float(textureWidth); }
-		float floatCoordY(int y) { return float(y) / float(textureHeight); }
-			// Convert a pixel coord to a proportional value (% of the texture size)
+		float floatCoordA(int texA);
+		float floatCoordB(int texB);
+		float floatCoordC(int texC);
+		float floatCoordD(int texD);
+			// Take a pixel-coord relative to the tex, return a %-coord
+			// relative to the MT.
 		
-		void upload();
-			// Must be called from thread for which the OpenGL
-			// context is current.
-		bool _uploaded;
+		// PLACEHOLDER REQD STILL?
+		// If the texture is uploaded into a "fresh" area of the MT,
+		// will be transp. & don't need a placeholder transp. tex
+		// But if uploaded over something that was deleted before, might
+		// briefly see previous MT contents?
 		
-		static void createPlaceholderTexture();
-		static Texture *_placeholderTexture;
-			// A texture used as placeholder for textures that have not yet been
-			// uploaded on the appropriate thread.
+		static void _createWhiteTexture();
+		static Texture *_whiteTexture;
+			// Used for drawing coloured rects
 		
-	protected:
-		Texture(unsigned int _glTexId, W::size _imsize, W::size _texsize);
-		unsigned int glTexId;
-			// If the image’s dimensions aren’t powers of two, the
-			// texture will be larger than the loaded image.
-		unsigned char *p2imagedata;
-		
-		int imageWidth, imageHeight;
-		int textureWidth, textureHeight;
-		
+	private:
+		Texture() : mtNode(NULL), usageCount(0) { }
 		std::string filename;
-		
-		int usageCount;	// Number of DrawnObjs referencing the texture
+		int usageCount;
+			// Number of DObjs referencing the texture
 	};
 	
 }

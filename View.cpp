@@ -1,27 +1,95 @@
 #include "W.h"
 #include "DrawnObj.h"
-#include "oglDrawHelpers.h"
+
+#ifdef __APPLE__
+	#include <OpenGL/gl.h>
+#elif defined _WIN32 || _WIN64
+	#include <gl\gl.h>
+	#include <gl\glu.h>
+#endif
+
+#define GL_ARRAY_INITIAL_SIZE 256
+
+/********************************/
+/*** glData struct definition ***/
+/********************************/
+
+struct W::View::glDataArrays {
+	unsigned int array_size, array_used_size;
+	v3f *vert_array;
+	c4f *col_array;
+	t2f *texcoord_array;
+	glDataArrays() : array_size(0), array_used_size(0), vert_array(NULL), texcoord_array(NULL), col_array(NULL) {
+		array_size = GL_ARRAY_INITIAL_SIZE / 2;
+		increaseSize();
+	}
+	~glDataArrays() {
+		if (vert_array) {
+			delete vert_array;
+			delete col_array;
+			delete texcoord_array;
+		}
+	}
+	void increaseSize() {
+		v3f *new_vert_array     = (v3f*) malloc(sizeof(v3f) * array_size * 2);
+		c4f *new_col_array      = (c4f*) malloc(sizeof(c4f) * array_size * 2);
+		t2f *new_texcoord_array = (t2f*) malloc(sizeof(t2f) * array_size * 2);
+		if (vert_array) {
+			for (int i=0; i < array_size; ++i) {
+				new_vert_array[i] = vert_array[i];
+				new_col_array[i] = col_array[i];
+				new_texcoord_array[i] = texcoord_array[i];
+			}
+			free(vert_array);
+			free(col_array);
+			free(texcoord_array);
+		}
+		vert_array     = new_vert_array;
+		col_array      = new_col_array;
+		texcoord_array = new_texcoord_array;
+		array_size *= 2;
+	}
+	void compact() {
+		return;
+		if (array_used_size > array_size / 3) return;
+		
+		v3f *new_vert_array     = (v3f*) malloc(sizeof(v3f) * array_size / 2);
+		c4f *new_col_array      = (c4f*) malloc(sizeof(c4f) * array_size / 2);
+		t2f *new_texcoord_array = (t2f*) malloc(sizeof(t2f) * array_size / 2);
+		if (vert_array) {
+			for (int i=0; i < array_size; ++i) {
+				new_vert_array[i] = vert_array[i];
+				new_col_array[i] = col_array[i];
+				new_texcoord_array[i] = texcoord_array[i];
+			}
+			free(vert_array);
+			free(col_array);
+			free(texcoord_array);
+		}
+		vert_array     = new_vert_array;
+		col_array      = new_col_array;
+		texcoord_array = new_texcoord_array;
+		array_size /= 2; 
+	}
+};
+
+
+/***************************/
+/*** View implementation ***/
+/***************************/
 
 W::View::View(Positioner *_pos) :
-	_positioner(_pos)
+	_positioner(_pos),
+	glData(new glDataArrays),
+	firstDObj(NULL),
+	lastDObj(NULL)
 {
-	if (_positioner)
-		_updatePosition(_window->getDimensions());
+	if (_positioner) _updatePosition(_window->getDimensions());
 }
 W::View::~View()
 {
 	if (_positioner) delete _positioner;
-	
-	// GameState::removeView() must first be called, to safely remove the view (& so all its DrawnObjs)
-	// from the in-flight graphics data.
-	// Therefore we can simply deallocate all DrawnObjs the view holds references to.
-	for (std::map<int, DO_list>::iterator it = scene.begin(); it != scene.end(); it++) {
-		DO_list &l = it->second;
-		for (DO_list::iterator itl = l.begin(); itl < l.end(); ++itl)
-			delete *itl;
-	}
-	for (std::vector<DOAndLayer>::iterator it = newDOs.begin(); it < newDOs.end(); it++)
-		delete it->DO;
+	delete glData;
 }
 
 void W::View::_updatePosition(const size &winsize) {
@@ -44,85 +112,40 @@ void W::View::_unsubscribeFromMouseEvents() {
 	Messenger::unsubscribeFromMouseEvents(this);
 }
 
-void W::View::addDO(DrawnObj *_obj, int layer) {
-	newDOs.push_back(DOAndLayer(_obj, layer));
+int W::View::_getStorageForDObjOfLength(int length) {
+	while (glData->array_used_size + length > glData->array_size)
+		glData->increaseSize();
+	int i = glData->array_used_size;
+	glData->array_used_size += length;
+	return i;
 }
-void W::View::removeDO(DrawnObj *_obj) {
-	deletedDOs.push_back(_obj);
-}
-void W::View::_markDOAsDirty(DrawnObj *_obj) {
-	dirtyDOs.push_back(_obj);
-}
-void W::View::_updateDOs() {
-	// Remove deleted D.O.s
-	for (DO_list::iterator it = deletedDOs.begin(); it < deletedDOs.end(); it++)
-		_removeDO(*it);
-	deletedDOs.clear();
-	
-	// Add new D.O.s
-	for (std::vector<DOAndLayer>::iterator it = newDOs.begin(); it < newDOs.end(); it++)
-		scene[it->layer].push_back(it->DO);
-	newDOs.clear();
-	
-	// Update dirty D.O.s
-	for (DO_list::iterator it = dirtyDOs.begin(); it < dirtyDOs.end(); it++)
-		(*it)->_updateValues();
-	dirtyDOs.clear();
+void W::View::_removeStorageForDObjOfLength(int length) {
+	glData->array_used_size -= length;
 }
 
-void W::View::_removeDO(DrawnObj *_obj) {
-	for (std::map<int, DO_list>::iterator itm = scene.begin(); itm != scene.end(); ) {
-		DO_list &vec = itm->second;
-		for (DO_list::iterator itv = vec.begin(); itv < vec.end(); )
-			if (*itv == _obj) {
-				delete *itv;
-				itv = vec.erase(itv);
-			}
-			else ++itv;
-		if (!vec.size())
-			scene.erase(itm++);
-		else
-			++itm;
-	}
+void W::View::_updateDObjs() {
+	for (std::vector<DObj*>::iterator it = _DObjs_needing_recopy.begin(); it < _DObjs_needing_recopy.end(); ++it)
+		(*it)->recopy(glData->vert_array, glData->col_array, glData->texcoord_array);
+	_DObjs_needing_recopy.clear();
+	glData->compact();
 }
 
 void W::View::_draw(const size &winSz) {
 	size sz = rct.sz;			// Note: these properties are copied, to avoid artifacts in the event
 	position pos = rct.pos;		// that the view's position is updated while its objects are being drawn
-
+	
+	// Set up OGL: scissor to view bounds, translate to view pos w/ modelview matrix
 	glScissor(pos.x, winSz.height - pos.y - sz.height, sz.width, sz.height);
+	glLoadIdentity();
+	glTranslatef(pos.x, pos.y, 0);
 	
-	// Users can write custom OpenGL code to draw in the background
-	performOpenGLBackgroundDrawing();
+	// Users can write custom OpenGL code
+	customOpenGLDrawing();
 	
-	// Draw all DOs
-	for (std::map<int, DO_list>::iterator itm = scene.begin(); itm != scene.end(); itm++) {
-		DO_list &vec = itm->second;
-		for (DO_list::iterator itv = vec.begin(); itv != vec.end(); itv++) {
-			DrawnObj *obj = *itv;
-			if (obj->type == DrawnObj::RECT) {
-				DrawnRect *drect = (DrawnRect*) obj;
-				position &objPos = drect->rct.pos;
-				size &objSz = drect->rct.sz;
-				drawRect(objPos.x + pos.x + _offset.x, objPos.y + pos.y + _offset.y, objSz.width, objSz.height, drect->col, drect->rot);
-			}
-			else if (obj->type == DrawnObj::TEXT) {
-				DrawnText *dtext = (DrawnText*) obj;
-				position &objPos = dtext->rct.pos;
-				drawText(objPos.x + pos.x + _offset.x, objPos.y + pos.y + _offset.y, dtext->col, dtext->txt.c_str(), dtext->r_align);
-			}
-			else if (obj->type == DrawnObj::IMAGE) {
-				DrawnImage &dimg = *((DrawnImage*) obj);
-				position &objPos = dimg.rct.pos;
-				size &objSz = dimg.rct.sz;
-				Texture &tex = *dimg.getTex();
-				drawImage(
-					objPos.x + pos.x + _offset.x, objPos.y + pos.y + _offset.y,
-					objSz.width, objSz.height,
-					dimg.chunkA, dimg.chunkB, dimg.chunkC, dimg.chunkD,
-					tex.getTexId()
-				);
-			}
-		}
-	}
+	// Submit data arrays to opengl
+	glVertexPointer(3, GL_FLOAT, 0, glData->vert_array);
+	glColorPointer(4, GL_FLOAT, 0, glData->col_array);
+	glTexCoordPointer(2, GL_FLOAT, 0, glData->texcoord_array);
+	glDrawArrays(GL_TRIANGLES, 0, glData->array_used_size);
+	
 }

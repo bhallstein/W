@@ -4,15 +4,16 @@
 
 #ifdef __APPLE__
 	#include <Cocoa/Cocoa.h>
-	#include "ObjC-Classes.h"
+	#include "MacOSXClasses.h"
 	#include <OpenGL/gl.h>
 #elif defined _WIN32 || _WIN64
-	/*#include "shlobj.h"*/
 	#include <gl\gl.h>
 	#include <gl\glu.h>
 #endif
 
 #include "Messenger.h"
+#include "MegaTexture.h"
+#include "GenericRetro.h"
 
 namespace W {
 	std::string   logFilePath, logFileName;
@@ -55,15 +56,13 @@ namespace W {
 		event_mutex,
 		graphics_mutex,
 		texture_mutex;
-	
-	int W_MAXPATH = 450;
 }
 
 
 /* Initialisation */
 
-struct W::_init {
-	_init() {
+struct W::_wInit {
+	_wInit() {
 		// Default log: /dev/null
 		std::string p;
 		#ifdef __APPLE__
@@ -90,12 +89,9 @@ struct W::_init {
 		
 		// Init mutexes
 		#ifdef __APPLE__
-			if (!!pthread_mutex_init(&event_mutex, NULL))
-				throw Exception("Couldn't initialize event vector mutex");
-			if (!!pthread_mutex_init(&graphics_mutex, NULL))
-				throw Exception("Couldn't initialize graphics mutex");
-			if (!!pthread_mutex_init(&texture_mutex, NULL))
-				throw Exception("Couldn't initialize texture mutex");
+			if (!!pthread_mutex_init(&event_mutex, NULL))    throw Exception("Couldn't initialize event vector mutex");
+			if (!!pthread_mutex_init(&graphics_mutex, NULL)) throw Exception("Couldn't initialize graphics mutex");
+			if (!!pthread_mutex_init(&texture_mutex, NULL))  throw Exception("Couldn't initialize texture mutex");
 		#elif defined _WIN32 | _WIN64
 			InitializeCriticalSection(&event_mutex);
 			InitializeCriticalSection(&graphics_mutex);
@@ -105,7 +101,7 @@ struct W::_init {
 		W::log << "W app inited" << std::endl;
 	}
 };
-struct W::_init *W::_initializer = new W::_init();
+struct W::_wInit *W::_initializer = new W::_wInit();
 
 
 /* Logging */
@@ -301,12 +297,12 @@ void W::_update() {
 		}
 	}
 	
-	// Call updateDOs on all views, to apply D.O. changes made during update
+	// Submit changes to drawn objects
 	if (_gs.size()) {
 		_lock_mutex(&graphics_mutex);
 		GameState::Viewlist &views = _gs.back()->_vlist;
-		for (GameState::Viewlist::iterator it = views.begin(); it != views.end(); it++)
-			(*it)->_updateDOs();
+		for (GameState::Viewlist::iterator it = views.begin(); it != views.end(); ++it)
+			(*it)->_updateDObjs();
 		_unlock_mutex(&graphics_mutex);
 	}
 	
@@ -379,24 +375,37 @@ DWORD WINAPI W::drawingThreadFn(LPVOID lpParam)
 		size window_size = _window->getDimensions();
 		int &winW = window_size.width, &winH= window_size.height;
 		
+		// Texture uploading/unloading
+		if (MegaTexture::modified()) {
+			_lock_mutex(&texture_mutex);
+			MegaTexture::upload();
+			_unlock_mutex(&texture_mutex);
+		}
+		
 		glScissor(0, 0, winW, winH);
 		
 		glClearColor(0.525, 0.187, 0.886, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
 		
+		glBindTexture(GL_TEXTURE_2D, MegaTexture::getGLTexId());
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//		glTexParameteri(GL_TEXTURE_2D, GL_MIN_FILTER, GL_LINEAR);
+//		glTexParameteri(GL_TEXTURE_2D, GL_MAG_FILTER, GL_LINEAR);
+		
 		// Draw
 		_lock_mutex(&graphics_mutex);
-		if (int n = (int) _gs.size()) {
+		if (int n = (int)_gs.size()) {
 			int first_to_draw = n - 1;
-			for (int i = n-1; i >= 0; i--)
+			for (int i = n-1; i >= 0; --i)
                 if (_gs[i]->isTranslucent())
 					first_to_draw = (i ? i-1 : 0);
 			
 			// Draw all GameStates back to the last that was translucent - 1
-			for (int i = first_to_draw; i < n; i++) {
+			for (int i = first_to_draw; i < n; ++i) {
 				// Call _draw on all views
 				GameState::Viewlist &views = _gs[i]->_vlist;
-				for (GameState::Viewlist::iterator it = views.begin(); it != views.end(); it++)
+				for (GameState::Viewlist::iterator it = views.begin(); it != views.end(); ++it)
 					(*it)->_draw(window_size);
 			}
 		}
@@ -404,21 +413,6 @@ DWORD WINAPI W::drawingThreadFn(LPVOID lpParam)
 		
 		_window->swapBuffers();
 		
-		// Texture uploading/unloading
-		if (_textures_to_upload.size()) {
-			_lock_mutex(&texture_mutex);
-			for (std::vector<Texture*>::iterator it = _textures_to_upload.begin(); it < _textures_to_upload.end(); it++)
-				(*it)->upload();
-			_textures_to_upload.clear();
-			_unlock_mutex(&texture_mutex);
-		}
-		if (_textures_to_unload.size()) {
-			_lock_mutex(&texture_mutex);
-			for (std::vector<Texture*>::iterator it = _textures_to_unload.begin(); it < _textures_to_unload.end(); it++)
-				delete *it;
-			_textures_to_unload.clear();
-			_unlock_mutex(&texture_mutex);
-		}
 //		gettimeofday(&t2, NULL);
 //		lastNFrameDurations[f] =
 //			t2.tv_sec - t1.tv_sec

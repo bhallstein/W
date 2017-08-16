@@ -14,7 +14,7 @@ namespace W {
 	class Event;
 	class Positioner;
 	class GameState;
-	class DrawnObj;
+	class DObj;
 	
 	class View {
 	public:
@@ -31,38 +31,32 @@ namespace W {
 		void _subscribeToMouseEvents();		// Called by GS in addView()
 		void _unsubscribeFromMouseEvents();	// Called by GS in removeView()
 		
-		// Drawn Object adding/removing/updating
-		void addDO(DrawnObj *, int layer = 1);
-		void removeDO(DrawnObj *);
-		void _markDOAsDirty(DrawnObj *);
-		void _updateDOs();
-			// Update status of all drawn objects.
-			// Graphics mutex must first be locked before this fn is called.
-		
 		void _draw(const W::size &winSz);
+		
+		DObj *firstDObj, *lastDObj;
+			// DObjs form a doubly-linked list.
+			// View needs refs to the first & the last.
+		
+		int _getStorageForDObjOfLength(int);
+			// Called by DObj when created, returns the start index of the chunk assigned to the object
+		void _removeStorageForDObjOfLength(int);
+		
+		void _updateDObjs(); // Call recopy() on _DObjs_needing_recopy, clear
+		void _setNeedsRecopy(DObj *_d) { _DObjs_needing_recopy.push_back(_d); }
+		
 	protected:
 		Positioner *_positioner;
 		rect rct;
 		
-		// Drawn Object vectors
-		typedef std::vector<DrawnObj*> DO_list;
-		std::map<int, DO_list> scene;
-		DO_list
-			deletedDOs,
-			dirtyDOs;
-		struct DOAndLayer {
-			DOAndLayer(DrawnObj *_DO, int _layer) : DO(_DO), layer(_layer) { }
-			DrawnObj *DO;
-			int layer;
-		};
-		std::vector<DOAndLayer> newDOs;
+		struct glDataArrays;
+		glDataArrays *glData;		// Vertex, colour & texcoord info
 		
-		void _removeDO(DrawnObj *);
-		
-		position _offset;
+		position _offset;	// Def 0. Used by scrolling subviews. Undocumented!
 		
 		virtual void updatePosition(const W::size &winsize) { }	// Let subsclasses perform own position update behaviours
-		virtual void performOpenGLBackgroundDrawing() { }
+		virtual void customOpenGLDrawing() { }
+		
+		std::vector<DObj*> _DObjs_needing_recopy;
 	};
 	
 }

@@ -5,6 +5,7 @@
 #include "Messenger.h"
 #include "Positioner.h"
 #include "Window.h"
+#include "DrawnObj.h"
 
 #include "LuaObj.h"
 
@@ -26,13 +27,12 @@ W::UIView::UIView(const std::string &viewname) :
 		);
 	updatePosition(_window->getDimensions());
 	
-	bgDRect = new DrawnRect(this, position(), rct.sz, W::Colour::TransparentBlack);
-	addDO(bgDRect, 0);
+	bgDRect = new DRect(this, position(), rct.sz, W::Colour::TransparentBlack);
 }
 
 W::UIView::~UIView()
 {
-	removeDO(bgDRect);
+	delete bgDRect;
 }
 
 void W::UIView::processMouseEvent(Event *ev) {
