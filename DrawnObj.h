@@ -38,18 +38,23 @@ namespace W {
 			TEXT,
 			IMAGE
 		};
-		DrawnObj(View *, DOType _type, const W::rect &_posn);
+		DrawnObj(View *, DOType _type, const W::position &, const W::size &);
 		virtual ~DrawnObj() { }
 		DOType type;
 		
-		void _updateValues();
+		void _updateValues() {
+			rct = new_rct;
+			updateValues();
+		}
 		virtual void updateValues() = 0;
 		
-		void setPosn(const rect &_posn) { new_posn = _posn; _setDirty(); }
-		rect& getPosn() { return posn; }
+		void setPos(const W::position &_pos) { new_rct.pos = _pos; _setDirty(); }
+		void setSz(const W::size &_sz) { new_rct.sz = _sz; _setDirty(); }
+		void setRect(const W::rect &_rect) { new_rct = _rect; _setDirty(); }
+		
+		rect rct, new_rct;
 		
 	protected:
-		rect posn, new_posn;
 		void _setDirty() {
 			view->_markDOAsDirty(this);
 		}
@@ -64,19 +69,16 @@ namespace W {
 	
 	class DrawnRect : public DrawnObj {
 	public:
-		DrawnRect(View *, const W::rect &, const W::Colour &, float rotation = 0);
+		DrawnRect(View *, const W::position &, const W::size &, const W::Colour &, float rotation = 0);
 		
 		void setCol(const Colour &_col) { new_col = _col; _setDirty(); }
 		void setRot(float _rotation) { new_rot = _rotation; _setDirty(); }
-		W::Colour& getCol() { return col; }
-		float getRot() { return rot; }
 		
 		void updateValues() {
 			col = new_col;
 			rot = new_rot;
 		}
 		
-	protected:
 		W::Colour col, new_col;
 		float rot, new_rot;
 	};
@@ -84,39 +86,40 @@ namespace W {
 	
 	class DrawnText : public DrawnObj {
 	public:
-		DrawnText(View *, const W::rect &, const char *, const W::Colour &);
+		DrawnText(View *, const W::position &, const char *, const W::Colour &, bool r_align = false);
 		void setCol(Colour _col) { new_col = _col; _setDirty(); }
-		W::Colour& getCol() { return col; }
-		const std::string & getText() { return text; }
+		void setTxt(const char *_txt) { new_txt = _txt; _setDirty(); }
 		
 		void updateValues() {
 			col = new_col;
+			txt = new_txt;
+			r_align = new_r_align;
 		}
 		
-	protected:
-		std::string text, new_text;
+		std::string txt, new_txt;
 		W::Colour col, new_col;
+		bool r_align, new_r_align;
 	};
 	
 	
 	class DrawnImage : public DrawnObj {
 	public:
-		DrawnImage(View *, const W::rect &, Texture *, float opacity = 1, float rotation = 0);
+		DrawnImage(View *, const W::position &, const W::size &, Texture *, float opacity = 1, float rotation = 0);
 		~DrawnImage();
 		void setRot(float _rotation) { new_rot = _rotation; _setDirty(); }
 		void setOpacity(float _opacity) { new_opac = _opacity; _setDirty(); }
-		inline float getRot() { return rot; }
-		inline float getOpacity() { return opac; }
-		Texture* getTex();
 		
 		void updateValues() {
 			rot = new_rot;
 			opac = new_opac;
 		}
 		
-	protected:
 		float rot, new_rot;
 		float opac, new_opac;
+		
+		Texture * getTex();
+		
+	protected:
 		Texture *texture;
 		bool use_placeholder_texture;
 	};

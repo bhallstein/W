@@ -1,33 +1,29 @@
 #include "DrawnObj.h"
 
-W::DrawnObj::DrawnObj(View *_view, DOType _type, const rect &_posn) :
-	type(_type), posn(_posn), new_posn(_posn), view(_view)
+W::DrawnObj::DrawnObj(View *_view, DOType _type, const position &_pos, const size &_sz) :
+	type(_type), rct(_pos, _sz), new_rct(_pos, _sz), view(_view)
 {
 	// hai objy
 }
-void W::DrawnObj::_updateValues() {
-	posn = new_posn;
-	updateValues();
-}
 
-W::DrawnRect::DrawnRect(View *_view, const rect &_r, const Colour &_col, float _rot) :
-	DrawnObj(_view, RECT, _r),
+W::DrawnRect::DrawnRect(View *_view, const position &_p, const size &_s, const Colour &_col, float _rot) :
+	DrawnObj(_view, RECT, _p, _s),
 	col(_col), new_col(_col), rot(_rot), new_rot(_rot)
 {
 	// hai recty
 }
 
 
-W::DrawnText::DrawnText(View *_view, const rect &_r, const char *_text, const Colour &_col) :
-	DrawnObj(_view, TEXT, _r),
-	text(_text), new_text(_text), col(_col), new_col(_col)
+W::DrawnText::DrawnText(View *_view, const position &_p, const char *_txt, const Colour &_col, bool _r_align) :
+	DrawnObj(_view, TEXT, _p, size()),
+	txt(_txt), new_txt(_txt), col(_col), new_col(_col), r_align(_r_align), new_r_align(_r_align)
 {
 	// hai texty
 }
 
 
-W::DrawnImage::DrawnImage(View *_view, const rect &_r, Texture *_texture, float _opac, float _rot) :
-	DrawnObj(_view, IMAGE, _r),
+W::DrawnImage::DrawnImage(View *_view, const position &_p, const size &_s, Texture *_texture, float _opac, float _rot) :
+	DrawnObj(_view, IMAGE, _p, _s),
 	texture(_texture), rot(_rot), new_rot(_rot), opac(_opac), new_opac(_opac)
 {
 	// hai spritey

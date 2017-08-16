@@ -44,6 +44,8 @@ namespace W {
 	struct rect {
 		struct position pos;
 		struct size sz;
+		rect() { }
+		rect(position _pos, size _sz) : pos(_pos), sz(_sz) { }
 	};
 
 	/* Exceptions */

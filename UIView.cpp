@@ -26,11 +26,7 @@ W::UIView::UIView(const std::string &viewname) :
 		);
 	updatePosition(_window->getDimensions());
 	
-	rect r = {
-		position(),
-		rct.sz
-	};
-	bgDRect = new DrawnRect(this, r, W::Colour::TransparentBlack);
+	bgDRect = new DrawnRect(this, position(), rct.sz, W::Colour::TransparentBlack);
 	addDO(bgDRect, 0);
 }
 

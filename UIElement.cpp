@@ -29,7 +29,7 @@ W::Button::Button(View *_view, const std::string &_name, W::Positioner *_pos, Ev
 	buttonClickEvent(EventType::BUTTONCLICK)
 {
 	buttonClickEvent._payload = new std::string(name);
-	btnrect = new DrawnRect(view, rct, Colour::Black);
+	btnrect = new DrawnRect(view, rct.pos, rct.sz, Colour::Black);
 	
 	Callback cb(&Button::recEv, this);
 	Messenger::subscribeToPositionalEventType(evTypes[EventType::MOUSEMOVE], cb, this);
@@ -75,7 +75,7 @@ void W::Button::recEv(W::Event *ev) {
 	}
 }
 void W::Button::updatePosition() {
-	btnrect->setPosn(rct);		// Update D.O.
+	btnrect->setRect(rct);		// Update D.O.
 }
 void W::Button::activate() {
 	view->addDO(btnrect);

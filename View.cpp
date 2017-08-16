@@ -101,18 +101,18 @@ void W::View::_draw(const size &winSz) {
 			DrawnObj *obj = *itv;
 			if (obj->type == DrawnObj::RECT) {
 				DrawnRect *drect = (DrawnRect*) obj;
-				rect objPosn = drect->getPosn();
-				drawRect(objPosn.pos.x + pos.x, objPosn.pos.y + pos.y, objPosn.sz.width, objPosn.sz.height, drect->getCol(), drect->getRot());
+				rect &objRct = drect->rct;
+				drawRect(objRct.pos.x + pos.x, objRct.pos.y + pos.y, objRct.sz.width, objRct.sz.height, drect->col, drect->rot);
 			}
 			else if (obj->type == DrawnObj::TEXT) {
 				DrawnText *dtext = (DrawnText*) obj;
-				rect &objPosn = dtext->getPosn();
-				drawText(objPosn.pos.x + pos.x, objPosn.pos.y + pos.y, dtext->getCol(), dtext->getText().c_str());
+				rect &objRct = dtext->rct;
+				drawText(objRct.pos.x + pos.x, objRct.pos.y + pos.y, dtext->col, dtext->txt.c_str(), dtext->r_align);
 			}
 			else if (obj->type == DrawnObj::IMAGE) {
 				DrawnImage *dimg = (DrawnImage*) obj;
-				rect &objPosn = dimg->getPosn();
-				drawImage(objPosn.pos.x + pos.x, objPosn.pos.y + pos.y, objPosn.sz.width, objPosn.sz.height, dimg->getTex(), dimg->getOpacity());
+				rect &objRct = dimg->rct;
+				drawImage(objRct.pos.x + pos.x, objRct.pos.y + pos.y, objRct.sz.width, objRct.sz.height, dimg->getTex(), dimg->opac);
 			}
 		}
 	}
