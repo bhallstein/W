@@ -15,12 +15,11 @@ namespace W {
 	
 	class View : public MappedObj {
 	public:
-		View(Positioner *, Window *);
+		View(Positioner *);
 		~View();
 			// If NULL is supplied for positioner, subclass must
 			// set one up and call _updatePosition.
 		
-		void setWindow(Window *w);
 		void _updatePosition(const size &winsize);
 		
 		void _draw();					// Wrapper: prepares W for drawing the view, then calls draw()
@@ -31,13 +30,10 @@ namespace W {
 		void receiveEvent(Event *);					// Converts event to view’s coordinates, and calls processMouseEvent()
 		virtual void processMouseEvent(Event *) { }	// Override to do something with mouse events
 		
-		Window *_getWindow() { return _window; }
 		void _setGameState(GameState *g) { _gamestate = g; }
 		
 	protected:
-		View(Window *);				// Let subsclasses set up their own positioner
 		Positioner *_positioner;
-		Window *_window;
 		GameState *_gamestate;
 		
 		virtual void updatePosition(const size &winsize) { }	// Let subsclasses perform own position update behaviours

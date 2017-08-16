@@ -1,11 +1,7 @@
-#include "View.h"
-#include "Positioner.h"
-#include "Event.h"
-#include "Window.h"
-#include "GameState.h"
+#include "W.h"
 
-W::View::View(Positioner *_pos, Window *_win) :
-	_positioner(_pos), _window(_win), _gamestate(NULL)
+W::View::View(Positioner *_pos) :
+	_positioner(_pos), _gamestate(NULL)
 {
 	plan.resize(1);
 	if (_positioner)
@@ -14,11 +10,6 @@ W::View::View(Positioner *_pos, Window *_win) :
 W::View::~View()
 {
 	if (_positioner) delete _positioner;
-}
-
-void W::View::setWindow(Window *w) {
-	_window = w;
-	_gamestate->_updateWV(w, this);
 }
 
 void W::View::_updatePosition(const size &winsize) {

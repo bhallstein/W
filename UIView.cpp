@@ -12,8 +12,8 @@
 
 #include <iostream>
 
-W::UIView::UIView(const std::string &viewname, Window *_win) :
-	View(NULL, _win),
+W::UIView::UIView(const std::string &viewname) :
+	View(NULL),
 	dragloop(false)
 {
 	createEvTypeMap();	// Make event type translation map for this uiview

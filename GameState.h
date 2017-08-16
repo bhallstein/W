@@ -34,6 +34,8 @@ namespace W {
 
 	class GameState {
 	public:
+		typedef std::list<View*> Viewlist;
+		
 		GameState(GameStateTranslucency _tr = GS_OPAQUE);
 		virtual ~GameState();
 		
@@ -42,18 +44,15 @@ namespace W {
 		
 		void addView(View *);
 		void removeView(View *);
+		Viewlist* _getViews() { return &_vlist; }
 		
 		virtual void handleCloseEvent();	// By default, initiates the killer returny tango: override to customise
 		
 		bool isTranslucent() { return translucent; }
 		
-		void _updateWV(Window *, View *);
-		void _removeFromWV(View *);
-		std::map<Window*, std::list<View*> >* _getViews() { return &_wv; }
-		
 	protected:
 		// Properties
-		std::map<Window*, std::list<View*> > _wv;
+		Viewlist _vlist;
 		bool translucent;	// If true, the previous state will be drawn too.
 	};
 	

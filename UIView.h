@@ -13,7 +13,7 @@ namespace W {
 	
 	class UIView : public View {
 	public:
-		UIView(const std::string &viewname, Window *);
+		UIView(const std::string &viewname);
 		~UIView();
 		
 		void processMouseEvent(Event *);

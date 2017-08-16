@@ -72,7 +72,15 @@ struct W::Window_NativeObjs {
 #endif
 
 
-W::Window::Window() {
+W::Window::Window()
+{
+	// Check window has not already been created
+	if (W::_window) {
+		char s[300];
+		sprintf(s, "Cannot create window: window has already been created (%p)", _window);
+		throw Exception(s);
+	}
+	
 	_objs = new Window_NativeObjs();
 
 #ifdef __APPLE__
@@ -93,16 +101,12 @@ W::Window::Window() {
 	// Create window
 	_createWindow();
 	
-	// Add to W::_windows vector
-	W::_windows.push_back(this);
+	// Set W::_window
+	W::_window = this;
 }
 W::Window::~Window() {
-	// Remove from _windows vector
-	for (std::vector<Window*>::iterator it = _windows.begin(); it < _windows.end(); it++)
-		if (*it == this) {
-			_windows.erase(it);
-			break;
-		}
+	// Unset W::_window
+	W::_window = NULL;
 }
 
 void W::Window::setTitle(const char *t) {

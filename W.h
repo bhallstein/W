@@ -44,8 +44,8 @@ namespace W {
 	
 	class Window;
 	
-	/* Maintain a list of windows */
-	extern std::vector<Window*> _windows;
+	/* The Window */
+	extern Window *_window;
 	void _updateAllViewPositions();
 	
 	/* Bollocks */

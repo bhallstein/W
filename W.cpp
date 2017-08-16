@@ -19,7 +19,7 @@ namespace W {
 	
 	std::vector<GameState*> _gs;
 	std::vector<Event>      _evqueue;
-	std::vector<Window*>    _windows;
+	Window *_window;
 	W::Returny _returny(ReturnyType::EMPTY_RETURNY);
 	bool  _gsShouldPop;
 	bool  _quit = false;
@@ -107,6 +107,9 @@ VOID CALLBACK W::TimerProc(HWND windowHandle, UINT msg, UINT_PTR idEvent, DWORD 
 }
 #endif
 void W::startGameLoop() {
+	if (!_window) throw Exception(
+		"Error: W::startGameLoop called, but a window has not yet been set up"
+	);
 	#ifdef __APPLE__
 		[( W_Demon*)_demon gametimerStart];
 	#elif defined WIN32 || WIN64
@@ -121,7 +124,7 @@ void W::stopGameLoop() {
 	#endif
 }
 void W::_runGameLoop() {
-	_windows[0]->_generateMouseMoveEvent();	// TODO: only generate if within window bounds (plus some border)
+	_window->_generateMouseMoveEvent();	// TODO: only generate if within window bounds (plus some border)
 	GameState *g;
 	_gsShouldPop = false;
 	
@@ -160,14 +163,11 @@ void W::_runGameLoop() {
 	// Draw
 	if (_gs.size()) {
 		g = _gs.back();
-		std::map<Window*, std::list<View*> > *_wv = g->_getViews();
-		for (std::map<Window*, std::list<View*> >::iterator it = _wv->begin(); it != _wv->end(); it++) {
-			it->first->_startDrawing();
-			std::list<View*> *l = &it->second;
-			for (std::list<View*>::iterator itl = l->begin(); itl != l->end(); itl++)
-				(*itl)->_draw();
-			it->first->_finishDrawing();
-		}
+		GameState::Viewlist *vlist = g->_getViews();
+		_window->_startDrawing();
+		for (GameState::Viewlist::iterator it = vlist->begin(); it != vlist->end(); it++)
+			(*it)->_draw();
+		_window->_finishDrawing();
 	}
 	else {
 		_quit = true;
@@ -181,13 +181,10 @@ void W::_runGameLoop() {
 }
 
 void W::_updateAllViewPositions() {
+	const size &s = _window->_getDimensions();
 	for (std::vector<GameState*>::iterator itgs = _gs.begin(); itgs < _gs.end(); itgs++) {
-		std::map<Window*, std::list<View*> > *wv = (*itgs)->_getViews();
-		for (std::map<Window*, std::list<View*> >::iterator itwv = wv->begin(); itwv != wv->end(); itwv++) {
-			size s = itwv->first->_getDimensions();
-			std::list<View*> *l = &itwv->second;
-			for (std::list<View*>::iterator itl = l->begin(); itl != l->end(); itl++)
-				(*itl)->_updatePosition(s);
-		}
+		GameState::Viewlist *vlist = (*itgs)->_getViews();
+		for (GameState::Viewlist::iterator itv = vlist->begin(); itv != vlist->end(); itv++)
+			(*itv)->_updatePosition(s);
 	}
 }
