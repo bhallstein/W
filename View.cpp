@@ -90,6 +90,9 @@ void W::View::_draw(const size &winSz) {
 	position &pos = rct.pos;
 	glScissor(pos.x, winSz.height - pos.y - sz.height, sz.width, sz.height);
 	
+	// Allow users to perform custom OpenGL drawing in the background
+	performOpenGLBackgroundDrawing();
+	
 	// Draw all DOs
 	for (std::map<int, DO_list>::iterator itm = scene.begin(); itm != scene.end(); itm++) {
 		DO_list &vec = itm->second;

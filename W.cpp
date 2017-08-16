@@ -385,11 +385,19 @@ DWORD WINAPI W::drawingThreadFn(LPVOID lpParam)
 		
 		// Draw
 		_lock_mutex(&graphics_mutex);
-		if (_gs.size()) {
-			GameState::Viewlist &views = _gs.back()->_vlist;
-			// Call _draw on all views
-			for (GameState::Viewlist::iterator it = views.begin(); it != views.end(); it++)
-				(*it)->_draw(window_size);
+		if (int n = (int) _gs.size()) {
+			int first_to_draw = n - 1;
+			for (int i = n-1; i >= 0; i--)
+                if (_gs[i]->isTranslucent())
+					first_to_draw = (i ? i-1 : 0);
+			
+			// Draw all GameStates back to the last that was translucent - 1
+			for (int i = first_to_draw; i < n; i++) {
+				// Call _draw on all views
+				GameState::Viewlist &views = _gs[i]->_vlist;
+				for (GameState::Viewlist::iterator it = views.begin(); it != views.end(); it++)
+					(*it)->_draw(window_size);
+			}
 		}
 		_unlock_mutex(&graphics_mutex);
 		

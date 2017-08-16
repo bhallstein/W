@@ -59,7 +59,7 @@ namespace W {
 		void _removeDO(DrawnObj *);
 		
 		virtual void updatePosition(const size &winsize) { }	// Let subsclasses perform own position update behaviours
-		
+		virtual void performOpenGLBackgroundDrawing() { }
 	};
 	
 }
