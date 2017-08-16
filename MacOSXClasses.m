@@ -1,3 +1,15 @@
+/*
+ * W - a simple, cross-platform 2D game develpoment library
+ *
+ * ===================
+ *  MacOSXClasses.m
+ * ===================
+ *
+ * Copyright (C) 2012 - Ben Hallstein - http://ben.am
+ * Published under the MIT license: http://opensource.org/licenses/MIT
+ *
+ */
+
 #import "MacOSXClasses.h"
 #include "W.h"
 #include "Event.h"

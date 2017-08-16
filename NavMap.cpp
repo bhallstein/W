@@ -1,3 +1,15 @@
+/*
+ * W - a simple, cross-platform 2D game develpoment library
+ *
+ * ==============
+ *  NavMap.cpp
+ * ==============
+ *
+ * Copyright (C) 2012 - Ben Hallstein - http://ben.am
+ * Published under the MIT license: http://opensource.org/licenses/MIT
+ *
+ */
+
 #include "NavMap.h"
 
 #define NAV_INFINITY 99999999

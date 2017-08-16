@@ -1,3 +1,15 @@
+/*
+ * W - a simple, cross-platform 2D game develpoment library
+ *
+ * ==============
+ *  Colour.cpp
+ * ==============
+ *
+ * Copyright (C) 2012 - Ben Hallstein - http://ben.am
+ * Published under the MIT license: http://opensource.org/licenses/MIT
+ *
+ */
+
 #include "Colour.h"
 
 W::Colour::Colour(const W::Colour &col) : r(col.r), g(col.g), b(col.b), a(col.a)

@@ -1,4 +1,16 @@
-#include "Window.h"	
+/*
+ * W - a simple, cross-platform 2D game develpoment library
+ *
+ * ==============
+ *  Window.cpp
+ * ==============
+ *
+ * Copyright (C) 2012 - Ben Hallstein - http://ben.am
+ * Published under the MIT license: http://opensource.org/licenses/MIT
+ *
+ */
+
+#include "Window.h"
 #include "W.h"
 #include "Log.h"
 #include "MegaTexture.h"

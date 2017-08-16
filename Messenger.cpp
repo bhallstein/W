@@ -1,3 +1,15 @@
+/*
+ * W - a simple, cross-platform 2D game develpoment library
+ *
+ * =================
+ *  Messenger.cpp
+ * =================
+ *
+ * Copyright (C) 2012 - Ben Hallstein - http://ben.am
+ * Published under the MIT license: http://opensource.org/licenses/MIT
+ *
+ */
+
 #include "Messenger.h"
 #include "Callback.h"
 #include <iostream>

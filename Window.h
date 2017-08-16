@@ -1,10 +1,17 @@
 /*
- * Window.h
+ * W - a simple, cross-platform 2D game develpoment library
  *
- * Window encapsulates a Window on the device, and the View and OpenGL
- * state associated with it.
+ * ============
+ *  Window.h
+ * ============
+ *
+ * Copyright (C) 2012 - Ben Hallstein - http://ben.am
+ * Published under the MIT license: http://opensource.org/licenses/MIT
  *
  */
+
+// `Window` encapsulates a Window on the device, and the View and OpenGL
+// state associated with it.
 
 #ifndef __W_Window
 #define __W_Window

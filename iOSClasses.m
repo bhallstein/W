@@ -1,3 +1,15 @@
+/*
+ * W - a simple, cross-platform 2D game develpoment library
+ *
+ * ================
+ *  iOSClasses.m
+ * ================
+ *
+ * Copyright (C) 2012 - Ben Hallstein - http://ben.am
+ * Published under the MIT license: http://opensource.org/licenses/MIT
+ *
+ */
+
 #import "iOSClasses.h"
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/EAGL.h>

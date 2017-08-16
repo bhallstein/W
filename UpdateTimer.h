@@ -1,7 +1,16 @@
 /*
- * UpdateTimer.h - timer to run the update loop
+ * W - a simple, cross-platform 2D game develpoment library
+ *
+ * =================
+ *  UpdateTimer.h
+ * =================
+ *
+ * Copyright (C) 2012 - Ben Hallstein - http://ben.am
+ * Published under the MIT license: http://opensource.org/licenses/MIT
  *
  */
+
+// UpdateTimer is the timer used by W to run the update loop
 
 #ifndef __W__UpdateTimer
 #define __W__UpdateTimer
