@@ -49,11 +49,11 @@ W::UIView::~UIView()
 
 void W::UIView::processMouseEvent(Event *ev) {
 	if (dragloop) {
-		if (ev->type == EventType::MOUSEMOVE) {
+		if (ev->type == EventType::MouseMove) {
 			cur_positioner->nudge(ev->pos - drag_initial);
 			_updatePosition();
 		}
-		else if (ev->type == EventType::LEFTMOUSEUP) {
+		else if (ev->type == EventType::LMouseUp) {
 			Messenger::relinquishPrivilegedEventResponderStatus(this);
 			dragloop = false;
 		}
@@ -66,7 +66,7 @@ void W::UIView::processMouseEvent(Event *ev) {
 	bool wasDispatchedToElement = W::Messenger::dispatchPositionalEvent(&ev2);
 	
 	// If no element was found & allowDrag is true, perform dragloopery
-	if (!wasDispatchedToElement && allowDrag && ev->type == EventType::LEFTMOUSEDOWN && Messenger::requestPrivilegedEventResponderStatus(Callback(&View::receiveEvent, (View*)this)))
+	if (!wasDispatchedToElement && allowDrag && ev->type == EventType::LMouseDown && Messenger::requestPrivilegedEventResponderStatus(Callback(&View::receiveEvent, (View*)this)))
 		drag_initial = ev->pos, dragloop = true;
 }
 
@@ -305,9 +305,9 @@ W::UIElement* W::UIView::createElement(const std::string &limit, const std::stri
 
 void W::UIView::createEvTypeMap() {
 	using namespace EventType;
-	evTypeMap[MOUSEMOVE]      = Event::registerType();
-	evTypeMap[LEFTMOUSEDOWN]  = Event::registerType();
-	evTypeMap[LEFTMOUSEUP]    = Event::registerType();
-	evTypeMap[RIGHTMOUSEDOWN] = Event::registerType();
-	evTypeMap[RIGHTMOUSEUP]   = Event::registerType();
+	evTypeMap[MouseMove]  = Event::registerType();
+	evTypeMap[LMouseDown] = Event::registerType();
+	evTypeMap[LMouseUp]   = Event::registerType();
+	evTypeMap[RMouseDown] = Event::registerType();
+	evTypeMap[RMouseUp]   = Event::registerType();
 }

@@ -83,26 +83,26 @@ void W::Window::beginDrawing(const size &winSize) {
 void W::Window::generateMouseMoveEvent() {
 	position p = getMousePosition();
 	if (p.x >= 0 && p.y >= 0 && p.x < sz.width && p.y < sz.height)
-		W::Event::_addEvent(new W::Event(EventType::MOUSEMOVE, p));
+		W::Event::_addEvent(new W::Event(EventType::MouseMove, p));
 	
 	static int generosity = 20, scrollMargin = 20;
 	// If within the view + generosity margin...
 	if (p.x >= -generosity && p.y >= -generosity && p.x < sz.width+generosity && p.y < sz.height+generosity) {
 		if (p.x < scrollMargin) {
 			float d = float(scrollMargin-p.x)/float(scrollMargin);
-			W::Event::_addEvent(new Event(EventType::SCREENEDGE_LEFT, float(d>1.0?1.0:d)));
+			W::Event::_addEvent(new Event(EventType::ScreenEdgeLeft, float(d>1.0?1.0:d)));
 		}
 		else if (p.x >= sz.width-scrollMargin) {
 			float d = float(p.x-(sz.width-scrollMargin))/float(scrollMargin);
-			W::Event::_addEvent(new Event(EventType::SCREENEDGE_RIGHT, float(d>1.0?1.0:d)));
+			W::Event::_addEvent(new Event(EventType::ScreenEdgeRight, float(d>1.0?1.0:d)));
 		}
 		if (p.y < scrollMargin) {
 			float d = float(scrollMargin-p.y)/float(scrollMargin);
-			W::Event::_addEvent(new Event(EventType::SCREENEDGE_TOP, float(d>1.0?1.0:d)));
+			W::Event::_addEvent(new Event(EventType::ScreenEdgeTop, float(d>1.0?1.0:d)));
 		}
 		else if (p.y >= sz.height-scrollMargin) {
 			float d = float(p.y-(sz.height-scrollMargin))/float(scrollMargin);
-			W::Event::_addEvent(new Event(EventType::SCREENEDGE_BOTTOM, float(d>1.0?1.0:d)));
+			W::Event::_addEvent(new Event(EventType::ScreenEdgeBottom, float(d>1.0?1.0:d)));
 		}
 	}
 }

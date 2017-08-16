@@ -128,11 +128,11 @@ void W::Controller::update() {
 	
 	for (std::vector<Event*>::iterator it = Event::_events.begin(); it < Event::_events.end(); ++it) {
 		Event *ev = *it;
-		if (ev->type == EventType::CLOSED)
+		if (ev->type == EventType::Closed)
 			g->handleCloseEvent();
-		else if (ev->type == EventType::LEFTMOUSEDOWN || ev->type == EventType::LEFTMOUSEUP
-				 || ev->type == EventType::RIGHTMOUSEDOWN || ev->type == EventType::RIGHTMOUSEUP
-				 || ev->type == EventType::MOUSEMOVE
+		else if (ev->type == EventType::LMouseDown || ev->type == EventType::LMouseUp
+				 || ev->type == EventType::RMouseDown || ev->type == EventType::RMouseUp
+				 || ev->type == EventType::MouseMove
 				 || ev->type == EventType::TouchDown)
 			Messenger::dispatchPositionalEvent(ev);
 		else if (ev->type == EventType::TouchMoved || ev->type == EventType::TouchUp || ev->type == EventType::TouchCancelled)

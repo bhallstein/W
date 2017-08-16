@@ -110,19 +110,19 @@ void W::Messenger::unsubscribeFromPositionalEventType(W::EventType::T t, void *r
 
 void W::Messenger::subscribeToMouseEvents(const Callback &c, rect *rct) {
 	if (!_s) return;
-	subscribeToPositionalEventType(EventType::MOUSEMOVE, c, rct);
-	subscribeToPositionalEventType(EventType::LEFTMOUSEDOWN, c, rct);
-	subscribeToPositionalEventType(EventType::LEFTMOUSEUP, c, rct);
-	subscribeToPositionalEventType(EventType::RIGHTMOUSEDOWN, c, rct);
-	subscribeToPositionalEventType(EventType::RIGHTMOUSEUP, c, rct);
+	subscribeToPositionalEventType(EventType::MouseMove, c, rct);
+	subscribeToPositionalEventType(EventType::LMouseDown, c, rct);
+	subscribeToPositionalEventType(EventType::LMouseUp, c, rct);
+	subscribeToPositionalEventType(EventType::RMouseDown, c, rct);
+	subscribeToPositionalEventType(EventType::RMouseUp, c, rct);
 }
 void W::Messenger::unsubscribeFromMouseEvents(void *r) {
 	if (!_s) return;
-	unsubscribeFromPositionalEventType(EventType::MOUSEMOVE, r);
-	unsubscribeFromPositionalEventType(EventType::LEFTMOUSEDOWN, r);
-	unsubscribeFromPositionalEventType(EventType::LEFTMOUSEUP, r);
-	unsubscribeFromPositionalEventType(EventType::RIGHTMOUSEDOWN, r);
-	unsubscribeFromPositionalEventType(EventType::RIGHTMOUSEUP, r);
+	unsubscribeFromPositionalEventType(EventType::MouseMove, r);
+	unsubscribeFromPositionalEventType(EventType::LMouseDown, r);
+	unsubscribeFromPositionalEventType(EventType::LMouseUp, r);
+	unsubscribeFromPositionalEventType(EventType::RMouseDown, r);
+	unsubscribeFromPositionalEventType(EventType::RMouseUp, r);
 }
 
 bool W::Messenger::requestPrivilegedEventResponderStatus(const Callback &c) {

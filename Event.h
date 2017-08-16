@@ -21,12 +21,12 @@ namespace W {
 	namespace EventType {
 		typedef int T;
 		enum {
-			KEYDOWN, KEYUP,
-			MOUSEMOVE,
-			LEFTMOUSEUP, LEFTMOUSEDOWN, RIGHTMOUSEUP, RIGHTMOUSEDOWN,
-			SCREENEDGE_TOP, SCREENEDGE_BOTTOM, SCREENEDGE_LEFT, SCREENEDGE_RIGHT,
-			CLOSED,
-			BUTTONCLICK,
+			KeyDown, KeyUp,
+			MouseMove,
+			LMouseUp, LMouseDown, RMouseUp, RMouseDown,
+			ScreenEdgeTop, ScreenEdgeBottom, ScreenEdgeLeft, ScreenEdgeRight,
+			Closed,
+			ButtonClick,
 
 			TouchDown, TouchMoved, TouchUp, TouchCancelled,
 			Unknown
