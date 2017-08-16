@@ -19,7 +19,9 @@
 #endif
 
 #define GEOM_LENGTH_FOR_RECT 6
-#define RAD2DEG 180/M_PI
+#define RAD2DEG (180.0/M_PI)
+#define DEG2RAD (M_PI/180.0)
+#define ROOT3 1.732050808
 
 #define CIRCLE_NPOINTS 15
 #define GEOM_LENGTH_FOR_CIRCLE 3*CIRCLE_NPOINTS
@@ -165,12 +167,91 @@ void W::DLine::recalculateRectProperties() {
 }
 
 
+/*******************************/
+/*** DEquiTri implementation ***/
+/*******************************/
+
+W::DEquiTri::DEquiTri(View *_v, const position &_pos, float _rad, const Colour &_col, float _rot) :
+	DObj(_v, 3),
+	pos(_pos),
+	radius(_rad),
+	col(_col),
+	rotation(_rot),
+	tex(Texture::_whiteTexture)
+{
+	tex->incrementUsageCount();
+}
+W::DEquiTri::~DEquiTri()
+{
+	tex->decrementUsageCount();
+}
+void W::DEquiTri::_recopy(v3f *vert_array, c4f *col_array, t2f *texcoord_array) {
+	#ifdef GEOM_DEBUG
+		std::cout << "\nRecopying EquiTri...\n";
+	#endif
+	
+	float texA = tex->floatCoordA(0),
+		texB = tex->floatCoordB(0),
+		texC = tex->floatCoordC(tex->sz.width),
+		texD = tex->floatCoordD(tex->sz.height);
+	
+	v3f &v1 = vert_array[0],
+		&v2 = vert_array[1],
+		&v3 = vert_array[2];
+	
+	v1.z = v2.z = v3.z = 0;
+	
+	float sideLength = radius * ROOT3;
+	float apothem = radius * 0.5;
+	
+	v1.x = 0,               v1.y = -radius;
+	v2.x = sideLength*0.5,  v2.y = apothem;
+	v3.x = -sideLength*0.5, v3.y = apothem;
+	
+	if (rotation != 0.0) {
+		float rot = rotation * DEG2RAD;
+		float cosR = cos(rot), sinR = sin(rot);
+		v3f v1r, v2r, v3r;
+		
+		v1r.x = v1.x*cosR - v1.y*sinR,
+		v2r.x = v2.x*cosR - v2.y*sinR;
+		v3r.x = v3.x*cosR - v3.y*sinR;
+		
+		v1r.y = v1.x*sinR + v1.y*cosR;
+		v2r.y = v2.x*sinR + v2.y*cosR;
+		v3r.y = v3.x*sinR + v3.y*cosR;
+		
+		v1.x = v1r.x, v1.y = v1r.y;
+		v2.x = v2r.x, v2.y = v2r.y;
+		v3.x = v3r.x, v3.y = v3r.y;
+	}
+	
+	v1.x += pos.x, v1.y += pos.y;
+	v2.x += pos.x, v2.y += pos.y;
+	v3.x += pos.x, v3.y += pos.y;
+	
+	col_array[0] = col;
+	col_array[1] = col;
+	col_array[2] = col;
+	
+	texcoord_array[0].x = texA, texcoord_array[0].y = texB;
+	texcoord_array[1].x = texA, texcoord_array[1].y = texD;
+	texcoord_array[2].x = texC, texcoord_array[2].y = texD;
+	
+	#ifdef GEOM_DEBUG
+		std::cout << " Vertices: " << v1.str() << " " << v2.str() << " " << v3.str() << "\n";
+		std::cout << " Colour: " << col_array[0].str() << "\n";
+		std::cout << " Tex triangle: " << texcoord_array[0].str() << " " << texcoord_array[1].str() << " " << texcoord_array[2].str() << "\n";	
+	#endif
+}
+
+
 /******************************/
 /*** DCircle implementation ***/
 /******************************/
 
-struct W::DCircle::init {
-	init() {
+struct W::DCircle::Init {
+	Init() {
 		// Generate unit circle geometry
 		circleGeom = (v3f*)malloc(sizeof(v3f) * CIRCLE_NPOINTS * 3);
 		
@@ -196,7 +277,7 @@ struct W::DCircle::init {
 };
 
 W::v3f *W::DCircle::circleGeom;
-W::DCircle::init *W::DCircle::Initializer = new W::DCircle::init();
+W::DCircle::Init *W::DCircle::initializer = new W::DCircle::Init();
 
 W::DCircle::DCircle(View *_v, const W::position &_centrePos, int _radius, const Colour &_col) :
 	DObj(_v, GEOM_LENGTH_FOR_CIRCLE),
@@ -306,7 +387,6 @@ int W::DText::widthForChar(char c) {
 /*********************************************/
 
 #include <cmath>
-#define DEG2RAD (3.1415926536/180.0f)
 
 void copyQuadGeomToArrays(
 	W::v3f *vert_array, W::c4f *col_array, W::t2f *texcoord_array,
@@ -315,50 +395,50 @@ void copyQuadGeomToArrays(
 	float rotation
 ) {
 	// Vertices
-	W::v3f v1, v2, v3, /*v4,*/ v5, v6;
-	v1.z = v2.z = v3.z = /*v4.z =*/ v5.z = v6.z = 1;
-	v1.x = pos.x, v1.y = pos.y;
-	v2.x = pos.x, v2.y = pos.y+sz.height;
-	v3.x = pos.x+sz.width, v3.y = pos.y+sz.height;
-//	there is no v4. (we reuse v1.)
-	v5.x = pos.x+sz.width, v5.y = pos.y;
-	v6.x = pos.x+sz.width, v6.y = pos.y+sz.height;
+	W::v3f &v1 = vert_array[0],
+		&v2 = vert_array[1],
+		&v3 = vert_array[2],
+		&v4 = vert_array[3],
+		&v5 = vert_array[4],
+		&v6 = vert_array[5];
+		
+	v1.z = v2.z = v3.z = v4.z = v5.z = v6.z = 0;
 	
-	if (rotation != 0) {
+	v1.x = 0,        v1.y = 0;
+	v2.x = 0,        v2.y = sz.height;
+	v3.x = sz.width, v3.y = sz.height;
+	v5.x = sz.width, v5.y = 0;
+	
+	if (rotation != 0.0) {
 		rotation *= DEG2RAD;
 		float cosR = cos(rotation), sinR = sin(rotation);
-		W::position transl(pos.x+sz.width/2, pos.y+sz.height/2);
+		int centreX = 0.5*sz.width, centreY = 0.5*sz.height;
 		
-		W::v3f v1r, v2r, v3r, v5r, v6r;
-		v1r.z = v2r.z = v3r.z = v5r.z = v6r.z = 0;
+		W::v3f v1r, v2r, v3r, v5r;
 		
-		v1r.x = (v1.x-transl.x)*cosR - (v1.y-transl.y)*sinR + transl.x;
-		v2r.x = (v2.x-transl.x)*cosR - (v2.y-transl.y)*sinR + transl.x;
-		v3r.x = (v3.x-transl.x)*cosR - (v3.y-transl.y)*sinR + transl.x;
-		v5r.x = (v5.x-transl.x)*cosR - (v5.y-transl.y)*sinR + transl.x;
-		v6r.x = (v6.x-transl.x)*cosR - (v6.y-transl.y)*sinR + transl.x;
+		v1r.x = (v1.x-centreX)*cosR - (v1.y-centreY)*sinR + centreX;
+		v2r.x = (v2.x-centreX)*cosR - (v2.y-centreY)*sinR + centreX;
+		v3r.x = (v3.x-centreX)*cosR - (v3.y-centreY)*sinR + centreX;
+		v5r.x = (v5.x-centreX)*cosR - (v5.y-centreY)*sinR + centreX;
 		
-		v1r.y = (v1.x-transl.x)*sinR + (v1.y-transl.y)*cosR + transl.y;
-		v2r.y = (v2.x-transl.x)*sinR + (v2.y-transl.y)*cosR + transl.y;
-		v3r.y = (v3.x-transl.x)*sinR + (v3.y-transl.y)*cosR + transl.y;
-		v5r.y = (v5.x-transl.x)*sinR + (v5.y-transl.y)*cosR + transl.y;
-		v6r.y = (v6.x-transl.x)*sinR + (v6.y-transl.y)*cosR + transl.y;
+		v1r.y = (v1.x-centreX)*sinR + (v1.y-centreY)*cosR + centreY;
+		v2r.y = (v2.x-centreX)*sinR + (v2.y-centreY)*cosR + centreY;
+		v3r.y = (v3.x-centreX)*sinR + (v3.y-centreY)*cosR + centreY;
+		v5r.y = (v5.x-centreX)*sinR + (v5.y-centreY)*cosR + centreY;
 		
-		vert_array[0] = v1r;
-		vert_array[1] = v2r;
-		vert_array[2] = v3r;
-		vert_array[3] = v1r;
-		vert_array[4] = v5r;
-		vert_array[5] = v6r;
+		v1.x = v1r.x, v1.y = v1r.y;
+		v2.x = v2r.x, v2.y = v2r.y;
+		v3.x = v3r.x, v3.y = v3r.y;
+		v5.x = v5r.x, v5.y = v5r.y;
 	}
-	else {
-		vert_array[0] = v1;
-		vert_array[1] = v2;
-		vert_array[2] = v3;
-		vert_array[3] = v1;
-		vert_array[4] = v5;
-		vert_array[5] = v6;
-	}
+	
+	v1.x += pos.x, v1.y += pos.y;
+	v2.x += pos.x, v2.y += pos.y;
+	v3.x += pos.x, v3.y += pos.y;
+	v5.x += pos.x, v5.y += pos.y;
+	
+	v4.x = v1.x, v4.y = v1.y;
+	v6.x = v3.x, v6.y = v3.y;
 	
 	// Colour
 	for (int i=0; i < GEOM_LENGTH_FOR_RECT; ++i)
@@ -385,10 +465,10 @@ void copyQuadGeomToArrays(
 	tc6.x = tC, tc6.y = tD;
 	
 	#ifdef GEOM_DEBUG
-		std::cout << "Triangle 1: " << t1v1.str() << " " << t1v2.str() << " " << t1v3.str() << "\n";
-		std::cout << "Triangle 2: " << t2v1.str() << " " << t2v2.str() << " " << t2v3.str() << "\n";
-		std::cout << "Col: " << col_array[0].str() << "\n";
-		std::cout << "Tex triangle 1: " << tc1.str() << ' ' << tc2.str() << ' ' << tc3.str() << "\n";
-		std::cout << "Tex triangle 2: " << tc4.str() << ' ' << tc5.str() << ' ' << tc6.str() << "\n";
+		std::cout << " Triangle 1: " << v1.str() << " " << v2.str() << " " << v3.str() << "\n";
+		std::cout << " Triangle 2: " << v4.str() << " " << v5.str() << " " << v6.str() << "\n";
+		std::cout << " Col: " << col_array[0].str() << "\n";
+		std::cout << " Tex triangle 1: " << tc1.str() << ' ' << tc2.str() << ' ' << tc3.str() << "\n";
+		std::cout << " Tex triangle 2: " << tc4.str() << ' ' << tc5.str() << ' ' << tc6.str() << "\n";
 	#endif
 }

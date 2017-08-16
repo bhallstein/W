@@ -80,9 +80,9 @@ namespace W {
 			// in relation to it itself. Initially {0,0,tw,th}.
 			// The conversion to float coords of the MegaTexture is done by the
 			// GeometryChunk when generating GL array data.
+		
 	protected:
 		void _recopy(v3f*, c4f*, t2f*);	// Recopy geom data into supplied arrays
-		
 	};
 	
 	
@@ -121,6 +121,30 @@ namespace W {
 	
 	
 	/***
+		DEquiTri draws an equilateral triangle
+	 ***/
+	
+	class DEquiTri : public DObj {
+	public:
+		DEquiTri(View *, const position &, float _radius, const W::Colour &, float rotation = 0);
+		~DEquiTri();
+		void setPos(const position &_p) { pos = _p; setNeedsRecopy(); }
+		void setRadius(float _r) { radius = _r; setNeedsRecopy(); }
+		void setCol(const Colour &_c) { col = _c; setNeedsRecopy(); }
+		void setRot(float _r) { rotation = _r; setNeedsRecopy(); }
+		
+		position pos;
+		float radius;
+		Colour col;
+		float rotation;
+		Texture *tex;
+		
+	protected:
+		void _recopy(v3f*, c4f*, t2f*);
+	};
+	
+	
+	/***
 		DCircle
 	 ***/
 	
@@ -140,8 +164,8 @@ namespace W {
 
 	private:
 		static v3f *circleGeom;
-		struct init;
-		static init *Initializer;
+		struct Init;
+		static Init *initializer;
 	};
 	
 	
@@ -159,7 +183,7 @@ namespace W {
 			setNeedsRecopy();
 		}
 	};
-
+	
 	
 	/***
 		DText draws... text
