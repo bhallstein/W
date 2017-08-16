@@ -479,8 +479,8 @@ bool W::isValidDir(const char *path) {
 											 isDirectory:&isdir];
 		return isdir;
 	#elif defined _WIN32 || _WIN64
-		DWORD dw = GetFileAttributes(dir);
-		return dw != INVALID_FILE_ATTRIBUTES && (dw & FILE_ATTRIBUTE_DIRECTORY);
+		DWORD dw = GetFileAttributes(path);
+		return (dw != INVALID_FILE_ATTRIBUTES && (dw & FILE_ATTRIBUTE_DIRECTORY));
 	#endif
 }
 bool W::createDir(const std::string &path) {

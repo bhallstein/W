@@ -357,10 +357,10 @@ LRESULT CALLBACK W::Window::_WndProc(HWND windowHandle, UINT msg, WPARAM wParam,
 		));
 		return 0;
 	}
-	else if (msg == WM_CHAR) {
-		W::_addEvent(W::Event(W::EventType::KEYPRESS, W::Event::charToKeycode(wParam)));
-		return 0;
-	}
+	//else if (msg == WM_CHAR) {
+	//	W::_addEvent(W::Event(W::EventType::KEYPRESS, W::Event::charToKeycode(wParam)));
+	//	return 0;
+	//}
 	else if  (msg == WM_KEYDOWN || msg == WM_KEYUP) {
 		W::KeyCode::T k = KeyCode::K_OTHER;
 		if (wParam == VK_LEFT)        k = KeyCode::LEFT_ARROW;
@@ -370,6 +370,7 @@ LRESULT CALLBACK W::Window::_WndProc(HWND windowHandle, UINT msg, WPARAM wParam,
 		else if (wParam == VK_HOME)	  k = KeyCode::HOME;
 		else if (wParam == VK_END)	  k = KeyCode::END;
 		else if (wParam == VK_DELETE) k = KeyCode::_DELETE;
+		else k = Event::charToKeycode(wParam);
 		W::_addEvent(W::Event(
 			msg == WM_KEYDOWN ? W::EventType::KEYDOWN : W::EventType::KEYUP,
 			k
