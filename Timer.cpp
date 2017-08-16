@@ -36,28 +36,26 @@ THE SOFTWARE.
 #include "Timer.h"
 #include <sys/time.h>
 
-using namespace Ogre;
-
 //--------------------------------------------------------------------------------//
-Timer::Timer()
+W::Timer::Timer()
 {
 	reset();
 }
 
 //--------------------------------------------------------------------------------//
-Timer::~Timer()
+W::Timer::~Timer()
 {
 }
 
 //--------------------------------------------------------------------------------//
-void Timer::reset()
+void W::Timer::reset()
 {
 	zeroClock = clock();
 	gettimeofday(&start, NULL);
 }
 
 //--------------------------------------------------------------------------------//
-unsigned long Timer::getMilliseconds()
+unsigned long W::Timer::getMilliseconds()
 {
 	struct timeval now;
 	gettimeofday(&now, NULL);
@@ -65,7 +63,7 @@ unsigned long Timer::getMilliseconds()
 }
 
 //--------------------------------------------------------------------------------//
-unsigned long Timer::getMicroseconds()
+unsigned long W::Timer::getMicroseconds()
 {
 	struct timeval now;
 	gettimeofday(&now, NULL);
@@ -73,14 +71,14 @@ unsigned long Timer::getMicroseconds()
 }
 
 //-- Common Across All Timers ----------------------------------------------------//
-unsigned long Timer::getMillisecondsCPU()
+unsigned long W::Timer::getMillisecondsCPU()
 {
 	clock_t newClock = clock();
 	return (unsigned long)((float)(newClock-zeroClock) / ((float)CLOCKS_PER_SEC/1000.0)) ;
 }
 
 //-- Common Across All Timers ----------------------------------------------------//
-unsigned long Timer::getMicrosecondsCPU()
+unsigned long W::Timer::getMicrosecondsCPU()
 {
 	clock_t newClock = clock();
 	return (unsigned long)((float)(newClock-zeroClock) / ((float)CLOCKS_PER_SEC/1000000.0)) ;
@@ -96,14 +94,14 @@ unsigned long Timer::getMicrosecondsCPU()
 using namespace Ogre;
 
 //-------------------------------------------------------------------------
-Timer::Timer()
+W::Timer::Timer()
 	: mTimerMask( 0 )
 {
 	reset();
 }
 
 //-------------------------------------------------------------------------
-Timer::~Timer()
+W::Timer::~Timer()
 {
 }
 
@@ -135,7 +133,7 @@ Timer::~Timer()
 //}
 
 //-------------------------------------------------------------------------
-void Timer::reset()
+void W::Timer::reset()
 {
     // Get the current process core mask
 	DWORD_PTR procMask;
@@ -177,7 +175,7 @@ void Timer::reset()
 }
 
 //-------------------------------------------------------------------------
-unsigned long Timer::getMilliseconds()
+unsigned long W::Timer::getMilliseconds()
 {
     LARGE_INTEGER curTime;
 
@@ -219,7 +217,7 @@ unsigned long Timer::getMilliseconds()
 }
 
 //-------------------------------------------------------------------------
-unsigned long Timer::getMicroseconds()
+unsigned long W::Timer::getMicroseconds()
 {
     LARGE_INTEGER curTime;
 
@@ -261,18 +259,17 @@ unsigned long Timer::getMicroseconds()
 }
 
 //-------------------------------------------------------------------------
-unsigned long Timer::getMillisecondsCPU()
+unsigned long W::Timer::getMillisecondsCPU()
 {
 	clock_t newClock = clock();
 	return (unsigned long)( (float)( newClock - mZeroClock ) / ( (float)CLOCKS_PER_SEC / 1000.0 ) ) ;
 }
 
 //-------------------------------------------------------------------------
-unsigned long Timer::getMicrosecondsCPU()
+unsigned long W::Timer::getMicrosecondsCPU()
 {
 	clock_t newClock = clock();
 	return (unsigned long)( (float)( newClock - mZeroClock ) / ( (float)CLOCKS_PER_SEC / 1000000.0 ) ) ;
 }
-
 
 #endif

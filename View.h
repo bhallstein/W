@@ -19,8 +19,7 @@ namespace W {
 		~View();
 		
 		void setWindow(Window *w);
-		void _updatePosition(size *winsize);
-		virtual void updatePosition() { }
+		void _updatePosition(const size &winsize);
 		
 		void _draw();					// Wrapper: prepares W for drawing the view, then calls draw()
 		virtual void draw();			// Override to implement your subclass’s drawing behaviour
@@ -32,11 +31,15 @@ namespace W {
 		
 		Window *_getWindow() { return _window; }
 		void _setGameState(GameState *g) { _gamestate = g; }
-
+		
 	protected:
+		View(Window *);				// Let subsclasses set up their own positioner
 		Positioner *_positioner;
 		Window *_window;
 		GameState *_gamestate;
+		
+		virtual void updatePosition(const size &winsize) { }	// Let subsclasses perform own position update behaviours
+		
 	};
 	
 }

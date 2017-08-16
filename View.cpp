@@ -8,8 +8,13 @@ W::View::View(Positioner *_pos, Window *_win) :
 	_positioner(_pos), _window(_win), _gamestate(NULL)
 {
 	plan.resize(1);
-	size s = _window->_getDimensions();
-	_updatePosition(&s);
+	_updatePosition(_window->_getDimensions());
+}
+W::View::View(Window *_win) : _window(_win), _gamestate(NULL)
+{
+	// Positioner must be set up manually in derived class
+	// and _updatePosition then called
+	plan.resize(1);
 }
 W::View::~View()
 {
@@ -21,11 +26,11 @@ void W::View::setWindow(Window *w) {
 	_gamestate->_updateWV(w, this);
 }
 
-void W::View::_updatePosition(size *winsize) {
-	rect r = *_positioner->refresh(winsize);
+void W::View::_updatePosition(const size &winsize) {
+	const rect &r = _positioner->refresh(winsize);
 	pos = r.pos;
 	plan[0].sz = r.sz;
-	updatePosition();
+	updatePosition(winsize);
 }
 
 void W::View::_draw() {

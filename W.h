@@ -13,11 +13,8 @@
 namespace W {
 	
 	/* Logging */
-	extern std::string logFilePath;
-	extern std::string logFileName;
 	extern std::ofstream log;
-	
-	void setLogPath(const char *);
+	void setLogFile(const char *);
 
 	/* Mersenne Twister */
 	unsigned int randUpTo(int);
@@ -51,7 +48,8 @@ namespace W {
 	void _updateAllViewPositions();
 	
 	/* Bollocks */
-	extern int INFINITATION;
+	extern int W_INFINITY;
+	extern int W_MAXPATH;
 
 	/* Windows timery */
 	#if defined WIN32 || WIN64

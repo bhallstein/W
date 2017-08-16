@@ -2,6 +2,7 @@
 #define __W__UIView
 
 #include "View.h"
+#include "UIElement.h"
 #include "Event.h"
 #include "types.h"
 
@@ -9,45 +10,59 @@ namespace W {
 	
 	class EventHandler;
 	class Callback;
-	class Button;
-	
-	class Button : public MappedObj {
-	public:
-		Button(const W::rect &, const char *_action);
-		~Button();
-		
-		// Methods
-		void setHover();
-		W::Colour& col();
-		Event* getEvent();
-		
-	protected:
-		// Properties
-		bool hover;
-		Event event;
-		Colour _col;
-		Colour _hovcol;
-	};
 	
 
 	enum Draggability { DISALLOW_DRAG = 0, ALLOW_DRAG };
 	
 	class UIView : public View {
 	public:
-		UIView(Positioner *, Window *, Draggability _allowDrag = DISALLOW_DRAG);
+		UIView(const char *viewname, Window *, Draggability _allowDrag = DISALLOW_DRAG);
 		~UIView();
 		
 		void processMouseEvent(Event *);
-		void subscribeToButtons(Callback *);
-		virtual void draw() { }
+		void draw();
+		virtual void drawCustomBackground() { }	// Override for custom drawing behind elements in UIView
 		
 	protected:
+		void updatePosition(const size &winsize);
+			// Override; called after View::_updatePosition
+		
 		bool allowDrag;
 		bool dragloop;
 		position drag_initial;
 		
-		std::vector<Button*> buttons;
-		std::vector<Callback*> subscribers;
+		typedef std::vector<UIElement*> element_list;
+		typedef std::vector<Positioner*> positioner_list;
+		
+		bool orientation_check;
+		enum orientation_enum { O_LANDSCAPE, O_PORTRAIT };
+		
+		// - then in update code:
+		//     if (orientation_check)
+		//       orientation = (plan[0].sz.width > plan[0].sz.height ? O_L : O_P);
+		int cur_positioning_index;			// index of cur positioner in positioners vector
+		orientation_enum orientation;
+		
+		std::vector<int> landscape_positioning_limits;	// e.g. 400, 800, 1200
+		std::vector<int> portrait_positioning_limits;
+		positioner_list landscape_positioners;			// positioners for the uiview
+		positioner_list portrait_positioners;
+		std::vector<element_list> landscape_elements;	// elements for the given layout
+		std::vector<element_list> portrait_elements;
+		
+		// Initialization from Lua
+		bool initialize(const char *viewname);
+		
+		void addPositioner(const std::string limit, LHObj &, orientation_enum);
+		void addElements(const std::string limit, LHObj &, orientation_enum);
+		UIElement* createElement(const std::string limit, const std::string name, LHObj &, orientation_enum);
+			// These will throw, w/ useful error msg, if problem
+		
+		void createEvTypeMap();			// Translation table for event types subscribed
+		UIElement::EvTypeMap evTypeMap;	// to by UIElements. e.g. MOUSEMOVE => X
+										// (Specific to the UIView, since buttons will subscribe
+										// to view-specific mousey events submitted in processMouseEvent)
+		
 	};
 
 }

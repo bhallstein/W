@@ -51,16 +51,10 @@ THE SOFTWARE.
 
 #endif
 
-namespace Ogre
+namespace W
 {
-	/** \addtogroup Core
-	*  @{
-	*/
-	/** \addtogroup General
-	*  @{
-	*/
-
-	class Timer { // : public TimerAlloc
+	
+	class Timer {
     private:
 #ifdef __APPLE__
 		struct timeval start;
@@ -112,5 +106,3 @@ namespace Ogre
 
 // #ifndef __OSXTimer_H__
 // #define __OSXTimer_H__
-
-// #include "../OgrePrerequisites.h"

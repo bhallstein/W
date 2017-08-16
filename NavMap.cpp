@@ -7,7 +7,7 @@ namespace W {
 	{
 		// hai nodey
 	}
-
+	
 	void NavNode::addNeighbour(NavNode *n) {
 		removeNeighbour(n);
 		neighbours.push_back(n);
@@ -30,8 +30,8 @@ namespace W {
 	void NavNode::setComparand(float _min_dist) {
 		min_dist = _min_dist;
 	}
-
-
+	
+	
 	NavMap::NavMap(int _w, int _h) : open_nodes(_w * _h)
 	{
 		w = _w, h = _h;
@@ -57,7 +57,7 @@ namespace W {
 	{
 		
 	}
-
+	
 	void NavMap::makeImpassable(MappedObj *obj) {
 		int objx = obj->pos.x, objy = obj->pos.y;
 		for (std::vector<rect>::iterator it = obj->plan.begin(); it < obj->plan.end(); it++) {
@@ -225,7 +225,7 @@ namespace W {
 		open_nodes.reset();
 		for (int i=0; i < n; i++) {
 			NavNode *node = &nodes[i];
-			node->min_dist = INFINITATION;				// Set nodes’ min_dist to infinity
+			node->min_dist = W_INFINITY;				// Set nodes’ min_dist to infinity
 			if (node->passable)
 				open_nodes.fast_push(node), _i++;		// Populate heap vector with passable nodes
 		}
@@ -239,7 +239,7 @@ namespace W {
 		while (open_nodes.size()) {
 			X = open_nodes.pop();		// Pop node with lowest dist off heap
 			
-			if (X->min_dist == INFINITATION) {
+			if (X->min_dist == W_INFINITY) {
 				//cout << "lowest dist node unreachable!" << endl;
 				return false;		// No route is possible.
 			}
