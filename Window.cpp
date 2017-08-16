@@ -307,12 +307,12 @@ W::Window::Initializer *W::Window::init = new W::Window::Initializer();
 
 void W::Window::createWindow() {
 	if (objs) {
-		W::log << "createWindow() called, but seems to already exist\n";
+		W::log << "createWindow() called, but seems already to exist\n";
 		return;
 	}
 	
 	objs = new Objs();
-
+	
 	// Set window style & size
 	DWORD windowStyle = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 	DWORD extendedWindowStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;

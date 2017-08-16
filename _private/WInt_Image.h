@@ -29,8 +29,6 @@ public:
 	int height;
 	int nChannels;
 	
-private:
-	
 };
 
 

@@ -29,9 +29,6 @@
 -(BOOL)acceptsFirstResponder {
 	return YES;
 }
--(bool)windowShouldClose:(id)sender {
-	return NO;
-}
 
 -(void)mouseDown:(NSEvent *)nsev {
 	NSPoint p = [nsev locationInWindow];
@@ -147,7 +144,9 @@
 			return nil;
 		}
 		[self setContentView:view];
-		[context setView:view];		// Set view as context's drawable object
+		
+		// Set view as context's drawable object
+		[context setView:view];
 		
 		// Set delegate
 		if ((windowDelegate = [[W_WindowDelegate alloc] init]) == nil) {
