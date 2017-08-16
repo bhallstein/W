@@ -84,9 +84,9 @@
 //	W_View *view;
 //	NSOpenGLContext *context;
 }
-@property W_WindowDelegate *windowDelegate;
-@property W_View *view;
-@property NSOpenGLContext *context;
+@property(nonatomic, strong) W_WindowDelegate *windowDelegate;
+@property(nonatomic, strong) W_View *view;
+@property(nonatomic, strong) NSOpenGLContext *context;
 @end
 
 @implementation W_Window

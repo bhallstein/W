@@ -21,6 +21,7 @@
 
 #endif
 
+#include "Colour.h"
 
 namespace W {
 
@@ -154,6 +155,9 @@ namespace W {
 			std::stringstream ss;
 			ss << "{r:" << r << ",b:" << b << ",g:" << g << ",a:" << a << "}";
 			return ss.str();
+		}
+		void operator= (const W::Colour &c) {
+			r = c.r, g = c.g, b = c.b, a = c.a;
 		}
 	};
 	struct t2f {

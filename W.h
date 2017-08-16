@@ -9,6 +9,7 @@
 #include "types.h"
 #include "Log.h"
 #include "Controller.h"
+#include "Rand.h"
 #include "Colour.h"
 #include "DrawnObj.h"
 #include "Event.h"

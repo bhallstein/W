@@ -43,12 +43,12 @@ W::DObj::~DObj()
 	// Move subsequent DObjs' array start points back by length of this Dobj
 	if (nextDObj)
 		nextDObj->moveBackBy(array_length);
-	// If DObj was first in chain, set view.first to this.next
-	if (!prevDObj) view->firstDObj = nextDObj;
-	else prevDObj->nextDObj = nextDObj;
-	// if DObj was last in chain, set view.last to this.prev
-	if (!nextDObj) view->lastDObj = prevDObj;
-	else nextDObj->prevDObj = prevDObj;
+	
+	if (!prevDObj) view->firstDObj = nextDObj;	// If DObj was first in chain, set view.first to this.next
+	else prevDObj->nextDObj = nextDObj;			// Otherwise set prev's next to this's next
+	
+	if (!nextDObj) view->lastDObj = prevDObj;	// If DObj was last in chain, set view.last to this.prev
+	else nextDObj->prevDObj = prevDObj;			// Otherwise, set next's prev to this's prev
 	
 	view->_removeStorageForDObjOfLength(array_length);
 
@@ -167,6 +167,7 @@ int W::DText::widthForChar(char c) {
 	return defaultCharWidth;
 }
 
+
 /*********************************************/
 /*** Rect copying helper fn implementation ***/
 /*********************************************/
@@ -186,7 +187,7 @@ void copyQuadGeomToArrays(
 	v1.x = pos.x, v1.y = pos.y;
 	v2.x = pos.x, v2.y = pos.y+sz.height;
 	v3.x = pos.x+sz.width, v3.y = pos.y+sz.height;
-//	v4.x = pos.x, v4.y = pos.y;
+//	there is no v4. (we reuse v1.)
 	v5.x = pos.x+sz.width, v5.y = pos.y;
 	v6.x = pos.x+sz.width, v6.y = pos.y+sz.height;
 	
@@ -195,20 +196,18 @@ void copyQuadGeomToArrays(
 		float cosR = cos(rotation), sinR = sin(rotation);
 		W::position transl(pos.x+sz.width/2, pos.y+sz.height/2);
 		
-		W::v3f v1r, v2r, v3r, /*v4r,*/ v5r, v6r;
-		v1r.z = v2r.z = v3r.z = /*v4r.z =*/ v5r.z = v5r.z = 0;
+		W::v3f v1r, v2r, v3r, v5r, v6r;
+		v1r.z = v2r.z = v3r.z = v5r.z = v6r.z = 0;
 		
 		v1r.x = (v1.x-transl.x)*cosR - (v1.y-transl.y)*sinR + transl.x;
 		v2r.x = (v2.x-transl.x)*cosR - (v2.y-transl.y)*sinR + transl.x;
 		v3r.x = (v3.x-transl.x)*cosR - (v3.y-transl.y)*sinR + transl.x;
-//		v4r.x = (v4.x-transl.x)*cosR - (v4.y-transl.y)*sinR + transl.x;
 		v5r.x = (v5.x-transl.x)*cosR - (v5.y-transl.y)*sinR + transl.x;
 		v6r.x = (v6.x-transl.x)*cosR - (v6.y-transl.y)*sinR + transl.x;
 		
 		v1r.y = (v1.x-transl.x)*sinR + (v1.y-transl.y)*cosR + transl.y;
 		v2r.y = (v2.x-transl.x)*sinR + (v2.y-transl.y)*cosR + transl.y;
 		v3r.y = (v3.x-transl.x)*sinR + (v3.y-transl.y)*cosR + transl.y;
-//		v4r.y = (v4.x-transl.x)*sinR + (v4.y-transl.y)*cosR + transl.y;
 		v5r.y = (v5.x-transl.x)*sinR + (v5.y-transl.y)*cosR + transl.y;
 		v6r.y = (v6.x-transl.x)*sinR + (v6.y-transl.y)*cosR + transl.y;
 		
@@ -229,14 +228,8 @@ void copyQuadGeomToArrays(
 	}
 	
 	// Colour
-	W::c4f *c;
-	for (int i=0; i < GEOM_LENGTH_FOR_RECT; ++i) {
-		c = &col_array[i];
-		c->r = col.r;
-		c->g = col.g;
-		c->b = col.b;
-		c->a = col.a;
-	}
+	for (int i=0; i < GEOM_LENGTH_FOR_RECT; ++i)
+		col_array[i] = col;
 	
 	// Tex coords
 	float
