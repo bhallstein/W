@@ -30,11 +30,11 @@ namespace W {
 	};
 	
 
-	enum Dragability { ALLOW_DRAG = 1, DISALLOW_DRAG = 0 };
+	enum Draggability { DISALLOW_DRAG = 0, ALLOW_DRAG };
 	
 	class UIView : public View {
 	public:
-		UIView(Positioner *, Window *, EventHandler *, Dragability _allowDrag = DISALLOW_DRAG);
+		UIView(Positioner *, Window *, EventHandler *, Draggability _allowDrag = DISALLOW_DRAG);
 		~UIView();
 		
 		void processMouseEvent(Event *);

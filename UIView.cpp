@@ -34,12 +34,12 @@ W::Event* W::Button::getEvent() {
 }
 
 
-W::UIView::UIView(Positioner *_pos, Window *_win, EventHandler *_eh, Dragability _allowDrag) :
+W::UIView::UIView(Positioner *_pos, Window *_win, EventHandler *_eh, Draggability _allowDrag) :
 	View(_pos, _win),
 	eh(_eh), allowDrag(_allowDrag),
 	dragloop(false)
 {
-	
+	// Hai UIView
 }
 W::UIView::~UIView()
 {

@@ -19,22 +19,22 @@
 -(void)mouseDown:(NSEvent *)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::_addEvent(W::Event(W::EventType::LEFTMOUSEDOWN, p.x, p.y));
+	W::_addEvent(W::Event(W::EventType::LEFTMOUSEDOWN, W::position((int)p.x, (int)p.y)));
 }
 -(void)mouseUp:(NSEvent*)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::_addEvent(W::Event(W::EventType::LEFTMOUSEUP, p.x, p.y));
+	W::_addEvent(W::Event(W::EventType::LEFTMOUSEUP, W::position((int)p.x, (int)p.y)));
 }
 -(void)rightMouseDown:(NSEvent *)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::_addEvent(W::Event(W::EventType::RIGHTMOUSEDOWN, p.x, p.y));
+	W::_addEvent(W::Event(W::EventType::RIGHTMOUSEDOWN, W::position((int)p.x, (int)p.y)));
 }
 -(void)rightMouseUp:(NSEvent *)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::_addEvent(W::Event(W::EventType::RIGHTMOUSEUP, p.x, p.y));
+	W::_addEvent(W::Event(W::EventType::RIGHTMOUSEUP, W::position((int)p.x, (int)p.y)));
 }
 -(void)keyDown:(NSEvent *)nsev {
 	W::_addEvent(W::Event(

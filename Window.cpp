@@ -119,7 +119,7 @@ void W::Window::_generateMouseMoveEvent() {
 	#ifdef __APPLE__
 		NSPoint p = [_objs->window mouseLocationOutsideOfEventStream];
 		[_objs->view __convertMouseCoords:&p];
-		W::Event ev(EventType::MOUSEMOVE, p.x, p.y);
+		W::Event ev(EventType::MOUSEMOVE, W::position((int)p.x, (int)p.y));
 		W::_addEvent(ev);
 	#elif defined WIN32 || WIN64
 		POINT p;
