@@ -89,6 +89,7 @@ namespace W {
 		DrawnText(View *, const W::position &, const char *, const W::Colour &, bool r_align = false);
 		void setCol(Colour _col) { new_col = _col; _setDirty(); }
 		void setTxt(const char *_txt) { new_txt = _txt; _setDirty(); }
+		void setRAlign(bool _r_align) { new_r_align = _r_align; _setDirty(); }
 		
 		void updateValues() {
 			col = new_col;
@@ -117,7 +118,7 @@ namespace W {
 		float rot, new_rot;
 		float opac, new_opac;
 		
-		Texture * getTex();
+		Texture* getTex();
 		
 	protected:
 		Texture *texture;

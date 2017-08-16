@@ -40,10 +40,9 @@ namespace W {
 	class NavMap
 	{
 	public:
-		NavMap(int w, int h);
+		NavMap(const W::size &);
+		NavMap(int _w, int _h);
 		~NavMap();
-		
-		int w, h;
 		
 		void makeImpassable(MappedObj *);	// Unlink all mappedobj nodes from the node network
 		void makePassable(MappedObj *);
@@ -51,8 +50,8 @@ namespace W {
 		void isolate(MappedObj *);			// Unlink only across edge nodes of mappedobj, leaving interior navigable
 		void unisolate(MappedObj *);
 		
-		void createConnection(W::position &p1, W::position &p2);
-		void removeConnection(W::position &p1, W::position &p2);
+		void createConnection(const W::position &p1, const W::position &p2);
+		void removeConnection(const W::position &p1, const W::position &p2);
 		
 		bool isPassableAt(int atX, int atY);
 		bool isPassableUnder(MappedObj *);
@@ -60,15 +59,21 @@ namespace W {
 		bool getRoute(int fromX, int fromY, int toX, int toY, std::vector<position> *route);
 		
 		NavNode* _nodeAt(int atX, int atY);
+		NavNode* _nodeAt(const W::position &);
+		
+		int width() { return w; }
+		int height() { return h; }
 		
 	protected:
 		// Properties
+		int w, h;
 		std::vector<NavNode> nodes;		// A w*h-sized array of NavNodes
 		MisterHeapy<NavNode*, float> open_nodes;
 		
 		// Methods
 		void _makeImpassable(int atX, int atY);
 		void _makePassable(int atX, int atY);
+		void initialize();
 	};
 }
 

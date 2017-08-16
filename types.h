@@ -35,6 +35,13 @@ namespace W {
 			x -= pos2.x, y -= pos2.y;
 			a -= pos2.a, b -= pos2.b;
 		}
+		bool operator== (const position &pos2) {
+			return
+				x == pos2.x &&
+				y == pos2.y &&
+				a == pos2.a &&
+				b == pos2.b;
+		}
 	};
 	struct size {
 		int width, height;

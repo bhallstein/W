@@ -56,7 +56,6 @@ namespace W {
 		graphics_mutex,
 		texture_mutex;
 	
-	int W_INFINITY = 99999999;
 	int W_MAXPATH = 450;
 }
 

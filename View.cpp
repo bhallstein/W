@@ -101,18 +101,20 @@ void W::View::_draw(const size &winSz) {
 			DrawnObj *obj = *itv;
 			if (obj->type == DrawnObj::RECT) {
 				DrawnRect *drect = (DrawnRect*) obj;
-				rect &objRct = drect->rct;
-				drawRect(objRct.pos.x + pos.x, objRct.pos.y + pos.y, objRct.sz.width, objRct.sz.height, drect->col, drect->rot);
+				position &objPos = drect->rct.pos;
+				size &objSz = drect->rct.sz;
+				drawRect(objPos.x + pos.x, objPos.y + pos.y, objSz.width, objSz.height, drect->col, drect->rot);
 			}
 			else if (obj->type == DrawnObj::TEXT) {
 				DrawnText *dtext = (DrawnText*) obj;
-				rect &objRct = dtext->rct;
-				drawText(objRct.pos.x + pos.x, objRct.pos.y + pos.y, dtext->col, dtext->txt.c_str(), dtext->r_align);
+				position &objPos = dtext->rct.pos;
+				drawText(objPos.x + pos.x, objPos.y + pos.y, dtext->col, dtext->txt.c_str(), dtext->r_align);
 			}
 			else if (obj->type == DrawnObj::IMAGE) {
 				DrawnImage *dimg = (DrawnImage*) obj;
-				rect &objRct = dimg->rct;
-				drawImage(objRct.pos.x + pos.x, objRct.pos.y + pos.y, objRct.sz.width, objRct.sz.height, dimg->getTex(), dimg->opac);
+				position &objPos = dimg->rct.pos;
+				size &objSz = dimg->rct.sz;
+				drawImage(objPos.x + pos.x, objPos.y + pos.y, objSz.width, objSz.height, dimg->getTex(), dimg->opac);
 			}
 		}
 	}

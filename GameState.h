@@ -8,8 +8,7 @@
 namespace W {
 	
 	namespace ReturnyType {
-		typedef int T;
-		enum {
+		enum T {
 			EMPTY_RETURNY,
 			KILLER_RETURNY,
 			PAYLOAD_RETURNY		// has a string payload

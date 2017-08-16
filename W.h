@@ -109,7 +109,6 @@ namespace W {
 	#endif
 	
 	/* Bollocks */
-	extern int W_INFINITY;
 	extern int W_MAXPATH;
 	
 	struct _init;
