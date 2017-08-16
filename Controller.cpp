@@ -104,7 +104,9 @@ void W::Controller::update() {
 	
 	/* 1. Event sending */
 	
-	window->generateMouseMoveEvent();
+	#ifndef WTARGET_IOS
+		window->generateMouseMoveEvent();
+	#endif
 	
 	#ifdef WTARGET_WIN
 		Event::_mutex.lock();
@@ -113,15 +115,15 @@ void W::Controller::update() {
 	GameState *g = GameState::_gsStack.back();
 	
 	for (std::vector<Event*>::iterator it = Event::_events.begin(); it < Event::_events.end(); ++it) {
-		Event &ev = **it;
-		if (ev.type == EventType::CLOSED)
+		Event *ev = *it;
+		if (ev->type == EventType::CLOSED)
 			g->handleCloseEvent();
-		else if (ev.type == EventType::LEFTMOUSEDOWN || ev.type == EventType::LEFTMOUSEUP
-				 || ev.type == EventType::RIGHTMOUSEDOWN || ev.type == EventType::RIGHTMOUSEUP
-				 || ev.type == EventType::MOUSEMOVE)
-			Messenger::dispatchPositionalEvent(&ev);
+		else if (ev->type == EventType::LEFTMOUSEDOWN || ev->type == EventType::LEFTMOUSEUP
+				 || ev->type == EventType::RIGHTMOUSEDOWN || ev->type == EventType::RIGHTMOUSEUP
+				 || ev->type == EventType::MOUSEMOVE)
+			Messenger::dispatchPositionalEvent(ev);
 		else
-			Messenger::dispatchEvent(&ev);
+			Messenger::dispatchEvent(ev);
 		delete *it;
 //		if (GameState::_pop) break;
 	}
