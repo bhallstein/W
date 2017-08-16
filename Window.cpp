@@ -125,7 +125,8 @@ void W::Window::_generateMouseMoveEvent() {
 		POINT p;
 		GetCursorPos(&p);
 		ScreenToClient(_objs->windowHandle, &p);
-		W::Event ev(EventType::MOUSEMOVE, p.x, p.y);
+		position _pos((int)p.x, (int)p.y);
+		W::Event ev(EventType::MOUSEMOVE, _pos);
 		W::_addEvent(ev);
 	#endif
 	// Generate screenedge events, useful for scrolling the map
@@ -380,13 +381,13 @@ void W::Window::_convertToWEvent(W::Event &ev, UINT msg, WPARAM wParam, LPARAM l
 	}
 	else if (msg == WM_KEYDOWN) {
 		ev.type = EventType::KEYPRESS;
-		if (wParam == VK_LEFT)			ev.key = KeyCode::K_LEFT_ARROW;
-		else if (wParam == VK_RIGHT)	ev.key = KeyCode::K_RIGHT_ARROW;
-		else if (wParam == VK_UP)		ev.key = KeyCode::K_UP_ARROW;
-		else if (wParam == VK_DOWN)		ev.key = KeyCode::K_DOWN_ARROW;
-		else if (wParam == VK_HOME)		ev.key = KeyCode::K_HOME;
-		else if (wParam == VK_END)		ev.key = KeyCode::K_END;
-		else if (wParam == VK_DELETE)	ev.key = KeyCode::K_DELETE;
+		if (wParam == VK_LEFT)			ev.key = KeyCode::LEFT_ARROW;
+		else if (wParam == VK_RIGHT)	ev.key = KeyCode::RIGHT_ARROW;
+		else if (wParam == VK_UP)		ev.key = KeyCode::UP_ARROW;
+		else if (wParam == VK_DOWN)		ev.key = KeyCode::DOWN_ARROW;
+		else if (wParam == VK_HOME)		ev.key = KeyCode::HOME;
+		else if (wParam == VK_END)		ev.key = KeyCode::END;
+		else if (wParam == VK_DELETE)	ev.key = KeyCode::_DELETE;
 		else ev.key = KeyCode::K_OTHER;
 	}
 	else if (msg == WM_CLOSE)
