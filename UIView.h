@@ -27,7 +27,7 @@ namespace W {
 		
 		bool allowDrag;		// Set from positioner when refreshed
 		bool dragloop;
-		position drag_last;
+		position drag_initial;
 		
 		typedef std::vector<UIElement*> element_list;
 		typedef std::vector<Positioner*> positioner_list;
@@ -39,6 +39,7 @@ namespace W {
 		//     if (orientation_check)
 		//       orientation = (plan[0].sz.width > plan[0].sz.height ? O_L : O_P);
 		int cur_positioning_index;			// index of cur positioner in positioners vector
+		Positioner *cur_positioner;	
 		orientation_enum orientation;
 		
 		std::vector<int> landscape_positioning_limits;	// e.g. 400, 800, 1200

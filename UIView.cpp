@@ -36,10 +36,8 @@ W::UIView::~UIView()
 void W::UIView::processMouseEvent(Event *ev) {
 	if (dragloop) {
 		if (ev->type == EventType::MOUSEMOVE) {
-			_positioner->nudge(ev->pos - drag_last);
-			drag_last = ev->pos;
-			size s = _window->_getDimensions();
-			_updatePosition(s);
+			cur_positioner->nudge(ev->pos - drag_initial);
+			_updatePosition(_window->_getDimensions());
 		}
 		else if (ev->type == EventType::LEFTMOUSEUP) {
 			Messenger::relinquishPrivilegedEventResponderStatus(this);
@@ -49,8 +47,12 @@ void W::UIView::processMouseEvent(Event *ev) {
 	}
 	
 	// If an element is under event, translate & resubmit.
+	UIElement *el = NULL;
+	// ...
 	
 	// Otherwise, if allowDrag, do dragloopery
+	if (!el && allowDrag && ev->type == EventType::LEFTMOUSEDOWN && Messenger::requestPrivilegedEventResponderStatus(Callback(&View::receiveEvent, (View*)this)))
+		drag_initial = ev->pos, dragloop = true;
 	
 //	Button *b = NULL;
 //	// Get last button that lies under the mouse
@@ -104,12 +106,12 @@ void W::UIView::updatePosition(const size &winsize) {
 			break;
 	
 	// Update position of self
-	Positioner *p = psnr_vec->at(cur_positioning_index);
-	rect &r = p->refresh(winsize);
+	cur_positioner = psnr_vec->at(cur_positioning_index);
+	rect &r = cur_positioner->refresh(winsize);
 	pos = r.pos;
 	plan[0].sz = r.sz;
 	
-	allowDrag = p->isDraggable();
+	allowDrag = cur_positioner->isDraggable();
 	
 	// Update element positions
 	element_list *ellist = &ellist_vec->at(cur_positioning_index);
