@@ -25,6 +25,7 @@ W::UIView::UIView(const std::string &viewname, Window *_win) :
 			string("Error creating UIView '") + string(viewname) +
 			string("' - see log file for further details")
 		);
+	updatePosition(_window->_getDimensions());
 }
 
 W::UIView::~UIView()
@@ -96,9 +97,9 @@ void W::UIView::updatePosition(const size &winsize) {
 	// Set current positioning index
 	// - Limits are "up to": a limit of 400 applies up to & including width 400
 	// - If width larger than greatest limit, the last limit is used
-	cur_positioning_index = 0;
+	cur_positioning_index = -1;
 	for (std::vector<int>::iterator it = limit_vec->begin(); it < limit_vec->end(); it++, cur_positioning_index++)
-		if (winsize.width > *it)
+		if (*it > winsize.width)
 			break;
 	
 	// Update position of self

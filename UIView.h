@@ -18,9 +18,10 @@ namespace W {
 		
 		void processMouseEvent(Event *);
 		void draw();
-		virtual void drawCustomBackground() { }	// Override for custom drawing behind elements in UIView
 		
 	protected:
+		virtual void drawCustomBackground() { }
+			// Override for custom drawing behind elements in UIView
 		void updatePosition(const size &winsize);
 			// Override; called after View::_updatePosition
 		

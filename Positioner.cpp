@@ -59,7 +59,7 @@ W::Positioner::Positioner(LHObj &l)
 	LHObj &l_size = l["size"];
 	if (l_size.type != LHValueType::STRING) {
 		error = true;
-		errmsgs.push_back("\"size\" property not found");
+		errmsgs.push_back("'size' property not found");
 	}
 	else {
 		string &s = l_size.str_value;
@@ -76,8 +76,8 @@ W::Positioner::Positioner(LHObj &l)
 			string &c1 = sComponents[0], &c2 = sComponents[1];
 			sizing_method_x = (c1[c1.size()-1] == '%' ? PPROPORTIONAL : PFIXED);
 			sizing_method_y = (c2[c2.size()-1] == '%' ? PPROPORTIONAL : PFIXED);
-			strToT<float>(w, c1);
-			strToT<float>(h, c2);
+			strToT<float>(w, c1); if (sizing_method_x == PPROPORTIONAL) w /= 100.0;
+			strToT<float>(h, c2); if (sizing_method_y == PPROPORTIONAL) h /= 100.0;
 //			std::cout
 //				<< "sizing_method_x: " << w << ", " << (sizing_method_x == PPROPORTIONAL ? "proportional" : "fixed") << "\n"
 //				<< "sizing_method_y: " << h << ", " << (sizing_method_y == PPROPORTIONAL ? "proportional" : "fixed") << "\n";
@@ -97,8 +97,8 @@ W::Positioner::Positioner(LHObj &l)
 			string &c1 = sComponents[0], &c2 = sComponents[1];
 			pos_method_x = (c1[c1.size()-1] == '%' ? PPROPORTIONAL : PFIXED);
 			pos_method_y = (c2[c2.size()-1] == '%' ? PPROPORTIONAL : PFIXED);
-			strToT<float>(corner_x, c1);
-			strToT<float>(corner_y, c2);
+			strToT<float>(corner_x, c1); if (pos_method_x == PPROPORTIONAL) corner_x /= 100.0;
+			strToT<float>(corner_y, c2); if (pos_method_y == PPROPORTIONAL) corner_y /= 100.0;
 //			std::cout
 //				<< "pos_method_x: " << corner_x << ", " << (pos_method_x == PPROPORTIONAL ? "proportional" : "fixed") << "\n"
 //				<< "pos_method_y: " << corner_y << ", " << (pos_method_y == PPROPORTIONAL ? "proportional" : "fixed") << "\n";

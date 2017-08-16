@@ -22,9 +22,11 @@ void W::View::setWindow(Window *w) {
 }
 
 void W::View::_updatePosition(const size &winsize) {
-	const rect &r = _positioner->refresh(winsize);
-	pos = r.pos;
-	plan[0].sz = r.sz;
+	if (_positioner) {
+		const rect &r = _positioner->refresh(winsize);
+		pos = r.pos;
+		plan[0].sz = r.sz;
+	}
 	updatePosition(winsize);
 }
 
