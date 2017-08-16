@@ -1,5 +1,5 @@
 /*
- * W - a simple, cross-platform 2D game develpoment library
+ * W - a tiny 2D game develpoment library
  *
  * ==================
  *  Controller.cpp
@@ -132,8 +132,11 @@ void W::Controller::update() {
 			g->handleCloseEvent();
 		else if (ev->type == EventType::LEFTMOUSEDOWN || ev->type == EventType::LEFTMOUSEUP
 				 || ev->type == EventType::RIGHTMOUSEDOWN || ev->type == EventType::RIGHTMOUSEUP
-				 || ev->type == EventType::MOUSEMOVE)
+				 || ev->type == EventType::MOUSEMOVE
+				 || ev->type == EventType::TouchDown)
 			Messenger::dispatchPositionalEvent(ev);
+		else if (ev->type == EventType::TouchMoved || ev->type == EventType::TouchUp || ev->type == EventType::TouchCancelled)
+			Messenger::_dispatchTouchEvent(ev);
 		else
 			Messenger::dispatchEvent(ev);
 		delete *it;

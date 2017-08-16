@@ -1,5 +1,5 @@
 /*
- * W - a simple, cross-platform 2D game develpoment library
+ * W - a tiny 2D game develpoment library
  *
  * ===============
  *  UIElement.h

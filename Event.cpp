@@ -1,5 +1,5 @@
 /*
- * W - a simple, cross-platform 2D game develpoment library
+ * W - a tiny 2D game develpoment library
  *
  * =============
  *  Event.cpp
@@ -23,6 +23,7 @@ W::Event::Event(EventType::T _type) : type(_type) { }
 W::Event::Event(EventType::T _type, const position &_pos) : type(_type), pos(_pos) { }
 W::Event::Event(EventType::T _type, KeyCode::T _key) : type(_type), key(_key) { }
 W::Event::Event(EventType::T _type, float _x) : type(_type), x(_x) { }
+W::Event::Event(EventType::T _type, int _touchID, const position &_pos, const position &_prev_pos) : type(_type), touchID(_touchID), pos(_pos), prev_pos(_prev_pos) { }
 
 W::EventType::T W::Event::registerType() {
 	return _typecounter++;

@@ -1,5 +1,5 @@
 /*
- * W - a simple, cross-platform 2D game develpoment library
+ * W - a tiny 2D game develpoment library
  *
  * =================
  *  Messenger.cpp
@@ -27,6 +27,7 @@ namespace W {
 	struct Messenger::_messenger_state {
 		std::map<EventType::T, std::vector<Callback*>> type_subscriptions;
 		std::map<EventType::T, std::vector<cbAndRect*>> positional_subscriptions;
+		std::map<int, Callback*> touch_subscriptions;
 		
 		Callback *privileged_event_responder;
 		std::map<EventType::T, Callback *> type_pers;
@@ -212,6 +213,7 @@ void W::Messenger::_dispatchUIEvent(W::Event *ev) {
 		(*it3)->call(ev);
 }
 bool W::Messenger::_dispatchToPERs(W::Event *ev) {
+	if (!_s) return false;
 	std::map<EventType::T, Callback *>::iterator it;
 	
 	// If a general P.E.R. exists, send event to it
@@ -228,6 +230,13 @@ bool W::Messenger::_dispatchToPERs(W::Event *ev) {
 	}
 	
 	return false;
+}
+void W::Messenger::_dispatchTouchEvent(W::Event *ev) {
+	if (!_s) return;
+	std::map<int, Callback*>::iterator it = _s->touch_subscriptions.find(ev->touchID);
+	if (it != _s->touch_subscriptions.end()) {
+		it->second->call(ev);
+	}
 }
 
 void W::Messenger::subscribeToUIEvent(const char *_elname, EventType::T t, const Callback &c) {
@@ -259,4 +268,20 @@ void W::Messenger::unsubscribeFromUIEvent(const char *_elname, EventType::T t, v
 			it3 = cblist.erase(it3);
 		}
 		else it3++;
+}
+
+bool W::Messenger::subscribeToTouchEvent(int _touchID, const W::Callback &c) {
+	if (!_s) return false;
+	if (_s->touch_subscriptions.find(_touchID) != _s->touch_subscriptions.end())
+		return false;
+	_s->touch_subscriptions[_touchID] = c.copy();
+	return true;
+}
+void W::Messenger::unsubscribeFromTouchEvent(int _touchID, void *r) {
+	if (!_s) return;
+	std::map<int, Callback*>::iterator it = _s->touch_subscriptions.find(_touchID);
+	if (it == _s->touch_subscriptions.end()) return;
+	if (it->second->resp != r) return;
+	delete it->second;
+	_s->touch_subscriptions.erase(it);
 }

@@ -1,5 +1,5 @@
 /*
- * W - a simple, cross-platform 2D game develpoment library
+ * W - a tiny 2D game develpoment library
  *
  * ================
  *  iOSClasses.m
@@ -17,6 +17,7 @@
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
 
+#include "Event.h"
 #include <iostream>
 
 /*******************************/
@@ -39,9 +40,11 @@
 }
 -(id)initWithFrame:(CGRect)frame {
     if ((self = [super initWithFrame:frame])) {
+		/* Set up OpenGL ES 1.1 */
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
         
 		self.contentScaleFactor = [UIScreen mainScreen].scale;
+		self.multipleTouchEnabled = YES;
 		
         eaglLayer.opaque = TRUE;
         eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys: [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
@@ -55,6 +58,11 @@
 		glBindFramebufferOES(GL_FRAMEBUFFER_OES, framebuffer);
 		glBindRenderbufferOES(GL_RENDERBUFFER_OES, renderbuffer);
 		glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, renderbuffer);
+		
+		/* Add gesture recognizers */
+//		UITapGestureRecognizer *r = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(respondToTapGesture:)];
+//		r.numberOfTapsRequired = 1;
+//		[self addGestureRecognizer:r];
     }
     return self;
 }
@@ -71,7 +79,7 @@
 -(void)bindFramebuffer {
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, framebuffer);
 }
-- (void) layoutSubviews {
+-(void)layoutSubviews {
 	// Allocate color buffer backing based on the current layer size
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, renderbuffer);
     [context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)self.layer];
@@ -83,6 +91,43 @@
         return;
     }
 }
+
+//-(IBAction)respondToTapGesture:(UITapGestureRecognizer *)recognizer {
+//	CGPoint p = [recognizer locationInView:self];
+//	p.x *= self.contentScaleFactor, p.y *= self.contentScaleFactor;
+//	W::Event::_addEvent(new W::Event(W::EventType::TAP, W::position((int)p.x, (int)p.y)));
+//}
+
+inline W::position touchLocInView(UITouch *t, UIView *v) {
+	CGPoint p = [t locationInView:v];
+	p.x *= v.contentScaleFactor, p.y *= v.contentScaleFactor;
+	return W::position((int)p.x, (int)p.y);
+}
+inline W::position prevTouchLocInView(UITouch *t, UIView *v) {
+	CGPoint p = [t previousLocationInView:v];
+	p.x *= v.contentScaleFactor, p.y *= v.contentScaleFactor;
+	return W::position((int)p.x, (int)p.y);
+}
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *t in touches)
+		W::Event::_addEvent(new W::Event(W::EventType::TouchDown, (int)t, touchLocInView(t, self)));
+}
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *t in touches) {
+		W::position p = touchLocInView(t, self);
+		W::position pp = prevTouchLocInView(t, self);
+		W::Event::_addEvent(new W::Event(W::EventType::TouchMoved, (int)t, p, pp));
+	}
+}
+-(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *t in touches)
+		W::Event::_addEvent(new W::Event(W::EventType::TouchUp, (int)t, touchLocInView(t, self)));
+}
+-(void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *t in touches)
+		W::Event::_addEvent(new W::Event(W::EventType::TouchCancelled, (int)t, touchLocInView(t, self)));
+}
+
 -(void)dealloc {
 	// Tear down GL
 	if (framebuffer) {

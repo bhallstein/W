@@ -1,5 +1,5 @@
 /*
- * W - a simple, cross-platform 2D game develpoment library
+ * W - a tiny 2D game develpoment library
  *
  * ===========
  *  Event.h
@@ -27,7 +27,9 @@ namespace W {
 			SCREENEDGE_TOP, SCREENEDGE_BOTTOM, SCREENEDGE_LEFT, SCREENEDGE_RIGHT,
 			CLOSED,
 			BUTTONCLICK,
-			UNKNOWN
+
+			TouchDown, TouchMoved, TouchUp, TouchCancelled,
+			Unknown
 		};
 	}
 	
@@ -63,12 +65,15 @@ namespace W {
 		Event(W::EventType::T);
 		Event(W::EventType::T, const W::position &);
 		Event(W::EventType::T, W::KeyCode::T);
-		Event(W::EventType::T, float);
+		Event(W::EventType::T, float _x);
+		Event(EventType::T, int _touchID, const position &_pos, const position &_prev_pos = position(-1,-1));
 		
 		W::position pos;
+		W::position prev_pos;
 		W::EventType::T type;
 		W::KeyCode::T key;
 		float x;
+		int touchID;
 		void *_payload;
 		
 		static W::EventType::T registerType();

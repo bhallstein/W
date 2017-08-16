@@ -1,5 +1,5 @@
 /*
- * W - a simple, cross-platform 2D game develpoment library
+ * W - a tiny 2D game develpoment library
  *
  * ===============
  *  Messenger.h
@@ -45,9 +45,13 @@ namespace W {
 		static void _dispatchUIEvent(W::Event *);
 		static bool _dispatchToPERs(W::Event *);
 			// Returns true if event was sent to a P.E.R., false otherwise
+		static void _dispatchTouchEvent(W::Event *);
 		
 		static void subscribeToUIEvent(const char *_element_name, W::EventType::T, const W::Callback &);
 		static void unsubscribeFromUIEvent(const char *_element_name, W::EventType::T, void *);
+		
+		static bool subscribeToTouchEvent(int _touchID, const W::Callback &);
+		static void unsubscribeFromTouchEvent(int _touchID, void *);
 		
 		static void _useTemporaryState();	// Save subscriptions in a temporary state, for transferal in setActive~
 		static void _setActiveGamestate(GameState *);

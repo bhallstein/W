@@ -1,5 +1,5 @@
 /*
- * W - a simple, cross-platform 2D game develpoment library
+ * W - a tiny 2D game develpoment library
  *
  * ================
  *  iOSClasses.h
@@ -22,6 +22,7 @@
 -(void)clearOpenGLThreadAffinity;
 -(void)flushBuffer;		// Draw
 -(void)bindFramebuffer;	// Call before beginning to issue opengl commands
+//-(IBAction)respondToTapGesture:(UITapGestureRecognizer*)recognizer;
 @end
 
 
