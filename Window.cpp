@@ -272,8 +272,12 @@ void W::Window::closeWindow() {
 		[_objs->windowDelegate release];
 	#elif defined _WIN32 || _WIN64
 		if (_objs->renderingContext) {
-			if (!wglMakeCurrent(NULL, NULL))
-				MessageBox(NULL, "Error releasing device and rendering contexts", "Error", MB_OK | MB_ICONEXCLAMATION);
+			// The window is deleted from the quit() function, after the draw thread has released the context and exited.
+			// Therefore we don't need to unmake the context current before exiting - in general, this must be done before 
+			// the window is deleted.
+			// NB: if there's a problem during window creation, may need to call clearOpenGLThreadAffinity() before closeWindow().
+			//if (!wglMakeCurrent(NULL, NULL))
+			//	MessageBox(NULL, "Error releasing device and rendering contexts", "Error", MB_OK | MB_ICONEXCLAMATION);
 			if (!wglDeleteContext(_objs->renderingContext))
 				MessageBox(NULL, "Error deleting the rendering context", "Error", MB_OK | MB_ICONEXCLAMATION);
 			_objs->renderingContext = NULL;
