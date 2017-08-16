@@ -34,10 +34,10 @@ namespace W {
 		static void subscribe(EventType::T, const Callback &);
 		static void unsubscribe(EventType::T, void *);
 		
-		static void subscribeInView(View *, EventType::T, const Callback &, rect *);
+		static void subscribeInView(View *, EventType::T, const Callback &, iRect *);
 		static void unsubscribeInView(View *, EventType::T, void *);
 		
-		static void subscribeToMouseEvents(View *, const Callback &, rect *);
+		static void subscribeToMouseEvents(View *, const Callback &, iRect *);
 		static void unsubscribeFromMouseEvents(View *, void *);
 		
 		static bool requestPrivilegedEventResponderStatus(View *, EventType::T, const Callback &, bool global = false);

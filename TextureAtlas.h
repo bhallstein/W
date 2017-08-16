@@ -28,7 +28,7 @@ namespace  W {
 		TextureAtlas();
 		bool addTex(const std::string &filename, W::Texture *);
 			// Adds the texture and calls setModified(), returning false if impossible,
-		bool addTex(unsigned char *, const size &, W::Texture *);
+		bool addTex(unsigned char *, const v2i &, W::Texture *);
 		void removeTex(TANode *);
 			// Sets the given area node as empty
 		

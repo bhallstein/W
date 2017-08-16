@@ -46,27 +46,27 @@ namespace W {
 	class NavMap
 	{
 	public:
-		NavMap(const W::size &);
+		NavMap(const v2i &);
 		NavMap(int _w, int _h);
 		~NavMap();
 		
-		void makeImpassable(const rect &);	// Unlink all nodes in rect from the node network
-		void makePassable(const rect &);
+		void makeImpassable(const iRect &);	// Unlink all nodes in rect from the node network
+		void makePassable(const iRect &);
 		
-		void isolate(const rect &);			// Unlink only across edge nodes of rect, leaving interior navigable
-		void unisolate(const rect &);
+		void isolate(const iRect &);			// Unlink only across edge nodes of rect, leaving interior navigable
+		void unisolate(const iRect &);
 		
-		void createConnection(const W::position &p1, const W::position &p2);
-		void removeConnection(const W::position &p1, const W::position &p2);
+		void createConnection(const v2i &p1, const v2i &p2);
+		void removeConnection(const v2i &p1, const v2i &p2);
 		
 		bool isPassableAt(int atX, int atY);
-		bool isPassableAt(const W::position &);
-		bool isPassableUnder(const W::rect &);
+		bool isPassableAt(const v2i &);
+		bool isPassableUnder(const iRect &);
 		
-		bool getRoute(int fromX, int fromY, int toX, int toY, std::vector<position> &route);
+		bool getRoute(int fromX, int fromY, int toX, int toY, std::vector<v2i> &route);
 		
 		NavNode* _nodeAt(int atX, int atY);
-		NavNode* _nodeAt(const W::position &);
+		NavNode* _nodeAt(const v2i &);
 		
 		int width() { return w; }
 		int height() { return h; }

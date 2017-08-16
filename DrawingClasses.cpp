@@ -28,7 +28,7 @@
 
 #pragma mark - Triangle
 
-W::Triangle::Triangle(View *_v, const position &_p1, const position &_p2, const position &_p3, const Colour &_col, int _lay, BlendMode::T _blend) :
+W::Triangle::Triangle(View *_v, const v2f &_p1, const v2f &_p2, const v2f &_p3, const Colour &_col, int _lay, BlendMode::T _blend) :
 	p1(_p1),
 	p2(_p2),
 	p3(_p3),
@@ -40,13 +40,13 @@ W::Triangle::~Triangle()
 {
 	delete ((DTri*) dTri);
 }
-void W::Triangle::setP1(const position &x){ ((DTri*) dTri)->setP123(p1 = x, p2, p3); }
-void W::Triangle::setP2(const position &x){ ((DTri*) dTri)->setP123(p1, p2 = x, p3); }
-void W::Triangle::setP3(const position &x){ ((DTri*) dTri)->setP123(p1, p2, p3 = x); }
-void W::Triangle::setP123(const position &_p1, const position &_p2, const position &_p3) {
+void W::Triangle::setP1(const v2f &x){ ((DTri*) dTri)->setP123(p1 = x, p2, p3); }
+void W::Triangle::setP2(const v2f &x){ ((DTri*) dTri)->setP123(p1, p2 = x, p3); }
+void W::Triangle::setP3(const v2f &x){ ((DTri*) dTri)->setP123(p1, p2, p3 = x); }
+void W::Triangle::setP123(const v2f &_p1, const v2f &_p2, const v2f &_p3) {
 	((DTri*) dTri)->setP123(p1 = _p1, p2 = _p2, p3 = _p3);
 }
-void W::Triangle::nudge(const position &delta) {
+void W::Triangle::nudge(const v2f &delta) {
 	p1 += delta, p2 += delta, p3 += delta;
 	((DTri*) dTri)->setP123(p1, p2, p3);
 }
@@ -63,7 +63,7 @@ void W::Triangle::setBlendMode(BlendMode::T m) {
 
 #pragma mark - EquiTriangle
 
-W::EqTriangle::EqTriangle(View *_v, const position &_p, float _rad, const Colour &_col, float _rot, int _lay, BlendMode::T _blend) :
+W::EqTriangle::EqTriangle(View *_v, const v2f &_p, float _rad, const Colour &_col, float _rot, int _lay, BlendMode::T _blend) :
 	pos(_p),
 	radius(_rad),
 	rotation(_rot),
@@ -76,7 +76,7 @@ W::EqTriangle::~EqTriangle()
 {
 	delete ((DTri*) dTri);
 }
-void W::EqTriangle::setPosition(const position &_p) {
+void W::EqTriangle::setPosition(const v2f &_p) {
 	pos = _p;
 	genTriProperties();
 	((DTri*) dTri)->setP123(p1, p2, p3);
@@ -86,7 +86,7 @@ void W::EqTriangle::setRadius(float _rad) {
 	genTriProperties();
 	((DTri*) dTri)->setP123(p1, p2, p3);
 }
-void W::EqTriangle::nudge(const position &delta) {
+void W::EqTriangle::nudge(const v2f &delta) {
 	pos += delta;
 	p1 += delta, p2 += delta, p3 += delta;
 	((DTri*) dTri)->setP123(p1, p2, p3);
@@ -104,41 +104,41 @@ void W::EqTriangle::genTriProperties() {
 	float sideLength = radius * ROOT3;
 	float apothem = radius * 0.5;
 	
-	p1.x = 0,               p1.y = -radius;
-	p2.x = sideLength*0.5,  p2.y = apothem;
-	p3.x = -sideLength*0.5, p3.y = apothem;
+	p1.a = 0,               p1.b = -radius;
+	p2.a = sideLength*0.5,  p2.b = apothem;
+	p3.a = -sideLength*0.5, p3.b = apothem;
 	
 	if (rotation != 0.0) {
 		float rot = rotation * DEG2RAD;
 		float cosR = cos(rot), sinR = sin(rot);
-		position p1r, p2r, p3r;
+		v2f p1r, p2r, p3r;
 		
-		p1r.x = p1.x*cosR - p1.y*sinR,
-		p2r.x = p2.x*cosR - p2.y*sinR;
-		p3r.x = p3.x*cosR - p3.y*sinR;
+		p1r.a = p1.a*cosR - p1.b*sinR,
+		p2r.a = p2.a*cosR - p2.b*sinR;
+		p3r.a = p3.a*cosR - p3.b*sinR;
 		
-		p1r.y = p1.x*sinR + p1.y*cosR;
-		p2r.y = p2.x*sinR + p2.y*cosR;
-		p3r.y = p3.x*sinR + p3.y*cosR;
+		p1r.b = p1.a*sinR + p1.b*cosR;
+		p2r.b = p2.a*sinR + p2.b*cosR;
+		p3r.b = p3.a*sinR + p3.b*cosR;
 		
-		p1.x = p1r.x, p1.y = p1r.y;
-		p2.x = p2r.x, p2.y = p2r.y;
-		p3.x = p3r.x, p3.y = p3r.y;
+		p1.a = p1r.a, p1.b = p1r.b;
+		p2.a = p2r.a, p2.b = p2r.b;
+		p3.a = p3r.a, p3.b = p3r.b;
 	}
 	
-	p1.x += pos.x, p1.y += pos.y;
-	p2.x += pos.x, p2.y += pos.y;
-	p3.x += pos.x, p3.y += pos.y;
+	p1.a += pos.a, p1.b += pos.b;
+	p2.a += pos.a, p2.b += pos.b;
+	p3.a += pos.a, p3.b += pos.b;
 }
 
 
 #pragma mark - IsoTriangle
 
-W::IsoTriangle::IsoTriangle(View *_v, const position &_p, const size &_sz, const Colour &_col, float _rot, int _lay, BlendMode::T _blend) :
-pos(_p),
-sz(_sz),
-rotation(_rot),
-col(_col)
+W::IsoTriangle::IsoTriangle(View *_v, const v2f &_p, const v2f &_sz, const Colour &_col, float _rot, int _lay, BlendMode::T _blend) :
+	pos(_p),
+	sz(_sz),
+	rotation(_rot),
+	col(_col)
 {
 	genTriProperties();
 	dTri = new DTri(_v, p1, p2, p3, _col, _lay, _blend);
@@ -147,17 +147,17 @@ W::IsoTriangle::~IsoTriangle()
 {
 	delete ((DTri*) dTri);
 }
-void W::IsoTriangle::setPosition(const position &_p) {
+void W::IsoTriangle::setPosition(const v2f &_p) {
 	pos = _p;
 	genTriProperties();
 	((DTri*) dTri)->setP123(p1, p2, p3);
 }
-void W::IsoTriangle::setSize(const size &_sz) {
+void W::IsoTriangle::setSize(const v2f &_sz) {
 	sz = _sz;
 	genTriProperties();
 	((DTri*) dTri)->setP123(p1, p2, p3);
 }
-void W::IsoTriangle::nudge(const position &delta) {
+void W::IsoTriangle::nudge(const v2f &delta) {
 	pos += delta;
 	p1 += delta, p2 += delta, p3 += delta;
 	((DTri*) dTri)->setP123(p1, p2, p3);
@@ -172,34 +172,34 @@ void W::IsoTriangle::setBlendMode(BlendMode::T m) {
 	((DTri*) dTri)->setBlendMode(m);
 }
 void W::IsoTriangle::genTriProperties() {
-	float halfWidth = sz.width * 0.5;
-	float halfHeight = sz.height * 0.5;
+	float halfWidth = sz.a * 0.5;
+	float halfHeight = sz.b * 0.5;
 	
-	p1.x = 0,               p1.y = -halfHeight;
-	p2.x = -halfWidth,      p2.y = halfHeight;
-	p3.x = halfWidth,       p3.y = halfHeight;
+	p1.a = 0,               p1.b = -halfHeight;
+	p2.a = -halfWidth,      p2.b = halfHeight;
+	p3.a = halfWidth,       p3.b = halfHeight;
 	
 	if (rotation != 0.0) {
 		float rot = rotation * DEG2RAD;
 		float cosR = cos(rot), sinR = sin(rot);
-		position p1r, p2r, p3r;
+		v2f p1r, p2r, p3r;
 		
-		p1r.x = p1.x*cosR - p1.y*sinR,
-		p2r.x = p2.x*cosR - p2.y*sinR;
-		p3r.x = p3.x*cosR - p3.y*sinR;
+		p1r.a = p1.a*cosR - p1.b*sinR,
+		p2r.a = p2.a*cosR - p2.b*sinR;
+		p3r.a = p3.a*cosR - p3.b*sinR;
 		
-		p1r.y = p1.x*sinR + p1.y*cosR;
-		p2r.y = p2.x*sinR + p2.y*cosR;
-		p3r.y = p3.x*sinR + p3.y*cosR;
+		p1r.b = p1.a*sinR + p1.b*cosR;
+		p2r.b = p2.a*sinR + p2.b*cosR;
+		p3r.b = p3.a*sinR + p3.b*cosR;
 		
-		p1.x = p1r.x, p1.y = p1r.y;
-		p2.x = p2r.x, p2.y = p2r.y;
-		p3.x = p3r.x, p3.y = p3r.y;
+		p1.a = p1r.a, p1.b = p1r.b;
+		p2.a = p2r.a, p2.b = p2r.b;
+		p3.a = p3r.a, p3.b = p3r.b;
 	}
 	
-	p1.x += pos.x, p1.y += pos.y;
-	p2.x += pos.x, p2.y += pos.y;
-	p3.x += pos.x, p3.y += pos.y;
+	p1.a += pos.a, p1.b += pos.b;
+	p2.a += pos.a, p2.b += pos.b;
+	p3.a += pos.a, p3.b += pos.b;
 }
 
 
@@ -208,15 +208,15 @@ void W::IsoTriangle::genTriProperties() {
 
 W::Rectangle::Rectangle(
 	View *_v,
-	const position &_p,
-	const size &_sz,
+	const v2f &_p,
+	const v2f &_sz,
 	const Colour &_col,
 	float _rot,
 	int _lay,
 	BlendMode::T _blend
 ) :
 	pos(_p),
-	sz(_sz),
+	size(_sz),
 	rot(_rot),
 	col(_col)
 {
@@ -226,21 +226,21 @@ W::Rectangle::~Rectangle()
 {
 	delete ((DRect*) dRect);
 }
-void W::Rectangle::setPos(const position &_p) {
-	((DRect*) dRect)->setPosSzRot(pos = _p, sz, rot);
+void W::Rectangle::setPos(const v2f &_p) {
+	((DRect*) dRect)->setPosSzRot(pos = _p, size, rot);
 }
-void W::Rectangle::setSz(const size &_s) {
-	((DRect*) dRect)->setPosSzRot(pos, sz = _s, rot);
+void W::Rectangle::setSz(const v2f &_s) {
+	((DRect*) dRect)->setPosSzRot(pos, size = _s, rot);
 }
 void W::Rectangle::setRot(float _r) {
-	((DRect*) dRect)->setPosSzRot(pos, sz, rot = _r);
+	((DRect*) dRect)->setPosSzRot(pos, size, rot = _r);
 }
-void W::Rectangle::setAll(const position &_p, const size &_s, float _r) {
-	((DRect*) dRect)->setPosSzRot(pos = _p, sz = _s, rot = _r);
+void W::Rectangle::setAll(const v2f &_p, const v2f &_s, float _r) {
+	((DRect*) dRect)->setPosSzRot(pos = _p, size = _s, rot = _r);
 }
-void W::Rectangle::nudge(const position &delta) {
+void W::Rectangle::nudge(const v2f &delta) {
 	pos += delta;
-	((DRect*) dRect)->setPosSzRot(pos, sz, rot);
+	((DRect*) dRect)->setPosSzRot(pos, size, rot);
 }
 void W::Rectangle::setCol(const Colour &_c) {
 	((DRect*) dRect)->setCol(col = _c);
@@ -255,63 +255,63 @@ void W::Rectangle::setBlendMode(BlendMode::T m) {
 
 #pragma mark - Line
 
-W::Line::Line(View *_v, const position &_p1, const position &_p2, const W::Colour _col, float _width, int _lay, BlendMode::T _blend) :
+W::Line::Line(View *_v, const v2f &_p1, const v2f &_p2, const W::Colour _col, float _width, int _lay, BlendMode::T _blend) :
 	p1(_p1),
 	p2(_p2),
 	lineWidth(_width),
 	col(_col)
 {
-	position rPos;
-	size rSz;
-	float rRot;
-	
-	genRectProperties(rPos, rSz, rRot);
-	rectangle = new Rectangle(_v, rPos, rSz, col, rRot, _lay, _blend);
+	genDelta();
+	dLine = new DLine(_v, p1, p2, delta, col, _lay, _blend);
 }
 W::Line::~Line()
 {
-	delete rectangle;
+	delete ((DLine*) dLine);
 }
-void W::Line::setP1(const position &_p) {
+void W::Line::setP1(const v2f &_p) {
 	p1 = _p;
-	genRectProperties(rectangle->pos, rectangle->sz, rectangle->rot);
-	rectangle->setAll(rectangle->pos, rectangle->sz, rectangle->rot);
+	genDelta();
+	((DLine*)dLine)->setP1P2Delta(p1, p2, delta);
 }
-void W::Line::setP2(const position &_p) {
+void W::Line::setP2(const v2f &_p) {
 	p2 = _p;
-	genRectProperties(rectangle->pos, rectangle->sz, rectangle->rot);
-	rectangle->setAll(rectangle->pos, rectangle->sz, rectangle->rot);
+	genDelta();
+	((DLine*)dLine)->setP1P2Delta(p1, p2, delta);
 }
-void W::Line::setP1And2(const position &_p1, const position &_p2) {
+void W::Line::setP1And2(const v2f &_p1, const v2f &_p2) {
 	p1 = _p1;
 	p2 = _p2;
-	genRectProperties(rectangle->pos, rectangle->sz, rectangle->rot);
-	rectangle->setAll(rectangle->pos, rectangle->sz, rectangle->rot);
+	genDelta();
+	((DLine*)dLine)->setP1P2Delta(p1, p2, delta);
 }
-void W::Line::nudge(const position &delta) {
-	p1 += delta;
-	p2 += delta;
-	rectangle->nudge(delta);
+void W::Line::nudge(const v2f &dist) {
+	p1 += dist;
+	p2 += dist;
+	((DLine*)dLine)->setP1P2Delta(p1, p2, delta);
 }
-void W::Line::genRectProperties(position &pos, size &sz, float &rot) {
-	float lineLength = sqrt((p2.x-p1.x)*(p2.x-p1.x) + (p2.y-p1.y)*(p2.y-p1.y));
+void W::Line::genDelta() {
+	// Calculate delta
 	
-	sz.height = lineWidth;
-	sz.width = lineLength;
+	// First off, set delta to the vector between the 2 points
+	float da = p2.a - p1.a;
+	float db = p2.b - p1.b;
 	
-	pos.x = p1.x + (p2.x - p1.x)*0.5 - lineLength/2;
-	pos.y = p1.y + (p2.y - p1.y)*0.5 - lineWidth/2;
+	// Rotate it by -90 degrees
+	delta.a = -db;
+	delta.b = da;
 	
-	rot = asin((p2.y-p1.y) / lineLength) * RAD2DEG;
+	// Scale it to length of lineWidth/2
+	float lineLength = sqrt(da*da + db*db);
+	delta *= (lineWidth*0.5) / lineLength;	
 }
 void W::Line::setCol(const Colour &_c) {
-	rectangle->setCol(col = _c);
+	((DLine*)dLine)->setCol(col = _c);
 }
 void W::Line::setLayer(int l) {
-	rectangle->setLayer(l);
+	((DLine*)dLine)->setLayer(l);
 }
 void W::Line::setBlendMode(BlendMode::T m) {
-	rectangle->setBlendMode(m);
+	((DLine*)dLine)->setBlendMode(m);
 }
 
 
@@ -324,39 +324,39 @@ void W::Line::setBlendMode(BlendMode::T m) {
 W::Sprite::Sprite(
 	View *_v,
 	Texture *_t,
-	const position &_p,
-	const size &_sz,
+	const v2f &_p,
+	const v2f &_sc,
 	float _opac,
 	float _rot,
 	int _lay,
 	BlendMode::T _blend
 ) :
 	pos(_p),
-	sz(_sz),
+	scale(_sc),
 	rot(_rot),
 	opac(_opac)
 {
-	dSprite = new DSprite(_v, _t, _p, _sz, _opac, _rot, _lay, _blend);
+	dSprite = new DSprite(_v, _t, _p, _sc, _opac, _rot, _lay, _blend);
 }
 W::Sprite::~Sprite()
 {
 	delete ((DSprite*) dSprite);
 }
-void W::Sprite::setPos(const position &_p) {
-	((DSprite*) dSprite)->setPosSzRot(pos = _p, sz, rot);
+void W::Sprite::setPos(const v2f &_p) {
+	((DSprite*) dSprite)->setPosScaleRot(pos = _p, scale, rot);
 }
-void W::Sprite::setSz(const size &_s) {
-	((DSprite*) dSprite)->setPosSzRot(pos, sz = _s, rot);
+void W::Sprite::setScale(const v2f &_sc) {
+	((DSprite*) dSprite)->setPosScaleRot(pos, scale = _sc, rot);
 }
 void W::Sprite::setRot(float _r) {
-	((DSprite*) dSprite)->setPosSzRot(pos, sz, rot = _r);
+	((DSprite*) dSprite)->setPosScaleRot(pos, scale, rot = _r);
 }
-void W::Sprite::setAll(const position &_p, const size &_s, float _r) {
-	((DSprite*) dSprite)->setPosSzRot(pos = _p, sz = _s, rot = _r);
+void W::Sprite::setAll(const v2f &_p, const v2f &_sc, float _r) {
+	((DSprite*) dSprite)->setPosScaleRot(pos = _p, scale = _sc, rot = _r);
 }
-void W::Sprite::nudge(const position &delta) {
+void W::Sprite::nudge(const v2f &delta) {
 	pos += delta;
-	((DSprite*) dSprite)->setPosSzRot(pos, sz, rot);
+	((DSprite*) dSprite)->setPosScaleRot(pos, scale, rot);
 }
 void W::Sprite::setOpacity(float _o) {
 	((DSprite*) dSprite)->setOpac(_o);

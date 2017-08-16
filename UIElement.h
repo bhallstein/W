@@ -31,7 +31,7 @@ namespace W {
 		UIElement(const std::string &_name, W::Positioner *, View *);
 		~UIElement();
 		
-		void _updatePosition(const size &containersize);
+		void _updatePosition(const v2i &containersize);
 		virtual void updatePosition() { }
 			// Override to implement updates to D.O.s etc
 		
@@ -41,7 +41,7 @@ namespace W {
 	protected:
 		std::string name;
 		W::Positioner *positioner;
-		rect rct;
+		iRect rct;
 		View *view;
 	};
 	

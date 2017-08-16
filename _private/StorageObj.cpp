@@ -97,7 +97,7 @@ void W::StorageObjForColouredShapes::removeDrawable(DColouredShape *d) {
 	for (int i=0; i < d->length; ++i) {
 		w_dout << i+1 << " ";
 		v3f &v = d->vptr[i];
-		v.x = v.y = 0;
+		v.a = v.b = 0;
 	}
 	w_dout << "\n";
 	
@@ -261,7 +261,7 @@ void W::StorageObjForTexturedShapes::removeDrawable(DTexturedShape *d) {
 	for (int i=0; i < d->length; ++i) {
 		w_dout << i+1 << " ";
 		v3f &v = d->vptr[i];
-		v.x = v.y = 0;
+		v.a = v.b = 0;
 	}
 	w_dout << "\n";
 	

@@ -37,7 +37,7 @@ namespace W {
 	};
 	extern OpenGLState oglState;
 	
-	void _createWindow(const size &sz, const std::string &title);
+	void _createWindow(const v2i &sz, const std::string &title);
 	void _start();
 	void _pushState(GameState *);
 	void _popState(const Returny &);
@@ -54,7 +54,7 @@ namespace W {
 	};
 	extern WObjs wObjs;
 	
-	const size& windowSize();
+	const v2i& windowSize();
 }
 
 #endif

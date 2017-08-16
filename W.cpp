@@ -25,10 +25,10 @@ namespace W {
 
 #ifdef WTARGET_IOS
 	void W::createWindow() {
-		_createWindow(size(), "");
+		_createWindow(v2i(), "");
 	}
 #else
-	void W::createWindow(const size &sz, const std::string &title) {
+	void W::createWindow(const v2i &sz, const std::string &title) {
 		_createWindow(sz, title);
 	}
 #endif

@@ -35,13 +35,13 @@ namespace W {
 	protected:
 		virtual void drawCustomBackground() { }
 			// Override for custom drawing behind elements in UIView
-		void updatePosition(const size &winsize);
+		void updatePosition(const v2i &winsize);
 			// Override; note we do not call _updatePosition because that method of
 			// View doesn't have access to all the positioner arrays of UIView
 		
 		bool allowDrag;		// Set from positioner when refreshed
 		bool dragloop;
-		position drag_initial;
+		v2i drag_initial;
 		
 		typedef std::vector<UIElement*> element_list;
 		typedef std::vector<Positioner*> positioner_list;

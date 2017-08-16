@@ -45,7 +45,7 @@ namespace W {
 	#ifdef WTARGET_IOS
 		void createWindow();
 	#else
-		void createWindow(const W::size &sz, const std::string &title);
+		void createWindow(const W::v2i &sz, const std::string &title);
 	#endif
 	void start();
 	void pushState(W::GameState *);

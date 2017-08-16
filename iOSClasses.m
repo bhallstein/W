@@ -98,7 +98,7 @@
 	// Notify W::Window of new frame size
 	W::Window *win = (W::Window*)w_window;
 	if (win)
-		win->updateSize(W::size(self.bounds.size.width, self.bounds.size.height) * self.contentScaleFactor);
+		win->updateSize(W::v2i(self.bounds.size.width, self.bounds.size.height) * self.contentScaleFactor);
 }
 
 //-(IBAction)respondToTapGesture:(UITapGestureRecognizer *)recognizer {
@@ -107,15 +107,15 @@
 //	W::Event::_addEvent(new W::Event(W::EventType::TAP, W::position((int)p.x, (int)p.y)));
 //}
 
-inline W::position touchLocInView(UITouch *t, UIView *v) {
+inline W::v2i touchLocInView(UITouch *t, UIView *v) {
 	CGPoint p = [t locationInView:v];
 	p.x *= v.contentScaleFactor, p.y *= v.contentScaleFactor;
-	return W::position((int)p.x, (int)p.y);
+	return W::v2i(p.x, p.y);
 }
-inline W::position prevTouchLocInView(UITouch *t, UIView *v) {
+inline W::v2i prevTouchLocInView(UITouch *t, UIView *v) {
 	CGPoint p = [t previousLocationInView:v];
 	p.x *= v.contentScaleFactor, p.y *= v.contentScaleFactor;
-	return W::position((int)p.x, (int)p.y);
+	return W::v2i(p.x, p.y);
 }
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
 	for (UITouch *t in touches)
@@ -123,8 +123,8 @@ inline W::position prevTouchLocInView(UITouch *t, UIView *v) {
 }
 -(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
 	for (UITouch *t in touches) {
-		W::position p = touchLocInView(t, self);
-		W::position pp = prevTouchLocInView(t, self);
+		W::v2i p = touchLocInView(t, self);
+		W::v2i pp = prevTouchLocInView(t, self);
 		W::Event::_addEvent(new W::Event(W::EventType::TouchMoved, (int)t, p, pp));
 	}
 }

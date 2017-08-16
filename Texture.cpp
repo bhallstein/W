@@ -36,7 +36,7 @@ W::Texture::~Texture()
 
 float W::Texture::floatCoordA(/*int texA*/) { return float(atlasA + /*texA +*/ 0.5) / atlas->width(); }
 float W::Texture::floatCoordB(/*int texB*/) { return float(atlasB + /*texB +*/ 0.5) / atlas->width(); }
-float W::Texture::floatCoordC(/*int texC*/) { return float(atlasA + sz.width - /*texC -*/ 0.5) / atlas->width(); }
-float W::Texture::floatCoordD(/*int texD*/) { return float(atlasB + sz.height - /*texD -*/ 0.5) / atlas->width(); }
+float W::Texture::floatCoordC(/*int texC*/) { return float(atlasA + sz.a - /*texC -*/ 0.5) / atlas->width(); }
+float W::Texture::floatCoordD(/*int texD*/) { return float(atlasB + sz.b - /*texD -*/ 0.5) / atlas->width(); }
 	// Note: texels are sampled in the middle. We add/subtract half a pixel to prevent unwanted edge blending.
 	// See also http://www.mindcontrol.org/~hplus/graphics/opengl-pixel-perfect.html

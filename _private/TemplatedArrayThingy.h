@@ -14,6 +14,7 @@
 #define W_TemplatedArrayThingy_h
 
 //#define __W_DEBUG
+#include <iostream>
 #include "DebugMacro.h"
 
 #define COMPACTION_THRESHOLD 0.3	// Compaction occurs if used_size < capacity * threshold

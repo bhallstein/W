@@ -22,22 +22,22 @@ namespace W {
 	
 	class Triangle {
 	public:
-		Triangle(View *, const position &p1, const position &p2, const position &p3, const Colour &, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		Triangle(View *, const v2f &p1, const v2f &p2, const v2f &p3, const Colour &, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
 		~Triangle();
 		
-		void setP1(const position &);
-		void setP2(const position &);
-		void setP3(const position &);
-		void setP123(const position &, const position &, const position &);
+		void setP1(const v2f &);
+		void setP2(const v2f &);
+		void setP3(const v2f &);
+		void setP123(const v2f &, const v2f &, const v2f &);
 		
-		void nudge(const position &);
+		void nudge(const v2f &);
 		
 		void setCol(const Colour &);
 		
 		void setLayer(int);
 		void setBlendMode(BlendMode::T);
 		
-		position p1, p2, p3;
+		v2f p1, p2, p3;
 		Colour col;
 		
 	private:
@@ -48,26 +48,26 @@ namespace W {
 	
 	class EqTriangle {
 	public:
-		EqTriangle(View *, const position &, float radius, const Colour &, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		EqTriangle(View *, const v2f &, float radius, const Colour &, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
 		~EqTriangle();
 		
-		void setPosition(const position &);
+		void setPosition(const v2f &);
 		void setRadius(float);
 		
-		void nudge(const position &);
+		void nudge(const v2f &);
 		
 		void setCol(const Colour &);
 
 		void setLayer(int);
 		void setBlendMode(BlendMode::T);
 		
-		position pos;
+		v2f pos;
 		float radius;
 		float rotation;
 		Colour col;
 		
 	private:
-		position p1, p2, p3;
+		v2f p1, p2, p3;
 		void genTriProperties();
 			// Gen from public properties, save result in p1-3
 		void *dTri;
@@ -77,27 +77,27 @@ namespace W {
 	
 	class IsoTriangle {
 	public:
-		IsoTriangle(View *, const position &, const size &, const Colour &, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		IsoTriangle(View *, const v2f &pos, const v2f &size, const Colour &, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
 		~IsoTriangle();
 		
-		void setPosition(const position &);
-		void setSize(const size &);
+		void setPosition(const v2f &);
+		void setSize(const v2f &);
 		void setRotation(float);
 		
-		void nudge(const position &);
+		void nudge(const v2f &);
 		
 		void setCol(const Colour &);
 		
 		void setLayer(int);
 		void setBlendMode(BlendMode::T);
 		
-		position pos;
-		size sz;
+		v2f pos;
+		v2f sz;
 		float rotation;
 		Colour col;
 	
 	private:
-		position p1, p2, p3;
+		v2f p1, p2, p3;
 		void genTriProperties();
 		void *dTri;
 		
@@ -106,22 +106,21 @@ namespace W {
 	
 	class Rectangle {
 	public:
-		Rectangle(View *, const position &, const size &, const Colour &, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		Rectangle(View *, const v2f &position, const v2f &size, const Colour &, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
 		~Rectangle();
 		
-		void setPos(const position &);
-		void setSz(const size &);
+		void setPos(const v2f &);
+		void setSz(const v2f &);
 		void setRot(float);
-		void setAll(const position &, const size &, float);
-		void nudge(const position &);
+		void setAll(const v2f &, const v2f &, float);
+		void nudge(const v2f &);
 		
 		void setCol(const Colour &);
 		
 		void setLayer(int);
 		void setBlendMode(BlendMode::T);
 		
-		position pos;
-		size sz;
+		v2f pos, size;
 		float rot;
 		Colour col;
 		
@@ -133,47 +132,49 @@ namespace W {
 	
 	class Line {
 	public:
-		Line(View *, const position &p1, const position &p2, const W::Colour, float width, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		Line(View *, const v2f &p1, const v2f &p2, const W::Colour, float width, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
 		~Line();
 		
-		void setP1(const position &);
-		void setP2(const position &);
-		void setP1And2(const position &p1, const position &p2);
-		void nudge(const position &);
+		void setP1(const v2f &);
+		void setP2(const v2f &);
+		void setP1And2(const v2f &p1, const v2f &p2);
+		void nudge(const v2f &);
 		
 		void setCol(const Colour &);
 		
 		void setLayer(int);
 		void setBlendMode(BlendMode::T);
 		
-		position p1, p2;
+		v2f p1, p2;
 		float lineWidth;
 		Colour col;
 		
 	private:
-		void genRectProperties(position &, size &, float &rot);
-		Rectangle *rectangle;
+		void genDelta();
+		v2f delta;
+			// We add/sub delta*width from p1 & p2 to get the
+			// rect's corners
+		void *dLine;
 	};
 	
 	
 	class Sprite {
 	public:
-		Sprite(View *, Texture *, const position &, const size &, float opacity = 1, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		Sprite(View *, Texture *, const v2f &pos, const v2f &scale = v2f(1.0,1.0), float opacity = 1, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
 		~Sprite();
 		
-		void setPos(const position &);
-		void setSz(const size &);
+		void setPos(const v2f &);
+		void setScale(const v2f &);
 		void setRot(float);
-		void setAll(const position &, const size &, float);
-		void nudge(const position &);
+		void setAll(const v2f &pos, const v2f &sz, float);
+		void nudge(const v2f &);
 		
 		void setOpacity(float);
 		
 		void setLayer(int);
 		void setBlendMode(BlendMode::T);
 		
-		position pos;
-		size sz;
+		v2f pos, scale;
 		float rot;
 		
 		float opac;

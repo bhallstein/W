@@ -14,13 +14,10 @@
 // - include DebugMacro.h to enable the w_dout macro
 // - to turn output on, define __W_DEBUG before including the file
 
-#ifndef W_DebugMacro_h
-#define W_DebugMacro_h
-
 #ifdef __W_DEBUG
+	#undef w_dout
 	#define w_dout std::cout
 #else
+	#undef w_dout
 	#define w_dout 0 && std::cout
-#endif
-
 #endif

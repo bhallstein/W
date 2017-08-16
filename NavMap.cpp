@@ -44,10 +44,10 @@ void W::NavNode::setComparand(float _min_dist) {
 }
 
 
-W::NavMap::NavMap(const size &_sz) :
-	w(_sz.width),
-	h(_sz.height),
-	open_nodes(_sz.width * _sz.height)
+W::NavMap::NavMap(const v2i &_sz) :
+	w(_sz.a),
+	h(_sz.b),
+	open_nodes(_sz.a * _sz.b)
 {
 	initialize();
 }
@@ -80,28 +80,28 @@ void W::NavMap::initialize() {
 	}
 }
 
-void W::NavMap::makeImpassable(const rect &r) {
-	for (int i = r.pos.x; i < r.pos.x + r.sz.width; i++)
-		for (int j = r.pos.y; j < r.pos.y + r.sz.height; j++)
+void W::NavMap::makeImpassable(const iRect &r) {
+	for (int i = r.position.a; i < r.position.a + r.size.a; i++)
+		for (int j = r.position.b; j < r.position.b + r.size.b; j++)
 			if (i < 0 || j < 0 || i >= w || j >= h)
 				throw(Exception("NavMap::makeImpassable encountered out-of-bounds coordinate."));
 			else
 				_makeImpassable(i, j);
 }
-void W::NavMap::makePassable(const rect &r) {
-	for (int i = r.pos.x; i < r.pos.x + r.sz.width; i++)
-		for (int j = r.pos.y; j < r.pos.y + r.sz.height; j++)
+void W::NavMap::makePassable(const iRect &r) {
+	for (int i = r.position.a; i < r.position.a + r.size.a; i++)
+		for (int j = r.position.b; j < r.position.b + r.size.b; j++)
 			if (i < 0 || j < 0 || i >= w || j >= h)
 				throw(Exception("NavMap::makePassable encountered out-of-bounds coordinate."));
 			else
 				_makePassable(i, j);
 }
 
-void W::NavMap::isolate(const rect &r) {
+void W::NavMap::isolate(const iRect &r) {
 	std::vector<NavNode *> edgey_nodes;
 	
-	for (int i = r.pos.x; i < r.pos.x + r.sz.width; i++) {
-		for (int j = r.pos.y; j < r.pos.y + r.sz.height; j++) {
+	for (int i = r.position.a; i < r.position.a + r.size.a; i++) {
+		for (int j = r.position.b; j < r.position.b + r.size.b; j++) {
 			if (i < 0 || j < 0 || i >= w || j >= h)
 				throw(Exception("NavMap::isolate encountered an out-of-bounds coordinate."));
 			NavNode *X = _nodeAt(i, j);
@@ -110,7 +110,7 @@ void W::NavMap::isolate(const rect &r) {
 			std::vector<NavNode*> &neighbours = X->neighbours;
 			for (std::vector<NavNode*>::iterator ity = neighbours.begin(); ity < neighbours.end(); ) {
 				NavNode *Y = *ity;
-				W::position _p(Y->x, Y->y);
+				v2i _p(Y->x, Y->y);
 				bool Y_is_part_of_obj = r.overlapsWith(_p);
 				// if Y is not part of obj, sever links with X & add both to edgey nodes
 				if (Y_is_part_of_obj) ity++;
@@ -175,17 +175,17 @@ void W::NavMap::isolate(const rect &r) {
 //		Y->addNeighbour(X);
 //	}
 }
-void W::NavMap::unisolate(const rect &r) {
+void W::NavMap::unisolate(const iRect &r) {
 	// TODO: unisolate
 }
 
-void W::NavMap::createConnection(const W::position &p1, const W::position &p2) {
+void W::NavMap::createConnection(const v2i &p1, const v2i &p2) {
 	NavNode *n1 = _nodeAt(p1);
 	NavNode *n2 = _nodeAt(p2);
 	n1->addNeighbour(n2);
 	n2->addNeighbour(n1);
 }
-void W::NavMap::removeConnection(const W::position &p1, const W::position &p2) {
+void W::NavMap::removeConnection(const v2i &p1, const v2i &p2) {
 	NavNode *n1 = _nodeAt(p1);
 	NavNode *n2 = _nodeAt(p2);
 	n1->removeNeighbour(n2);
@@ -195,19 +195,19 @@ void W::NavMap::removeConnection(const W::position &p1, const W::position &p2) {
 bool W::NavMap::isPassableAt(int atX, int atY) {
 	return nodes[atY*w + atX].passable;
 }
-bool W::NavMap::isPassableAt(const W::position &pos) {
-	return isPassableAt(pos.x, pos.y);
+bool W::NavMap::isPassableAt(const v2i &pos) {
+	return isPassableAt(pos.a, pos.b);
 }
-bool W::NavMap::isPassableUnder(const rect &r) {
-	const int &ox = r.pos.x, &oy = r.pos.y;
-	const int &ow = r.sz.width, &oh = r.sz.height;
+bool W::NavMap::isPassableUnder(const iRect &r) {
+	const int &ox = r.position.a, &oy = r.position.b;
+	const int &ow = r.size.a, &oh = r.size.b;
 	for (int i = ox; i < ox + ow; i++)
 		for (int j = oy; j < oy + oh; j++)
 			if (!isPassableAt(i, j)) return false;
 	return true;
 }
 
-bool W::NavMap::getRoute(int fromX, int fromY, int toX, int toY, std::vector<position> &route) {
+bool W::NavMap::getRoute(int fromX, int fromY, int toX, int toY, std::vector<v2i> &route) {
 	route.clear();
 	
 	if (fromX < 0 || fromX >= w || fromY < 0 || fromY >= h || toX < 0 || toX >= w || toY < 0 || toY >= h) {
@@ -269,11 +269,11 @@ bool W::NavMap::getRoute(int fromX, int fromY, int toX, int toY, std::vector<pos
 	
 	/* Get route */
 	for (X = &B; X != &A; X = X->route_prev) {
-		position p;
-		p.x = X->x, p.y = X->y;
+		v2i p;
+		p.a = X->x, p.b = X->y;
 		route.push_back(p);
 	}
-	route.push_back(position(A.x, A.y));
+	route.push_back(v2i(A.x, A.y));
 	
 	return true;
 }
@@ -328,6 +328,6 @@ void W::NavMap::_makeImpassable(int atX, int atY) {
 W::NavNode* W::NavMap::_nodeAt(int atX, int atY) {
 	return &nodes[atY * w + atX];
 }
-W::NavNode* W::NavMap::_nodeAt(const W::position &p) {
-	return &nodes[p.y * w + p.x];
+W::NavNode* W::NavMap::_nodeAt(const v2i &p) {
+	return &nodes[p.b * w + p.a];
 }

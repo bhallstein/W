@@ -41,10 +41,10 @@ namespace W {
 			if (c1) delete c1;
 			if (c2) delete c2;
 		}
-		TANode* insert(const W::size &sz, int atlasCurSideLength);
+		TANode* insert(const v2i &sz, int atlasCurSideLength);
 			// Attempt to insert image of size r here or among descendants
 		
-		W::rect rct;
+		W::iRect rct;
 		TANode *c1, *c2;
 		
 		W::Texture *tex;
@@ -80,16 +80,16 @@ W::TextureAtlas::TextureAtlas() :
 	
 	// Create initial node
 	topNode = new TANode;
-	topNode->rct.sz = size(TANODE_FULL_SIZE);
+	topNode->rct.size = v2i(TANODE_FULL_SIZE);
 }
 
 
 bool W::TextureAtlas::addTex(const std::string &filename, Texture *_tex) {
-	size imageSz;
+	v2i imageSz;
 	int imChannels;
 	unsigned char *imagedata = SOIL_load_image(
 		filename.c_str(),
-		&imageSz.width, &imageSz.height, &imChannels,
+		&imageSz.a, &imageSz.b, &imChannels,
 		SOIL_LOAD_RGBA	// Resulting array should thusly have 4 channels
 	);
 	if (!imagedata) {
@@ -105,7 +105,7 @@ bool W::TextureAtlas::addTex(const std::string &filename, Texture *_tex) {
 	
 	return success;
 }
-bool W::TextureAtlas::addTex(unsigned char *imagedata, const size &imageSz, W::Texture *_tex) {
+bool W::TextureAtlas::addTex(unsigned char *imagedata, const v2i &imageSz, W::Texture *_tex) {
 	// Find node to copy image into
 	TANode *n = NULL;
 	while(curTexPower <= TA_MAX_POWER && !n) {
@@ -121,21 +121,21 @@ bool W::TextureAtlas::addTex(unsigned char *imagedata, const size &imageSz, W::T
 	
 	// Copy image into megatexture at given node
 	int curAtlasSideLength = 1 << curTexPower;
-	const int &w1 = imageSz.width, &h1 = imageSz.height;
+	const int &w1 = imageSz.a, &h1 = imageSz.b;
 	int &w2 = curAtlasSideLength;
 	
 	for (int j=0; j < h1; ++j)
 		for (int i=0; i < w1*N_CHANNELS; ++i) {
 			int x = j*w1*N_CHANNELS + i;
-			int y = (j+n->rct.pos.y)*w2*N_CHANNELS + i + n->rct.pos.x*N_CHANNELS;
+			int y = (j+n->rct.position.b)*w2*N_CHANNELS + i + n->rct.position.a*N_CHANNELS;
 			data[y] = imagedata[x];
 		}
 	
 	// Set node & texture properties
 	n->tex = _tex;
 	_tex->taNode = n;
-	_tex->atlasA = n->rct.pos.x;
-	_tex->atlasB = n->rct.pos.y;
+	_tex->atlasA = n->rct.position.a;
+	_tex->atlasB = n->rct.position.b;
 	_tex->sz = imageSz;
 		
 	setModified();
@@ -146,8 +146,8 @@ void W::TextureAtlas::removeTex(TANode *_n) {
 	// can simply re-mark that part of the atlas as available.
 	_n->tex = NULL;
 	// Check if size should dynamically stretch to edge of Megatex
-	if (_n->rct.pos.x + _n->rct.sz.width == width())  _n->rct.sz.width = TANODE_FULL_SIZE;
-	if (_n->rct.pos.y + _n->rct.sz.height == width()) _n->rct.sz.height = TANODE_FULL_SIZE;
+	if (_n->rct.position.a + _n->rct.size.a == width()) _n->rct.size.a = TANODE_FULL_SIZE;
+	if (_n->rct.position.b + _n->rct.size.b == width()) _n->rct.size.b = TANODE_FULL_SIZE;
 }
 
 void W::TextureAtlas::allocate(int newTexPower) {
@@ -217,7 +217,7 @@ void W::TextureAtlas::debug(std::string f) {
 /*** TANode implementation ***/
 /*****************************/
 
-W::TANode* W::TANode::insert(const W::size &imageSz, int atlasCurSideLength) {
+W::TANode* W::TANode::insert(const v2i &imageSz, int atlasCurSideLength) {
 	if (isBranch()) {
 		// If this is a `split` node, try to insert in descendants
 		TANode *retnode = c1->insert(imageSz, atlasCurSideLength);
@@ -226,34 +226,26 @@ W::TANode* W::TANode::insert(const W::size &imageSz, int atlasCurSideLength) {
 	}
 	// This is an `area` node: try to insert, or create split if larger than image
 	if (tex) return NULL;
-	size nodeSize(
-		rct.sz.width == TANODE_FULL_SIZE ? atlasCurSideLength - rct.pos.x : rct.sz.width,
-		rct.sz.height == TANODE_FULL_SIZE ? atlasCurSideLength - rct.pos.y : rct.sz.height
+	v2i nodeSize(
+		rct.size.a == TANODE_FULL_SIZE ? atlasCurSideLength - rct.position.a : rct.size.a,
+		rct.size.b == TANODE_FULL_SIZE ? atlasCurSideLength - rct.position.b : rct.size.b
 	);
-	if (imageSz.width > nodeSize.width || imageSz.height > nodeSize.height) return NULL;
+	if (imageSz.a > nodeSize.a || imageSz.b > nodeSize.b) return NULL;
 	if (imageSz == nodeSize) return this;
 	else {
 		c1 = new TANode, c2 = new TANode;
-		bool split_horizontally = (nodeSize.width - imageSz.width >= nodeSize.height - imageSz.height);
+		bool split_horizontally = (nodeSize.a - imageSz.a >= nodeSize.b - imageSz.b);
 		if (split_horizontally) {
-			c1->rct = W::rect(
-				rct.pos,
-				W::size(imageSz.width, rct.sz.height)
-			);
-			c2->rct = rect(
-				position(rct.pos.x + imageSz.width, rct.pos.y),
-				size(rct.sz.width == TANODE_FULL_SIZE ? TANODE_FULL_SIZE : nodeSize.width - imageSz.width, rct.sz.height)
-			);
+			c1->rct.position = rct.position;
+			c1->rct.size     = v2i(imageSz.a, rct.size.b);
+			c2->rct.position = v2i(rct.position.a + imageSz.a, rct.position.b);
+			c2->rct.size     = v2i(rct.size.a == TANODE_FULL_SIZE ? TANODE_FULL_SIZE : nodeSize.a - imageSz.a, rct.size.b);
 		}
 		else {
-			c1->rct = W::rect(
-				rct.pos,
-				W::size(rct.sz.width, imageSz.height)
-			);
-			c2->rct = W::rect(
-				position(rct.pos.x, rct.pos.y + imageSz.height),
-				size(rct.sz.width, rct.sz.height == TANODE_FULL_SIZE ? TANODE_FULL_SIZE : nodeSize.height - imageSz.height)
-			);
+			c1->rct.position = rct.position;
+			c1->rct.size     = v2i(rct.size.a, imageSz.b);
+			c2->rct.position = v2i(rct.position.a, rct.position.b + imageSz.b);
+			c2->rct.size     = v2i(rct.size.a, rct.size.b == TANODE_FULL_SIZE ? TANODE_FULL_SIZE : nodeSize.b - imageSz.b);
 		}
 		return c1->insert(imageSz, atlasCurSideLength);
 	}

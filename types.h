@@ -33,130 +33,139 @@
 
 #endif
 
-#include "Colour.h"
-
 namespace W {
 
 	extern int DEFAULT_LAYER;
 	
-	namespace DrawableType {
-		enum T { Coloured, Textured };
-	}
 	namespace BlendMode {
 		enum T { Normal, Additive };
 	}
 	
-	/* Coordinates & such */
-	struct size {
-		int width, height;
-		size() : width(0), height(0) { }
-		size(int _s) : width(_s), height(_s) { }
-		size(int _w, int _h) : width(_w), height(_h) { }
-		bool operator== (const size &sz) const { return (width == sz.width && height == sz.height); }
-		bool operator!= (const size &sz) const { return (width != sz.width || height != sz.height); }
-		size operator+  (const size &sz) const { return size(width+sz.width,height+sz.height); }
-		size operator-  (const size &sz) const { return size(width-sz.width,height-sz.height); }
-		void operator+= (const size &sz) { width += sz.width; height += sz.height; }
-		void operator-= (const size &sz) { width -= sz.width; height -= sz.height; }
-		size operator*  (float x) const { return size(width*x,height*x); }
-		size operator*  (int x)   const { return size(width*x,height*x); }
-		size operator/  (float x) const { return size(width/x,height/x); }
-		size operator/  (int x)   const { return size(width/x,height/x); }
-		void operator*= (float x) { width *= x; height *= x; }
-		void operator*= (int x)   { width *= x; height *= x; }
-		void operator/= (float x) { width /= x; height /= x; }
-		void operator/= (int x)   { width /= x; height /= x; }
-		std::string str() const {
-			std::stringstream ss;
-			ss << width << "x" << height;
-			return ss.str();
-		}
-	};
-	struct position {
-		int x, y;
-		float a, b;
-		position() : x(0), y(0), a(0), b(0) { }
-		position(int _x, int _y) : x(_x), y(_y), a(0), b(0) { }
-		position(float _a, float _b) : x(0), y(0), a(_a), b(_b) { }
-		position(int _x, int _y, float _a, float _b) : x(_x), y(_y), a(_a), b(_b) { }
-		position operator+ (const position &pos2) const {
-			return position(
-							x + pos2.x, y + pos2.y,
-							a + pos2.a, b + pos2.b
-							);
-		}
-		void operator+= (const position &pos2) {
-			x += pos2.x, y += pos2.y;
-			a += pos2.a, b += pos2.b;
-		}
-		position operator- (const position &pos2) const {
-			return position(
-							x - pos2.x, y - pos2.y,
-							a - pos2.a, b - pos2.b
-							);
-		}
-		void operator-= (const position &pos2) {
-			x -= pos2.x, y -= pos2.y;
-			a -= pos2.a, b -= pos2.b;
-		}
-		bool operator== (const position &pos2) const {
-			return
-			x == pos2.x &&
-			y == pos2.y &&
-			a == pos2.a &&
-			b == pos2.b;
-		}
-		bool operator!= (const position &pos2) const {
-			return
-			x != pos2.x ||
-			y != pos2.y ||
-			a != pos2.a ||
-			b != pos2.b;
-		}
-		position operator+ (const size &sz) const {
-			return position(x + sz.width, y + sz.height);
-		}
-		void operator+= (const size &sz) {
-			x += sz.width, y += sz.height;
-		}
-		position operator- (const size &sz) const {
-			return position(x - sz.width, y - sz.height);
-		}
-		void operator-= ( const size &sz) {
-			x -= sz.width, y -= sz.height;
-		}
+	
+	/* Vector types */
+	
+	struct v2i {
+		int a, b;
 		
-		std::string xyStr() const {
-			std::stringstream ss;
-			ss << x << "," << y;
-			return ss.str();
-		}
-		std::string abStr() const {
-			std::stringstream ss;
-			ss << a << "," << b;
-			return ss.str();
-		}
-		std::string str() const {
-			return xyStr() + "[" + abStr() + "]";
-		}
+		v2i();
+		v2i(int x);
+		v2i(int a, int b);
+		
+		bool operator== (const v2i &v) const;
+		bool operator!= (const v2i &v) const;
+		v2i operator+ (const v2i &v) const;
+		v2i operator- (const v2i &v) const;
+		void operator+= (const v2i &v);
+		void operator-= (const v2i &v);
+		v2i operator*  (int x) const;
+		v2i operator/  (int x) const;
+		void operator*= (int x);
+		void operator/= (int x);
+		
+		v2i& operator= (const v2i &);
+		
+		std::string str() const;
 	};
-	struct rect {
-		W::position pos;
-		W::size sz;
-		rect() { }
-		rect(position _pos, size _sz) : pos(_pos), sz(_sz) { }
-		void setPos(const W::position &_pos) { pos = _pos; }
-		void setSz(const W::size &_sz) { sz = _sz; }
-		bool overlapsWith(const W::position &p) const {
-			float x = pos.x + pos.a, y = pos.y + pos.b;
-			return (p.x >= x && p.x < x + sz.width && p.y >= y && p.y < y + sz.height);
-		}
-		std::string str() const {
-			return pos.str() + std::string("/") + sz.str();
-		}
+	
+	struct v2f {
+		float a, b;
+		
+		v2f();
+		v2f(float x);
+		v2f(float a, float b);
+		v2f(const v2i &);
+		
+		bool operator== (const v2f &v) const;
+		bool operator!= (const v2f &v) const;
+		v2f operator+ (const v2f &v) const;
+		v2f operator- (const v2f &v) const;
+		void operator+= (const v2f &v);
+		void operator-= (const v2f &v);
+		v2f operator*  (float x) const;
+		v2f operator/  (float x) const;
+		void operator*= (float x);
+		void operator/= (float x);
+		
+		v2f& operator= (const v2f &);
+		
+		std::string str() const;
 	};
+	
+	struct v3f {
+		float a, b, c;
+		v3f();
+		v3f(float x);
+		v3f(float a, float b, float c);
+		
+		bool operator== (const v3f &v) const;
+		bool operator!= (const v3f &v) const;
+		v3f operator+ (const v3f &v);
+		v3f operator- (const v3f &v);
+		void operator+= (const v3f &v);
+		void operator-= (const v3f &v);
+		v3f operator*  (float x) const;
+		v3f operator/  (float x) const;
+		void operator*= (float x);
+		void operator/= (float x);
+		
+		v3f& operator= (const v3f &);
+		v3f& operator= (const v2f &);
+		
+		std::string str() const;
+	};
+	
+	
+	class Colour;
+	
+	struct v4f {
+		float a, b, c, d;
+		v4f();
+		v4f(float x);
+		v4f(float a, float b, float c, float d);
+		
+		bool operator== (const v4f &v) const;
+		bool operator!= (const v4f &v) const;
+		v4f operator+ (const v4f &v) const;
+		v4f operator- (const v4f &v) const;
+		void operator+= (const v4f &v);
+		void operator-= (const v4f &v);
+		v4f operator*  (float x) const;
+		v4f operator/  (float x) const;
+		void operator*= (float x);
+		void operator/= (float x);
+		
+		v4f& operator= (const v4f &);
+		v4f& operator= (const Colour *);
+		
+		std::string str() const;
+	};
+	
+	
+	struct iRect {
+		v2i position;
+		v2i size;
+		
+		iRect();
+		iRect(v2i _p, v2i _s);
+		
+		bool overlapsWith(const v2i &coord) const;
+		std::string str() const;
+	};
+	struct fRect {
+		v2f position;
+		v2f size;
+
+		fRect();
+		fRect(v2f _p, v2f _s);
+		fRect(const iRect &);
+
+		bool overlapsWith(const v2f &coord) const;
+		std::string str() const;
+	};
+	
 
 	/* Exceptions */
+	
 	class Exception : public std::exception {
 	public:
 		Exception(const std::string &_msg) : msg(_msg) { }
@@ -169,7 +178,9 @@ namespace W {
 		std::string msg;
 	};
 	
+	
 	/* String-related helper functions */
+	
 	bool isNum(const char c);
 	std::string upCase(const std::string &);
 	std::string downCase(const std::string &);
@@ -182,46 +193,13 @@ namespace W {
 		return !(ss >> t).fail();
 	}
 
+	
 	/* File/Directory helper functions */
+	
 	bool isValidDir(const std::string &path);
 	bool isValidDir(const char *path);
 	bool createDir(const std::string &path);
 	bool createDir(const char *path);
-	
-	// Vertexy stuff
-	struct v3f {
-		float x, y, z;
-		std::string str() {
-			std::stringstream ss;
-			ss << '{' << x << ',' << y << ',' << z << '}';
-			return ss.str();
-		}
-		void operator= (const W::position &p) {
-			x = p.x, y = p.y, z = 0;
-		}
-	};
-	struct c4f {
-		float r, g, b, a;
-		std::string str() {
-			std::stringstream ss;
-			ss << "{r:" << r << ",b:" << b << ",g:" << g << ",a:" << a << "}";
-			return ss.str();
-		}
-		void operator= (const W::Colour &c) {
-			r = c.r, g = c.g, b = c.b, a = c.a;
-		}
-		void operator= (const c4f &c) {
-			r = c.r, g = c.g, b = c.b, a = c.a;
-		}
-	};
-	struct t2f {
-		float x, y;
-		std::string str() {
-			std::stringstream ss;
-			ss << '{' << x << ',' << y << '}';
-			return ss.str();
-		}
-	};
 	
 }
 

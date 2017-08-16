@@ -37,7 +37,7 @@ namespace W {
 	public:
 		StorageObjForColouredShapes();
 		~StorageObjForColouredShapes();
-		TemplatedArrayThingy<c4f> c_array;
+		TemplatedArrayThingy<v4f> c_array;
 		
 		void addDrawable(DColouredShape *);
 		void removeDrawable(DColouredShape *);
@@ -60,8 +60,8 @@ namespace W {
 	public:
 		StorageObjForTexturedShapes();
 		~StorageObjForTexturedShapes();
-		TemplatedArrayThingy<c4f> c_array;
-		TemplatedArrayThingy<t2f> t_array;
+		TemplatedArrayThingy<v4f> c_array;
+		TemplatedArrayThingy<v2f> t_array;
 		
 		void addDrawable(DTexturedShape *);
 		void removeDrawable(DTexturedShape *);

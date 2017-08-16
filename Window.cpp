@@ -32,7 +32,7 @@ bool W::Retina;
 /*** Window: common implementation ***/
 /*************************************/
 
-W::Window::Window(const size &_sz, const std::string &_title) :
+W::Window::Window(const v2i &_sz, const std::string &_title) :
 	sz(_sz),
 	objs(NULL),
 	winSizeHasChanged(false)
@@ -65,17 +65,17 @@ void W::Window::setUpOpenGL() {
 void W::Window::setUpViewport() {
 	w_dout << "Window::setUpViewport()\n";
 	w_dout << " setting viewport to " << sz.str() << "\n";
-	glViewport(0, 0, sz.width, sz.height);
+	glViewport(0, 0, sz.a, sz.b);
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, sz.width, sz.height, 0, -1, 1);
+	glOrtho(0, sz.a, sz.b, 0, -1, 1);
 	
 	glMatrixMode(GL_MODELVIEW);
 	w_dout << "\n";
 }
 void W::Window::beginDrawing() {
-	glScissor(0, 0, sz.width, sz.height);
+	glScissor(0, 0, sz.a, sz.b);
 	glClearColor(0.525, 0.187, 0.886, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
@@ -84,32 +84,32 @@ void W::Window::beginDrawing() {
 	#endif
 }
 void W::Window::generateMouseMoveEvent() {
-	position p = getMousePosition();
-	if (p.x >= 0 && p.y >= 0 && p.x < sz.width && p.y < sz.height)
+	v2i p = getMousePosition();
+	if (p.a >= 0 && p.b >= 0 && p.a < sz.a && p.b < sz.b)
 		W::Event::_addEvent(new W::Event(EventType::MouseMove, p));
 	
 	static int generosity = 20, scrollMargin = 20;
 	// If within the view + generosity margin...
-	if (p.x >= -generosity && p.y >= -generosity && p.x < sz.width+generosity && p.y < sz.height+generosity) {
-		if (p.x < scrollMargin) {
-			float d = float(scrollMargin-p.x)/float(scrollMargin);
+	if (p.a >= -generosity && p.b >= -generosity && p.a < sz.a+generosity && p.b < sz.b+generosity) {
+		if (p.a < scrollMargin) {
+			float d = float(scrollMargin-p.a)/float(scrollMargin);
 			W::Event::_addEvent(new Event(EventType::ScreenEdgeLeft, float(d>1.0?1.0:d)));
 		}
-		else if (p.x >= sz.width-scrollMargin) {
-			float d = float(p.x-(sz.width-scrollMargin))/float(scrollMargin);
+		else if (p.a >= sz.a-scrollMargin) {
+			float d = float(p.a-(sz.a-scrollMargin))/float(scrollMargin);
 			W::Event::_addEvent(new Event(EventType::ScreenEdgeRight, float(d>1.0?1.0:d)));
 		}
-		if (p.y < scrollMargin) {
-			float d = float(scrollMargin-p.y)/float(scrollMargin);
+		if (p.b < scrollMargin) {
+			float d = float(scrollMargin-p.b)/float(scrollMargin);
 			W::Event::_addEvent(new Event(EventType::ScreenEdgeTop, float(d>1.0?1.0:d)));
 		}
-		else if (p.y >= sz.height-scrollMargin) {
-			float d = float(p.y-(sz.height-scrollMargin))/float(scrollMargin);
+		else if (p.b >= sz.b-scrollMargin) {
+			float d = float(p.b-(sz.b-scrollMargin))/float(scrollMargin);
 			W::Event::_addEvent(new Event(EventType::ScreenEdgeBottom, float(d>1.0?1.0:d)));
 		}
 	}
 }
-void W::Window::updateSize(const W::size &_sz) {
+void W::Window::updateSize(const W::v2i &_sz) {
 	if (sz != _sz) {
 		sz = _sz;
 		winSizeHasChanged = true;
@@ -142,7 +142,7 @@ void W::Window::createWindow() {
 	
 	objs = new Objs();
 	
-	objs->w_window = [[W_Window alloc] initWithWidth:sz.width height:sz.height];
+	objs->w_window = [[W_Window alloc] initWithWidth:sz.a height:sz.b];
 	if (objs->w_window == nil)
 		throw Exception("Could not create window; see log file for details");
 	
@@ -166,9 +166,9 @@ void W::Window::clearOpenGLThreadAffinity() {
 void W::Window::flushBuffer() {
 	[objs->w_window flushBuffer];
 }
-W::position W::Window::getMousePosition() {
+W::v2i W::Window::getMousePosition() {
 	NSPoint p = [objs->w_window getMousePosition];
-	return position((int)p.x, (int)p.y);
+	return v2i((int)p.x, (int)p.y);
 }
 
 #pragma mark - iOS implementation
@@ -207,7 +207,7 @@ void W::Window::createWindow() {
 	objs->view = objs->vc.v;
 	objs->view.w_window = this;
 	
-	sz = size(objs->view.bounds.size.width, objs->view.bounds.size.height) * objs->view.contentScaleFactor;
+	sz = v2i(objs->view.bounds.size.width, objs->view.bounds.size.height) * objs->view.contentScaleFactor;
 	
 	Retina = [objs->vc deviceIsRetina];
 }
@@ -230,7 +230,7 @@ void W::Window::setUpForDrawing() {
 	[objs->view bindFramebuffer];
 }
 void W::Window::setTitle(const std::string &t) { }
-W::position W::Window::getMousePosition() { return position(); }
+W::v2i W::Window::getMousePosition() { return v2i(); }
 
 #pragma mark - Windows implementation
 
@@ -253,7 +253,7 @@ struct W::Window::Objs {
 // Initialization
 
 LRESULT CALLBACK Window_WndProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM lParam) {
-	// If message if WM_NCCREATE, set pointer to MyWindow
+	// If message is WM_NCCREATE, set pointer to MyWindow
 	// (Since in CreateWindowEx we set lpParam to 'this', lParam is here a ptr to the window)
 	if (msg == WM_NCCREATE) {
 		LPCREATESTRUCT cs = (LPCREATESTRUCT) lParam;
