@@ -89,7 +89,7 @@ unsigned long Timer::getMicrosecondsCPU()
 #elif defined _WIN32 || _WIN64
 
 //#include "OgreStableHeaders.h"
-#include "OgreTimer.h"
+#include "Timer.h"
 #include <algorithm>
 //#include "OgreBitwise.h"
 

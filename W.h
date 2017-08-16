@@ -6,6 +6,10 @@
 #include <fstream>
 #include "mtrand.h"
 
+#if defined WIN32 || WIN64
+	#include "Windows.h"
+#endif
+
 namespace W {
 	
 	/* Logging */
@@ -35,6 +39,7 @@ namespace W {
 	
 	/* Game loopery */
 	void startGameLoop();
+	void stopGameLoop();
 	extern bool _quit;
 	extern void* _demon;
 	void _runGameLoop();
@@ -47,6 +52,11 @@ namespace W {
 	
 	/* Bollocks */
 	extern int INFINITATION;
+
+	/* Windows timery */
+	#if defined WIN32 || WIN64
+		void CALLBACK TimerProc(HWND, UINT, UINT_PTR, DWORD);
+	#endif
 	
 	struct _init;
 	extern _init *_initializer;

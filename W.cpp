@@ -1,8 +1,13 @@
 #include "W.h"
 #include <iostream>
 #include <ctime>
-#include <Cocoa/Cocoa.h>
-#include "ObjC-Classes.h"
+
+#ifdef __APPLE__
+	#include <Cocoa/Cocoa.h>
+	#include "ObjC-Classes.h"
+#elif defined WIN32 || WIN64
+	#include "shlobj.h"
+#endif
 
 #define MAX_PATH 250
 
@@ -21,11 +26,18 @@ int W::INFINITATION = 99999999;
 struct W::_init {
 	_init() {
 		// Set default log path
-		char path[MAX_PATH] = "";
-		[NSHomeDirectory() getCString:path maxLength:MAX_PATH encoding:NSUTF8StringEncoding];
-		std::string p = path;
-		p += "/Desktop/W_app_log.txt";
-		setLogPath(p.c_str());
+		#ifdef __APPLE
+			char path[MAX_PATH] = "";
+			[NSHomeDirectory() getCString:path maxLength:MAX_PATH encoding:NSUTF8StringEncoding];
+			std::string p = path;
+			p += "/Desktop/W_app_log.txt";
+			setLogPath(p.c_str());
+		#elif defined WIN32 || WIN64
+			char path[MAX_PATH] = "";
+			SHGetFolderPath(NULL, CSIDL_DESKTOPDIRECTORY, NULL, 0, path);
+			std::string p = path;
+			p += "/DBTlog.txt";
+		#endif
 		
 		// Init MTRand
 		time_t timey;
@@ -33,7 +45,11 @@ struct W::_init {
 		twister.seed(timey);
 		
 		// Init the Demon (runs the gameloop timer)
-		_demon = (void*) [[W_Demon alloc] init];
+		#ifdef __APPLE__
+			_demon = (void*) [[W_Demon alloc] init];
+		#elif defined WIN32 || WIN64
+			// ...
+		#endif
 	}
 };
 struct W::_init *W::_initializer = new W::_init();
@@ -72,8 +88,23 @@ void W::_addEvent(const Event &ev) {
 	_evqueue.push_back(ev);
 }
 
+
+VOID CALLBACK W::TimerProc(HWND windowHandle, UINT msg, UINT_PTR idEvent, DWORD dwTime) {
+	W::_runGameLoop();
+}
 void W::startGameLoop() {
-	[( W_Demon*)_demon gametimerStart];
+	#ifdef __APPLE__
+		[( W_Demon*)_demon gametimerStart];
+	#elif defined WIN32 || WIN64
+		SetTimer(NULL, 0, 33, (TIMERPROC) W::TimerProc);
+	#endif
+}
+void W::stopGameLoop() {
+	#ifdef __APPLE__
+		[( W_Demon*)_demon gametimerStop];
+	#elif defined WIN32 || WIN64
+		KillTimer(NULL, 0);
+	#endif
 }
 void W::_runGameLoop() {
 	_windows[0]->_generateMouseMoveEvent();	// TODO: only generate if within window bounds (plus some border)
@@ -122,8 +153,12 @@ void W::_runGameLoop() {
 	}
 	else {
 		_quit = true;
-		[( W_Demon*)_demon gametimerStop];
-		[NSApp performSelector:@selector(terminate:) withObject:nil afterDelay:0];
+		stopGameLoop();
+		#ifdef __APPLE__
+			[NSApp performSelector:@selector(terminate:) withObject:nil afterDelay:0];
+		#elif defined WIN32 || WIN64
+			// Need to monitor _quit in WinMain
+		#endif
 	}
 }
 

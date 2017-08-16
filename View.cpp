@@ -142,8 +142,8 @@ void W::View::drawText(float x, float y, Colour &col, const char *text, bool rAl
 				break;
 			}
 			case 'L' : case 'l' : {
-				drawRect(x+1, y, 2, 10, col, 0);
-				drawRect(x+3, y+8, 6, 2, col, 0);
+				drawRect(x, y, 2, 10, col, 0);
+				drawRect(x+2, y+8, 6, 2, col, 0);
 				break;
 			}
 			case 'M' : case 'm' : {

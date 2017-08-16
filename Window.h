@@ -3,6 +3,11 @@
 
 #include "types.h"
 #include "Colour.h"
+#include "Event.h"
+
+#if defined WIN32 || WIN64
+	#include "Windows.h"
+#endif
 
 namespace W {
 
@@ -25,16 +30,30 @@ namespace W {
 		void _drawRect(float x, float y, float w, float h, const W::Colour &, float rot);
 
 		size _getDimensions();
+#if defined WIN32 || WIN64
+		LRESULT CALLBACK _WndProc(HWND, UINT, WPARAM, LPARAM);
+#endif
 		
 	protected:
-		void createWindow();
-		void closeWindow();
+		void _createWindow();
+		void _closeWindow();
 		
-		void setUpOpenGL();
+		void _setUpOpenGL();
 		
-		Window_NativeObjs *objs;
-		View *current_drawn_view;
+		Window_NativeObjs *_objs;
+		View *_current_drawn_view;
+
+#if defined WIN32 || WIN64
+		struct _initializer;
+		static _initializer *_init;
+		static HINSTANCE _appInstance;
+		void _convertToWEvent(W::Event &, UINT, WPARAM, LPARAM);
+#endif
 	};
+
+#if defined WIN32 || WIN64
+	LRESULT CALLBACK Window_WndProc(HWND, UINT, WPARAM, LPARAM);
+#endif
 	
 }
 

@@ -63,6 +63,8 @@ namespace W {
 		{
 			
 		}
+
+		static W::KeyCode::T charToKeycode(unsigned int c);
 		
 		void setCoords(int x, int y, int a = 0, int b = 0) {
 			pos.x = x, pos.y = y;
