@@ -15,6 +15,11 @@ namespace W {
 			float y = rct.pos.y + rct.pos.b;
 			return (p.x >= x && p.x < x + rct.sz.width && p.y >= y && p.y < y + rct.sz.height);
 		}
+		std::string xyStr() {
+			std::stringstream ss;
+			ss << rct.pos.x << "," << rct.pos.y;
+			return ss.str();
+		}
 	};
 	
 }
