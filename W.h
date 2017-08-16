@@ -10,6 +10,8 @@
 	#include "Windows.h"
 #endif
 
+#include "SharedGraphicsState.h"
+
 namespace W {
 	
 	/* Logging */
@@ -44,9 +46,12 @@ namespace W {
 	
 	class Window;
 	
-	/* The Window */
+	/* The window */
 	extern Window *_window;
 	void _updateAllViewPositions();
+	
+	/* Graphics state */
+	extern SGS *_sgs;
 	
 	/* Bollocks */
 	extern int W_INFINITY;

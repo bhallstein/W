@@ -11,8 +11,6 @@
 
 namespace W {
 
-	struct Window_NativeObjs;
-
 	class View;
 	
 	class Window {
@@ -40,7 +38,8 @@ namespace W {
 		
 		void _setUpOpenGL();
 		
-		Window_NativeObjs *_objs;
+		struct NativeObjs;
+		struct NativeObjs *_objs;
 		View *_current_drawn_view;
 
 #if defined WIN32 || WIN64

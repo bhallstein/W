@@ -123,7 +123,7 @@ void W::UIView::updatePosition(const size &winsize) {
 	// Update element positions
 	element_list *ellist = &ellist_vec->at(cur_positioning_index);
 	for (element_list::iterator it = ellist->begin(); it < ellist->end(); it++)
-		(*it)->update(plan[0].sz);
+		(*it)->updatePosition(plan[0].sz);
 }
 
 bool W::UIView::initialize(const std::string &viewname) {

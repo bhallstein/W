@@ -13,7 +13,7 @@ W::UIElement::~UIElement()
 	delete positioner;
 }
 
-void W::UIElement::update(const W::size &_s) {
+void W::UIElement::updatePosition(const W::size &_s) {
 	rect &r = positioner->refresh(_s);
 	pos = r.pos;
 	plan[0].sz = r.sz;

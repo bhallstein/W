@@ -23,7 +23,7 @@ namespace W {
 		UIElement(const std::string &_name, W::Positioner *, EvTypeMap &);
 		~UIElement();
 		
-		void update(const size &containersize);		// Update positioner
+		void updatePosition(const size &containersize);
 		
 	protected:
 		std::string name;

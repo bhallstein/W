@@ -25,8 +25,10 @@ namespace W {
 	bool  _quit = false;
 	void* _demon;
 	
+	SGS *_sgs = new SGS;
+	
 	int W_INFINITY = 99999999;
-	int W_MAXPATH = 300;
+	int W_MAXPATH = 450;
 }
 
 struct W::_init {

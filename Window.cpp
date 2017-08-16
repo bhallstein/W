@@ -12,18 +12,18 @@
 
 #include <iostream>
 
-struct W::Window_NativeObjs {
-#ifdef __APPLE__
-	NSWindow *window;
-	W_WindowDelegate *windowDelegate;
-	W_View *view;
-	NSOpenGLPixelFormat *pf;
-	NSOpenGLContext *context;
-#elif defined WIN32 || WIN64
-	HWND windowHandle;
-	HDC deviceContext;
-	HGLRC renderingContext;
-#endif
+struct W::Window::NativeObjs {
+	#ifdef __APPLE__
+		NSWindow *window;
+		W_WindowDelegate *windowDelegate;
+		W_View *view;
+		NSOpenGLPixelFormat *pf;
+		NSOpenGLContext *context;
+	#elif defined WIN32 || WIN64
+		HWND windowHandle;
+		HDC deviceContext;
+		HGLRC renderingContext;
+	#endif
 };
 
 
@@ -81,22 +81,7 @@ W::Window::Window()
 		throw Exception(s);
 	}
 	
-	_objs = new Window_NativeObjs();
-
-#ifdef __APPLE__
-	// Create OpenGL context
-	NSOpenGLPixelFormatAttribute attrs[] = { NSOpenGLPFADoubleBuffer, 0 };
-	_objs->pf = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
-	if (_objs->pf == nil)
-		throw Exception("Couldn't get an appropriate pixel format");
-	_objs->context = [[NSOpenGLContext alloc] initWithFormat:_objs->pf shareContext:nil];
-	if (_objs->context == nil) {
-		[_objs->pf release];
-		throw Exception("Couldn't create opengl context");
-	}
-#elif defined WIN32 || WIN64
-	// [ all done in createWindow() ]
-#endif
+	_objs = new NativeObjs();
 	
 	// Create window
 	_createWindow();
@@ -105,16 +90,17 @@ W::Window::Window()
 	W::_window = this;
 }
 W::Window::~Window() {
+	delete _objs;
 	// Unset W::_window
 	W::_window = NULL;
 }
 
 void W::Window::setTitle(const char *t) {
-#ifdef __APPLE__
-	[_objs->window setTitle:[NSString stringWithUTF8String:t]];
-#elif defined WIN32 || WIN64
-	SetWindowText(_objs->windowHandle, t);
-#endif
+	#ifdef __APPLE__
+		[_objs->window setTitle:[NSString stringWithUTF8String:t]];
+	#elif defined WIN32 || WIN64
+		SetWindowText(_objs->windowHandle, t);
+	#endif
 }
 
 void W::Window::_generateMouseMoveEvent() {
@@ -143,138 +129,152 @@ void W::Window::_generateMouseMoveEvent() {
 }
 
 void W::Window::_createWindow() {
-#ifdef __APPLE__
-	NSRect frame = NSMakeRect(0, 0, 800, 600);
-	_objs->window = [[NSWindow alloc] initWithContentRect:frame
-											   styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask /*| NSResizableWindowMask*/
-												 backing:NSBackingStoreBuffered
-												   defer:NO];
-//	NSWindowCollectionBehavior coll = [_objs->window collectionBehavior];	// Enable lion fullscreenery
-//	coll |= NSWindowCollectionBehaviorFullScreenPrimary;					//
-//	[_objs->window setCollectionBehavior:coll];								//
-	
-	[_objs->window center];
-	
-	NSRect viewRect = NSMakeRect(0, 0, frame.size.width, frame.size.height);
-	_objs->view = [[W_View alloc] initWithFrame:viewRect];
-	
-	[_objs->window setContentView:_objs->view];	// Add view to window
-	
-	[_objs->context setView:_objs->view];			// Set view as context’s drawable object
-	
-	_objs->windowDelegate = [[W_WindowDelegate alloc] init];	// Create delegate to handle window close
-	[_objs->window setDelegate:_objs->windowDelegate];
-	
-	[_objs->window makeKeyAndOrderFront:NSApp];
-	[_objs->window makeFirstResponder:_objs->view];
+	#ifdef __APPLE__
+		// Create OpenGL context
+		NSOpenGLPixelFormatAttribute attrs[] = { NSOpenGLPFADoubleBuffer, 0 };
+		_objs->pf = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
+		if (_objs->pf == nil)
+			throw Exception("Couldn't get an appropriate pixel format");
+		_objs->context = [[NSOpenGLContext alloc] initWithFormat:_objs->pf shareContext:nil];
+		if (_objs->context == nil) {
+			[_objs->pf release];
+			throw Exception("Couldn't create opengl context");
+		}
+		// Turn on VSync
+		int vsync = 1;
+		[_objs->context setValues:&vsync forParameter:NSOpenGLCPSwapInterval];
+		
+		NSRect frame = NSMakeRect(0, 0, 800, 600);
+		_objs->window = [[NSWindow alloc] initWithContentRect:frame
+												   styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask /*| NSResizableWindowMask*/
+													 backing:NSBackingStoreBuffered
+													   defer:NO];
+	//	NSWindowCollectionBehavior coll = [_objs->window collectionBehavior];	// Enable lion fullscreenery
+	//	coll |= NSWindowCollectionBehaviorFullScreenPrimary;					//
+	//	[_objs->window setCollectionBehavior:coll];								//
+		
+		[_objs->window center];
+		
+		NSRect viewRect = NSMakeRect(0, 0, frame.size.width, frame.size.height);
+		_objs->view = [[W_View alloc] initWithFrame:viewRect];
+		
+		[_objs->window setContentView:_objs->view];	// Add view to window
+		
+		[_objs->context setView:_objs->view];			// Set view as context’s drawable object
+		
+		_objs->windowDelegate = [[W_WindowDelegate alloc] init];	// Create delegate to handle window close
+		[_objs->window setDelegate:_objs->windowDelegate];
+		
+		[_objs->window makeKeyAndOrderFront:NSApp];
+		[_objs->window makeFirstResponder:_objs->view];
 
-#elif defined WIN32 || WIN64
-	// Set window style & size
-	DWORD windowStyle = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
-	DWORD extendedWindowStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
-	
-	int width = 800, height = 600;
+	#elif defined WIN32 || WIN64
+		// Set window style & size
+		DWORD windowStyle = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+		DWORD extendedWindowStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
+		
+		int width = 800, height = 600;
 
-	RECT rect;
-	rect.left = 0, rect.right = width;
-	rect.top = 0, rect.bottom = height;
-	AdjustWindowRectEx(&rect, windowStyle, FALSE, extendedWindowStyle);
-	
-	// Create window
-	_objs->windowHandle = CreateWindowEx(
-		extendedWindowStyle,
-		"W_Window",						// window class
-		"My Sexy W Application",		// title
-		windowStyle,
-		0, 0,			// position
-		rect.right - rect.left,
-		rect.bottom - rect.top,
-		NULL,			// parent window
-		NULL,			// menu
-		_appInstance,
-		this
-	);
-	if(_objs->windowHandle == NULL) {
-		DWORD err = GetLastError();
-		char errorMsg[200];
-		wsprintf(errorMsg, "Error creating window. Error code: %d, %X.", err, err);
-		_closeWindow();
-		throw Exception(errorMsg);
-	}
-	// Get device context
-	if (!(_objs->deviceContext = GetDC(_objs->windowHandle))) {
-		_closeWindow();
-		throw Exception("Error creating an OpenGL device context");
-	}
-	// Create pixel format
-	int pf;
-	static PIXELFORMATDESCRIPTOR pfd = {
-		sizeof(PIXELFORMATDESCRIPTOR),
-		1,						// Version number
-		PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, // Support windows, opengl, and double buffering
-		PFD_TYPE_RGBA,
-		16,						// Colour bit depth
-		0, 0, 0, 0, 0, 0,		// Color bits (ignored)
-		0,						// Alpha buffer
-		0,						// Shift bit
-		0,						// Accumulation buffer
-		0, 0, 0, 0,				// Accumulation bits (ignored)
-		16,						// 16 bit depth buffer
-		0,						// Stencil buffer
-		0,						// Auxiliary buffer
-		PFD_MAIN_PLANE,			// Main drawing layer
-		0,						// Reserved
-		0, 0, 0					// Layer Masks Ignored
-	};
-	if (!(pf = ChoosePixelFormat(_objs->deviceContext, &pfd))) {
-		_closeWindow();
-		throw Exception("Unable to get a suitable pixel format");
-	}
-	if(!SetPixelFormat(_objs->deviceContext, pf, &pfd)) {
-		_closeWindow();
-		throw Exception("Unable to set the pixel format");
-	}
-	// Create rendering context
-	if (!(_objs->renderingContext = wglCreateContext(_objs->deviceContext))) {
-		_closeWindow();
-		throw Exception("Error creating a rendering context");
-	}
-	// Make rendering context current
-	if (!wglMakeCurrent(_objs->deviceContext, _objs->renderingContext)) {
-		_closeWindow();
-		throw Exception("Error activating the rendering context");
-	}
-	
-	ShowWindow(_objs->windowHandle, SW_SHOW);
-	SetForegroundWindow(_objs->windowHandle);
-	SetFocus(_objs->windowHandle);
-#endif
+		RECT rect;
+		rect.left = 0, rect.right = width;
+		rect.top = 0, rect.bottom = height;
+		AdjustWindowRectEx(&rect, windowStyle, FALSE, extendedWindowStyle);
+		
+		// Create window
+		_objs->windowHandle = CreateWindowEx(
+			extendedWindowStyle,
+			"W_Window",						// window class
+			"My Sexy W Application",		// title
+			windowStyle,
+			0, 0,			// position
+			rect.right - rect.left,
+			rect.bottom - rect.top,
+			NULL,			// parent window
+			NULL,			// menu
+			_appInstance,
+			this
+		);
+		if(_objs->windowHandle == NULL) {
+			DWORD err = GetLastError();
+			char errorMsg[200];
+			wsprintf(errorMsg, "Error creating window. Error code: %d, %X.", err, err);
+			_closeWindow();
+			throw Exception(errorMsg);
+		}
+		// Get device context
+		if (!(_objs->deviceContext = GetDC(_objs->windowHandle))) {
+			_closeWindow();
+			throw Exception("Error creating an OpenGL device context");
+		}
+		// Create pixel format
+		int pf;
+		static PIXELFORMATDESCRIPTOR pfd = {
+			sizeof(PIXELFORMATDESCRIPTOR),
+			1,						// Version number
+			PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, // Support windows, opengl, and double buffering
+			PFD_TYPE_RGBA,
+			16,						// Colour bit depth
+			0, 0, 0, 0, 0, 0,		// Color bits (ignored)
+			0,						// Alpha buffer
+			0,						// Shift bit
+			0,						// Accumulation buffer
+			0, 0, 0, 0,				// Accumulation bits (ignored)
+			16,						// 16 bit depth buffer
+			0,						// Stencil buffer
+			0,						// Auxiliary buffer
+			PFD_MAIN_PLANE,			// Main drawing layer
+			0,						// Reserved
+			0, 0, 0					// Layer Masks Ignored
+		};
+		if (!(pf = ChoosePixelFormat(_objs->deviceContext, &pfd))) {
+			_closeWindow();
+			throw Exception("Unable to get a suitable pixel format");
+		}
+		if(!SetPixelFormat(_objs->deviceContext, pf, &pfd)) {
+			_closeWindow();
+			throw Exception("Unable to set the pixel format");
+		}
+		// Create rendering context
+		if (!(_objs->renderingContext = wglCreateContext(_objs->deviceContext))) {
+			_closeWindow();
+			throw Exception("Error creating a rendering context");
+		}
+		// Make rendering context current
+		if (!wglMakeCurrent(_objs->deviceContext, _objs->renderingContext)) {
+			_closeWindow();
+			throw Exception("Error activating the rendering context");
+		}
+		
+		ShowWindow(_objs->windowHandle, SW_SHOW);
+		SetForegroundWindow(_objs->windowHandle);
+		SetFocus(_objs->windowHandle);
+	#endif
 
 	_setUpOpenGL();
 }
 void W::Window::_closeWindow() {
-#ifdef __APPLE__
-	[_objs->context clearDrawable];
-	[_objs->window release];
-	[_objs->windowDelegate release];
-#elif defined WIN32 || WIN64
-	if (_objs->renderingContext) {
-		if (!wglMakeCurrent(NULL, NULL))
-			MessageBox(NULL, "Error releasing device and rendering contexts", "Error", MB_OK | MB_ICONEXCLAMATION);
-		if (!wglDeleteContext(_objs->renderingContext))
-			MessageBox(NULL, "Error deleting the rendering context", "Error", MB_OK | MB_ICONEXCLAMATION);
-		_objs->renderingContext = NULL;
-	}
-	if (_objs->deviceContext && !ReleaseDC(_objs->windowHandle, _objs->deviceContext))
-		MessageBox(NULL, "Error releasing the device context", "Error", MB_OK | MB_ICONEXCLAMATION);
-	_objs->deviceContext = NULL;
-	if (_objs->windowHandle && !DestroyWindow(_objs->windowHandle))
-		MessageBox(NULL, "Error destroying the window", "Error", MB_OK | MB_ICONEXCLAMATION);
-	_objs->windowHandle = NULL;
-	if (!UnregisterClass("OpenGL", _appInstance))
-		MessageBox(NULL, "Error unregistering the window class", "Error", MB_OK | MB_ICONEXCLAMATION);
-	_appInstance = NULL;
-#endif
+	#ifdef __APPLE__
+		[_objs->context clearDrawable];
+		[_objs->window release];
+		[_objs->windowDelegate release];
+	#elif defined WIN32 || WIN64
+		if (_objs->renderingContext) {
+			if (!wglMakeCurrent(NULL, NULL))
+				MessageBox(NULL, "Error releasing device and rendering contexts", "Error", MB_OK | MB_ICONEXCLAMATION);
+			if (!wglDeleteContext(_objs->renderingContext))
+				MessageBox(NULL, "Error deleting the rendering context", "Error", MB_OK | MB_ICONEXCLAMATION);
+			_objs->renderingContext = NULL;
+		}
+		if (_objs->deviceContext && !ReleaseDC(_objs->windowHandle, _objs->deviceContext))
+			MessageBox(NULL, "Error releasing the device context", "Error", MB_OK | MB_ICONEXCLAMATION);
+		_objs->deviceContext = NULL;
+		if (_objs->windowHandle && !DestroyWindow(_objs->windowHandle))
+			MessageBox(NULL, "Error destroying the window", "Error", MB_OK | MB_ICONEXCLAMATION);
+		_objs->windowHandle = NULL;
+		if (!UnregisterClass("OpenGL", _appInstance))
+			MessageBox(NULL, "Error unregistering the window class", "Error", MB_OK | MB_ICONEXCLAMATION);
+		_appInstance = NULL;
+	#endif
 }
 
 void W::Window::_setUpOpenGL() {
