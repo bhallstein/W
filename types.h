@@ -149,7 +149,7 @@ namespace W {
 	
 	/* String-related helper functions */
 	bool isNum(const char c);
-	void upCase(std::string &);
+	std::string upCase(const std::string &);
 	std::string downCase(const std::string &);
 	void strSplit(const std::string &s, std::vector<std::string> &v, char delim);
 	void implode(const std::vector<std::string> &v, std::string &s, const char *glue = "");

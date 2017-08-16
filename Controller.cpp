@@ -142,8 +142,16 @@ void W::Controller::update() {
 		Event *ev = *it;
 		if (ev->type == EventType::Closed)
 			g->handleCloseEvent();
-		else
+		else {
+			// Correct any touch events that are misplaced due to calibration error
+			const W::size &wSz = window->getSize();
+			if (ev->pos.x < 0) ev->pos.x = 0;
+			else if (ev->pos.x >= wSz.width) ev->pos.x = wSz.width - 1;
+			if (ev->pos.y < 0) ev->pos.y = 0;
+			else if (ev->pos.y >= wSz.height) ev->pos.y = wSz.height - 1;
+			
 			Messenger::dispatchEvent(ev);
+		}
 		delete *it;
 	}
 	Event::_events.clear();

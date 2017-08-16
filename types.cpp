@@ -41,14 +41,16 @@ bool W::isNum(const char c) {
 	return (c >= '0' && c <= '9');
 }
 
-void W::upCase(std::string &s) {
-	for (std::string::iterator it = s.begin(); it < s.end(); it++) {
-		char &c = *it;
+std::string W::upCase(const std::string &s) {
+	std::stringstream ss;
+	for (std::string::const_iterator it = s.begin(); it < s.end(); it++) {
+		char c = *it;
 		if (c >= 'a' && c <= 'z')
 			c += 'A' - 'a';
+		ss << c;
 	}
+	return ss.str();
 }
-
 std::string W::downCase(const std::string &s) {
 	std::stringstream ss;
 	for (std::string::const_iterator it = s.begin(); it < s.end(); it++) {

@@ -47,6 +47,8 @@ namespace W {
 		static const Positioner *WholeAreaPositioner;
 		static const Positioner *LeftHalfPositioner;
 		static const Positioner *RightHalfPositioner;
+		static const Positioner *TopHalfPositioner;
+		static const Positioner *BottomHalfPositioner;
 		static const Positioner *TopLeftQuarterPositioner;
 		static const Positioner *TopRightQuarterPositioner;
 		static const Positioner *BottomLeftQuarterPositioner;

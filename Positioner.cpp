@@ -215,6 +215,18 @@ namespace W {
 		PosType::Proportional, PosType::Proportional,
 		0, 0, 0.5, 1
 	);
+	const Positioner *Positioner::TopHalfPositioner = new Positioner(
+		Corner::TopLeft,
+		PosType::Fixed, PosType::Fixed,
+		PosType::Proportional, PosType::Proportional,
+		0, 0, 1, 0.5
+	);
+	const Positioner *Positioner::BottomHalfPositioner = new Positioner(
+		Corner::BottomLeft,
+		PosType::Fixed, PosType::Fixed,
+		PosType::Proportional, PosType::Proportional,
+		0, 0, 1, 0.5
+	);
 	const Positioner *Positioner::TopLeftQuarterPositioner = new Positioner(
 		Corner::TopLeft,
 		PosType::Fixed, PosType::Fixed,
