@@ -48,12 +48,16 @@ void W::upCase(std::string &s) {
 			c += 'A' - 'a';
 	}
 }
-void W::downCase(std::string &s) {
-	for (std::string::iterator it = s.begin(); it < s.end(); it++) {
-		char &c = *it;
+
+std::string W::downCase(const std::string &s) {
+	std::stringstream ss;
+	for (std::string::const_iterator it = s.begin(); it < s.end(); it++) {
+		char c = *it;
 		if (c >= 'A' && c <= 'Z')
 			c += 'a' - 'A';
+		ss << c;
 	}
+	return ss.str();
 }
 
 void W::strSplit(const std::string &s, std::vector<std::string> &v, char delim) {

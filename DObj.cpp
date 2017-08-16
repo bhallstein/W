@@ -333,18 +333,18 @@ void W::DEquiTri::updateTexcoords() {
 /*** DText implementation ***/
 /****************************/
 
-W::DText::DText(View *_v, const position &_p, const std::string &_txt, const Colour &_col, bool _r_align) :
-	DObj(_v, _col, _geomLengthForText(_txt)),
+W::DText::DText(View *_v, const position &_p, const std::string &_txt, const Colour &_col, TextAlign::T _al) :
+	DObj(_v, _col, _geomLengthForText(downCase(_txt))),
 	pos(_p),
 	txt(_txt),
 	col(_col),
-	r_align(_r_align),
+	alignment(_al),
 	tex(Texture::_whiteTexture),
 	texA(0),texB(0),texC(tex->sz.width),texD(tex->sz.height)
 {
 	tex->incrementUsageCount();
 	
-	downCase(txt);
+	txt = downCase(txt);
 	setPos(pos);
 	
 	updateTexcoords();
@@ -356,16 +356,14 @@ W::DText::~DText()
 }
 void W::DText::setPos(const W::position &_pos) {
 	pos = _pos;
-	// work out total width & hence position
-	int tw = 0, c;
-	for (int i=0; (c=txt[i]); ++i) tw += widthForChar(c);
-	if (r_align) pos.x -= tw;
-
+	// Calculate position given total pixel width
+	if (alignment == TextAlign::Right)       pos.x -= widthForStr(txt);
+	else if (alignment == TextAlign::Centre) pos.x -= widthForStr(txt) * 0.5;
 	updateVertices();
 }
-void W::DText::setRAlign(bool _a) {
-	if (_a != r_align) {
-		r_align = _a;
+void W::DText::setAlignment(TextAlign::T _al) {
+	if (_al != alignment) {
+		alignment = _al;
 		setPos(pos);
 		updateVertices();
 	}
@@ -374,6 +372,10 @@ void W::DText::setTxt(const char *_txt) {
 	// Remove DObj
 	makeTrianglesDegenerate();
 	view->_remDObj(this);
+	
+	// Set pos property back to non-alignment-corrected state
+	if (alignment == TextAlign::Right) pos.x += widthForStr(txt);
+	else if (alignment == TextAlign::Centre) pos.x += widthForStr(txt) * 0.5;
 	
 	// Put back in virgin state
 	prevDObj = nextDObj = NULL;
@@ -431,6 +433,11 @@ int W::DText::_geomLengthForText(const std::string &txt) {
 	for (int i=0; (c=txt[i]); ++i)
 		x += GenericRetro[c].size();
 	return x * 6;
+}
+int W::DText::widthForStr(const std::string &s) {
+	int tw = 0, c;
+	for (int i=0; (c=s[i]); ++i) tw += widthForChar(c);
+	return tw;
 }
 int W::DText::widthForChar(char c) {
 	static int defaultCharWidth = 14;

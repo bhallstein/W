@@ -207,20 +207,24 @@ namespace W {
 		DText draws... text
 	 ***/
 	
+	namespace TextAlign {
+		enum T { Left, Right, Centre };
+	}
+	
 	class DText : public DObj {
 	public:
-		DText(View *, const W::position &, const std::string &_txt, const W::Colour &, bool r_align = false);
+		DText(View *, const W::position &, const std::string &_txt, const W::Colour &, TextAlign::T _al = TextAlign::Left);
 		~DText();
 		
 		void setPos(const W::position &);
-		void setRAlign(bool);
+		void setAlignment(TextAlign::T);
 		void setTxt(const char *);
 		
 		std::string txt;
 		
 		position pos;
 		W::Colour col;
-		bool r_align;
+		TextAlign::T alignment;
 		
 	protected:
 		void updateVertices();
@@ -231,6 +235,7 @@ namespace W {
 		int texA, texB, texC, texD;
 
 		static int _geomLengthForText(const std::string &);
+		static int widthForStr(const std::string &);
 		static int widthForChar(char c);
 		
 	};
