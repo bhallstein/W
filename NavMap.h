@@ -16,7 +16,8 @@
 #include <iostream>
 #include <vector>
 
-#include "W.h"
+#include "types.h"
+#include "MisterHeapy.h"
 
 namespace W {
 	class NavNode

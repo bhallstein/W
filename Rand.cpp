@@ -11,10 +11,13 @@
  */
 
 #include "Rand.h"
+#include "mtrand.h"
 #include <ctime>
 #include <iostream>
 
 #define A_BILLION 1000000000
+
+MTRand_int32 twister;
 
 struct W::Rand::Init {
 	Init() {
@@ -24,7 +27,6 @@ struct W::Rand::Init {
 	}
 };
 
-MTRand_int32 W::Rand::twister;
 W::Rand::Init *W::Rand::init = new W::Rand::Init();
 
 int W::Rand::intUpTo(int x) {

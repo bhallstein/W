@@ -11,6 +11,7 @@
  */
 
 #include "NavMap.h"
+#include "Log.h"
 
 #define NAV_INFINITY 99999999
 

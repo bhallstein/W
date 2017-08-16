@@ -33,6 +33,7 @@ W::UpdateTimer::~UpdateTimer()
 /********************************************************/
 
 #if defined WTARGET_MAC || defined WTARGET_IOS
+#pragma mark - Mac/iOS impl
 
 #ifdef WTARGET_MAC
 	#include "MacOSXClasses.h"
@@ -67,6 +68,7 @@ void W::UpdateTimer::stop() { [objs->timer stop]; }
 /************************************************/
 
 #elif defined WTARGET_WIN
+#pragma mark - Windows impl
 
 struct W::UpdateTimer::Objs {
 	UINT timer;

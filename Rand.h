@@ -13,7 +13,7 @@
 #ifndef __W__Rand
 #define __W__Rand
 
-#include "mtrand.h"
+class MTRand_int32;
 
 namespace W {
 	
@@ -24,7 +24,6 @@ namespace W {
 		
 	private:
 		Rand() { }
-		static MTRand_int32 twister;
 		
 		struct Init;
 		static Init *init;

@@ -25,23 +25,6 @@ W::Event::Event(EventType::T _type, KeyCode::T _key) : type(_type), key(_key) { 
 W::Event::Event(EventType::T _type, float _x) : type(_type), x(_x) { }
 W::Event::Event(EventType::T _type, int _touchID, const position &_pos, const position &_prev_pos) : type(_type), touchID(_touchID), pos(_pos), prev_pos(_prev_pos) { }
 
-bool W::Event::_isMouse() {
-	using namespace EventType;
-	return type >= MouseMove && type <= RMouseDown;
-}
-bool W::Event::_isTouch() {
-	using namespace EventType;
-	return type >= TouchDown && type <= TouchCancelled;
-}
-bool W::Event::_isPositional() {
-	using namespace EventType;
-	return type >= MouseMove && type <= TouchCancelled;
-}
-bool W::Event::_isUI() {
-	using namespace EventType;
-	return type >= ButtonClick && type <= ButtonClick;	// lol
-}
-
 std::string W::Event::_printType() {
 	using namespace EventType;
 	std::stringstream ss;

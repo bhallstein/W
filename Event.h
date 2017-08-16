@@ -74,11 +74,6 @@ namespace W {
 		Event(W::EventType::T, float _x);
 		Event(EventType::T, int _touchID, const position &_pos, const position &_prev_pos = position(-1,-1));
 		
-		bool _isMouse();
-		bool _isTouch();
-		bool _isPositional();
-		bool _isUI();
-		
 		std::string _printType();
 		
 		W::position pos;

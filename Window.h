@@ -49,6 +49,9 @@ namespace W {
 		void generateMouseMoveEvent();
 		
 		void updateSize(const W::size &);
+			// Mac - called by the Window object
+			// iOS - called by the EAGLView object
+			// Win - ...
 		
 		#if defined WTARGET_WIN
 			LRESULT CALLBACK _WndProc(HWND, UINT, WPARAM, LPARAM);

@@ -33,7 +33,6 @@
 #include "Messenger.h"
 #include "GameState.h"
 #include "Callback.h"
-#include "MisterHeapy.h"
 #include "NavMap.h"
 #include "Texture.h"
 #include "Timer.h"

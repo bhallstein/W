@@ -81,6 +81,12 @@ namespace W {
 		static bool reqPERNonglobally(View *, EventType::T, const Callback &);
 		static void relinqPERGlobally(View *, EventType::T, void *);
 		static void relinqPERNonglobally(View *, EventType::T, void *);
+		
+		// Event typing methods
+		static bool _isMouse(Event *);
+		static bool _isTouch(Event *);
+		static bool _isPositional(Event *);
+		static bool _isUI(Event *);
 	};
 	
 }

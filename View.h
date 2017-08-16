@@ -77,7 +77,7 @@ namespace W {
 		
 		position _offset;	// Def 0. Used by scrolling subviews. Undocumented!
 		
-		virtual void updatePosition(const W::size &winsize) { }	// Let subsclasses perform own position update behaviours
+		virtual void updatePosition(const W::size &winsize) { }	// Override to implement subclass position update behaviours
 		virtual void customOpenGLDrawing() { }
 		
 	private:

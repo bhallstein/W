@@ -69,7 +69,7 @@ bool W::Messenger::dispatchEvent(Event *ev) {
 	if (!s) return false;
 	if (!activeGS) return false;
 	
-	if (ev->_isPositional()) {
+	if (_isPositional(ev)) {
 		// If there is a global PER for this event type, translate coords using its view & dispatch
 		map<EventType::T, cbAndView*>::iterator itGPER = s->globalPERs.find(ev->type);
 		if (itGPER != s->globalPERs.end()) {
@@ -86,11 +86,11 @@ bool W::Messenger::dispatchEvent(Event *ev) {
 		v->_convertEventCoords(ev);
 		
 		// Dispatch using mouse or touch system
-		if (ev->_isMouse()) return dispMouse(ev, v);
-		if (ev->_isTouch()) return dispTouch(ev, v);
+		if (_isMouse(ev)) return dispMouse(ev, v);
+		if (_isTouch(ev)) return dispTouch(ev, v);
 	}
 	
-	if (ev->_isUI()) return dispUI(ev);
+	if (_isUI(ev)) return dispUI(ev);
 	
 	// Dispatch to "normal" event type subscriptions
 	bool dispatched = false;
@@ -442,3 +442,21 @@ void W::Messenger::_gamestateDestroyed(W::GameState *_gs) {
 	activeGS = NULL;
 }
 
+
+#pragma mark - Event type identification
+bool W::Messenger::_isMouse(Event *ev) {
+	using namespace EventType;
+	return ev->type >= MouseMove && ev->type <= RMouseDown;
+}
+bool W::Messenger::_isTouch(Event *ev) {
+	using namespace EventType;
+	return ev->type >= TouchDown && ev->type <= TouchCancelled;
+}
+bool W::Messenger::_isPositional(Event *ev) {
+	using namespace EventType;
+	return ev->type >= MouseMove && ev->type <= TouchCancelled;
+}
+bool W::Messenger::_isUI(Event *ev) {
+	using namespace EventType;
+	return ev->type >= ButtonClick && ev->type <= ButtonClick;	// lol
+}

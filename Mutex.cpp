@@ -28,6 +28,7 @@ W::Mutex::~Mutex()
 /******************************************/
 
 #if defined WTARGET_MAC || defined WTARGET_IOS
+#pragma mark - Mac/iOS impl
 
 #include <pthread.h>
 
@@ -63,6 +64,7 @@ void W::Mutex::unlock() {
 /******************************************/
 
 #elif defined WTARGET_WIN
+#pragma mark - Windows impl
 
 #include "Windows.h"
 
