@@ -21,11 +21,19 @@ namespace W {
 				a + pos2.a, b + pos2.b
 			);
 		}
+		void operator+= (const position &pos2) {
+			x += pos2.x, y += pos2.y;
+			a += pos2.a, b += pos2.b;
+		}
 		position operator- (const position &pos2) {
 			return position(
 				x - pos2.x, y - pos2.y,
 				a - pos2.a, b - pos2.b
 			);
+		}
+		void operator-= (const position &pos2) {
+			x -= pos2.x, y -= pos2.y;
+			a -= pos2.a, b -= pos2.b;
 		}
 	};
 	struct size {

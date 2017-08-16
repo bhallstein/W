@@ -31,14 +31,14 @@ namespace W {
 		inline float getFloatH() { return float(imageHeight) / float(textureHeight); }
 		
 		void upload();
-		// Must be called from thread for which the OpenGL
-		// context is current.
+			// Must be called from thread for which the OpenGL
+			// context is current.
 		bool _uploaded;
 		
 		static void createPlaceholderTexture();
 		static Texture *_placeholderTexture;
-		// Texture used as placeholder before the appropriate
-		// thread has uploaded the texture.
+			// A texture used as placeholder for textures that have not yet been
+			// uploaded on the appropriate thread.
 		
 	protected:
 		Texture(unsigned int _glTexId, W::size _imsize, W::size _texsize);

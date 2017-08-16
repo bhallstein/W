@@ -1,9 +1,5 @@
 #include "Colour.h"
 
-W::Colour::Colour() : r(0), g(0), b(0), a(1)
-{
-	
-}
 W::Colour::Colour(const W::Colour &col) : r(col.r), g(col.g), b(col.b), a(col.a)
 {
 	

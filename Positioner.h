@@ -36,7 +36,7 @@ namespace W {
 		W::rect& refresh(const size &container_size);
 
 		void nudge(const position &delta);
-		bool isDraggable();
+		bool isDraggable() { return draggable; }
 		
 	private:
 		Corner::T fixed_corner;

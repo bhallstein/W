@@ -49,14 +49,9 @@ namespace W {
 		Event(W::EventType::T, const W::position &);
 		Event(W::EventType::T, W::KeyCode::T);
 		
-		void setPos(W::position &_pos)      { pos = _pos; }
-		void setType(W::EventType::T _type) { type = _type; }
-		void setKey(W::KeyCode::T _key)     { key = _key; }
-		void setPayload(void *_p)           { _payload = _p; }
-		
-		position pos;
-		EventType::T type;
-		KeyCode::T key;
+		W::position pos;
+		W::EventType::T type;
+		W::KeyCode::T key;
 		void *_payload;
 		
 		static W::EventType::T registerType();

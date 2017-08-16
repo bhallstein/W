@@ -38,6 +38,11 @@ namespace W {
 	extern std::vector<GameState*> _gs;
 	extern bool _gsShouldPop;
 	extern Returny _returny;
+	extern bool _locked_gfx_mutex_for_gs_popping;
+		// Normally when adding/removing a view to/from a gamestate, the gfx mutex is locked & unlocked.
+		// However, it may already be locked, by W::_performPop().
+		// Therefore we track whether this is the case, and if so don’t bother to lock the mutex
+		// in add/removeView().
 	
 	/* Events */
 	extern std::vector<Event> _events;	// Outstanding events,

@@ -22,6 +22,7 @@ namespace W {
 	std::vector<GameState*> _gs;
 	bool _gsShouldPop;
 	Returny _returny(ReturnyType::EMPTY_RETURNY);
+	bool _locked_gfx_mutex_for_gs_popping = false;
 	
 	std::vector<Event> _events;
 	
@@ -57,6 +58,9 @@ namespace W {
 	int W_INFINITY = 99999999;
 	int W_MAXPATH = 450;
 }
+
+
+/* Initialisation */
 
 struct W::_init {
 	_init() {
@@ -104,6 +108,8 @@ struct W::_init {
 struct W::_init *W::_initializer = new W::_init();
 
 
+/* Logging */
+
 void W::setLogFile(const char *path) {
 	if (log.is_open()) log.close();
 	log.open(path);
@@ -113,23 +119,33 @@ void W::setLogFile(const std::string &path) {
 	log.open(path.c_str());
 }
 
+
+/* MTRand */
+
 unsigned int W::randUpTo(int x) {
 	if (x == 0) return 0;
 	return twister()%x;
 }
 
+
+/* GameState pushing/popping */
+
 void W::pushState(GameState *g) {
+	_lock_mutex(&graphics_mutex);
 	for (std::vector<GameState*>::iterator it = _gs.begin(); it < _gs.end(); it++)
 		if (*it == g) return;
 //	if (!states.empty()) states.back()->pause();
 	_gs.push_back(g);
 	Messenger::_setActiveGamestate(g);
+	_unlock_mutex(&graphics_mutex);
 }
 void W::popState(W::Returny &r) {
 	_gsShouldPop = true;
 	_returny = r;
 }
 void W::_performPop() {
+	_locked_gfx_mutex_for_gs_popping = true;
+	_lock_mutex(&graphics_mutex);
 	do {
 		_gsShouldPop = false;
 		GameState *last_gs = _gs.back();
@@ -142,13 +158,21 @@ void W::_performPop() {
 			new_gs->resume(&_returny);
 		}
 	} while (_gsShouldPop && _gs.size());
+	_unlock_mutex(&graphics_mutex);
+	_locked_gfx_mutex_for_gs_popping = false;
 }
+
+
+/* Events */
 
 void W::_addEvent(const Event &ev) {
 	_lock_mutex(&event_mutex);
 	_events.push_back(ev);
 	_unlock_mutex(&event_mutex);
 }
+
+
+/* W::start() */
 
 void W::start() {
 	if (!_window)
@@ -160,28 +184,24 @@ void W::start() {
 		pthread_attr_t attr;
 	
 		err = pthread_attr_init(&attr);
-		if (err)
-			throw Exception("Error: couldn’t initialize drawing thread attributes", err);
+		if (err) throw Exception("Error: couldn’t initialize drawing thread attributes", err);
 		
 		err = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-		if (err)
-			throw Exception("Error: couldn’t set drawing thread to detached", err);
+		if (err) throw Exception("Error: couldn’t set drawing thread to detached", err);
 		
 		err = pthread_create(&_drawingThread, &attr, drawingThreadFn, NULL);
-		if (err)
-			throw Exception("Error: couldn’t detach drawing thread", err);
+		if (err) throw Exception("Error: couldn’t detach drawing thread", err);
 		
 		err = pthread_attr_destroy(&attr);
-		if (err)
-			log << "Error: couldn’t destroy drawing thread attributes obj" << " (error: " << err << ")" << std::endl;
+		if (err) log << "Error: couldn’t destroy drawing thread attributes obj" << " (error: " << err << ")" << std::endl;
 	#elif defined WIN32 || WIN64
 		_drawingThreadHandle = CreateThread(
-			0,			// ptr to SECURITY_ATTRIBUTES struct (0 for def.)
-			0,          // stack size (0 for def.)
-			&drawingThreadFn,			// ptr to fn to be executed
-			NULL, // ptr to variable to be passed
-			0,          // flags
-			&_drawingThreadId   // ptr to dword to store thread id in
+			0,					// ptr to SECURITY_ATTRIBUTES struct (0 for def.)
+			0,					// stack size (0 for def.)
+			&drawingThreadFn,	// ptr to fn to be executed
+			NULL,				// ptr to variable to be passed
+			0,					// flags
+			&_drawingThreadId	// ptr to dword to store thread id in
 		);
 		if (!_drawingThreadHandle)
 			throw Exception("Error: couldn’t detach drawing thread");
@@ -224,6 +244,10 @@ void W::_updateTimerStop() {
 		timeKillEvent(_updateTimer);
 	#endif
 }
+
+
+/* The update cycle */
+
 void W::_update() {
 	if (!_gs.size())
 		return;
@@ -264,19 +288,19 @@ void W::_update() {
 	else if (_gs.size()) {
 		g = _gs.back();
 		g->update();
-	}
-	
-	// Check for poppage due to update
-	if (_gsShouldPop) {
-		_performPop();
-		_gsShouldPop = false;
+		
+		// Check for poppage due to update
+		if (_gsShouldPop) {
+			_performPop();
+			_gsShouldPop = false;
+		}
 	}
 	
 	// Call updateDOs on all views, to apply D.O. changes made during update
 	if (_gs.size()) {
 		_lock_mutex(&graphics_mutex);
-		GameState::Viewlist *views = _gs.back()->_getViews();
-		for (GameState::Viewlist::iterator it = views->begin(); it != views->end(); it++)
+		GameState::Viewlist &views = _gs.back()->_vlist;
+		for (GameState::Viewlist::iterator it = views.begin(); it != views.end(); it++)
 			(*it)->_updateDOs();
 		_unlock_mutex(&graphics_mutex);
 	}
@@ -289,6 +313,10 @@ void W::_update() {
 		#endif
 	}
 }
+
+
+/* Quitting */
+
 void W::quit() {
 	_updateTimerStop();
 
@@ -320,6 +348,9 @@ void W::quit() {
 	#endif
 }
 
+
+/* The drawing thread function */
+
 #ifdef __APPLE__
 void* W::drawingThreadFn(void *)
 #elif defined _WIN32 || _WIN64
@@ -339,7 +370,7 @@ DWORD WINAPI W::drawingThreadFn(LPVOID lpParam)
 //		gettimeofday(&t1, NULL);
 		// Initial setup
 		size window_size = _window->getDimensions();
-		int winW = window_size.width, winH= window_size.height;
+		int &winW = window_size.width, &winH= window_size.height;
 		
 		glScissor(0, 0, winW, winH);
 		
@@ -355,9 +386,9 @@ DWORD WINAPI W::drawingThreadFn(LPVOID lpParam)
 		// Draw
 		_lock_mutex(&graphics_mutex);
 		if (_gs.size()) {
-			GameState::Viewlist *views = _gs.back()->_getViews();
+			GameState::Viewlist &views = _gs.back()->_vlist;
 			// Call _draw on all views
-			for (GameState::Viewlist::iterator it = views->begin(); it != views->end(); it++)
+			for (GameState::Viewlist::iterator it = views.begin(); it != views.end(); it++)
 				(*it)->_draw(window_size);
 		}
 		_unlock_mutex(&graphics_mutex);
@@ -400,14 +431,17 @@ DWORD WINAPI W::drawingThreadFn(LPVOID lpParam)
 	return 0;
 }
 
+
+/* Window */
+
 void W::createWindow(const size &_size, const char *_title) {
 	_window = new Window(_size, _title);
 }
 void W::_updateAllViewPositions() {
 	const size &s = _window->getDimensions();
 	for (std::vector<GameState*>::iterator itgs = _gs.begin(); itgs < _gs.end(); itgs++) {
-		GameState::Viewlist *vlist = (*itgs)->_getViews();
-		for (GameState::Viewlist::iterator itv = vlist->begin(); itv != vlist->end(); itv++)
+		GameState::Viewlist &vlist = (*itgs)->_vlist;
+		for (GameState::Viewlist::iterator itv = vlist.begin(); itv != vlist.end(); itv++)
 			(*itv)->_updatePosition(s);
 	}
 }

@@ -12,9 +12,8 @@ namespace W {
 	
 	class Colour {
 	public:
-		Colour();
 		Colour(const W::Colour &);
-		Colour(float _r, float _g, float _b, float _a = 1);
+		Colour(float _r = 0, float _g = 0, float _b = 0, float _a = 1);
 		bool operator==(const Colour &);
 		float r;
 		float g;

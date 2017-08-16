@@ -11,16 +11,24 @@ W::GameState::GameState(GameStateTranslucency _tr) :
 }
 W::GameState::~GameState()
 {
-	// TODO: consider cleanup here: remove any remaining views?
+	// bai
 }
 
 void W::GameState::addView(View *v) {
+	if (!W::_locked_gfx_mutex_for_gs_popping) W::_lock_mutex(&graphics_mutex);
+
 	_vlist.push_back(v);
 	v->_subscribeToMouseEvents();
+	
+	if (!W::_locked_gfx_mutex_for_gs_popping) W::_unlock_mutex(&graphics_mutex);
 }
 void W::GameState::removeView(View *v) {
+	if (!W::_locked_gfx_mutex_for_gs_popping) W::_lock_mutex(&graphics_mutex);
+
 	_vlist.remove(v);
 	v->_unsubscribeFromMouseEvents();
+	
+	if (!W::_locked_gfx_mutex_for_gs_popping) W::_unlock_mutex(&graphics_mutex);
 }
 
 void W::GameState::handleCloseEvent() {

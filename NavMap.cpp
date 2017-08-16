@@ -42,7 +42,7 @@ namespace W {
 		for (int j=0; j < h; j++) {
 			for (int i=0; i < w; i++) {
 				node = &nodes[j*w + i];
-				node->x = i;						// NavNodes should know their coordinates
+				node->x = i;						// NavNodes shall know their coordinates
 				node->y = j;						//
 				
 				for (int y=j-1; y <= j+1; y++)		// Setup refs to neighbouring nodes

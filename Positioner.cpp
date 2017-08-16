@@ -176,7 +176,3 @@ void W::Positioner::nudge(const position &delta) {
 	corner_x += (fixed_corner == Corner::TOP_LEFT || fixed_corner == Corner::BOTTOM_LEFT ? delta.x : -delta.x);
 	corner_y += (fixed_corner == Corner::TOP_LEFT || fixed_corner == Corner::TOP_RIGHT   ? delta.y : -delta.y);
 }
-
-bool W::Positioner::isDraggable() {
-	return draggable;
-}

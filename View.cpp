@@ -11,6 +11,17 @@ W::View::View(Positioner *_pos) :
 W::View::~View()
 {
 	if (_positioner) delete _positioner;
+
+	// GameState::removeView() must must first be called, to safely remove the view (& so all its DrawnObjs)
+	// from the in-flight graphics data.
+	// Therefore we can simply deallocate all DrawnObjs the view holds references to.
+	for (std::map<int, DO_list>::iterator it = scene.begin(); it != scene.end(); it++) {
+		DO_list &l = it->second;
+		for (DO_list::iterator it = l.begin(); it < l.end(); it++)
+			delete *it;
+	}
+	for (std::vector<DOAndLayer>::iterator it = newDOs.begin(); it < newDOs.end(); it++)
+		delete it->DO;
 }
 
 void W::View::_updatePosition(const size &winsize) {

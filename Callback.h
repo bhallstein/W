@@ -39,7 +39,8 @@ namespace W {
 		{
 			// constr
 		}
-		~Callback() {
+		~Callback()
+		{
 			delete c;
 		}
 		void call(Event *ev) {

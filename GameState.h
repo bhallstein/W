@@ -44,7 +44,7 @@ namespace W {
 		
 		void addView(View *);
 		void removeView(View *);
-		Viewlist* _getViews() { return &_vlist; }
+		Viewlist _vlist;
 		
 		virtual void handleCloseEvent();	// By default, initiates the killer returny tango: override to customise
 		
@@ -52,7 +52,6 @@ namespace W {
 		
 	protected:
 		// Properties
-		Viewlist _vlist;
 		bool translucent;	// If true, the previous state will be drawn too.
 	};
 	

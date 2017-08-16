@@ -31,13 +31,13 @@ namespace W {
 		void _subscribeToMouseEvents();		// Called by GS in addView()
 		void _unsubscribeFromMouseEvents();	// Called by GS in removeView()
 		
-		// Drawn Object methods
+		// Drawn Object adding/removing/updating
 		void addDO(DrawnObj *, int layer = 1);
 		void removeDO(DrawnObj *);
 		void _markDOAsDirty(DrawnObj *);
 		void _updateDOs();
 			// Update status of all drawn objects.
-			// Must be called after locking the graphics mutex.
+			// Graphics mutex must first be locked before this fn is called.
 
 		void _draw(const W::size &winSz);
 	protected:
@@ -55,7 +55,7 @@ namespace W {
 			int layer;
 		};
 		std::vector<DOAndLayer> newDOs;
-
+		
 		void _removeDO(DrawnObj *);
 		
 		virtual void updatePosition(const size &winsize) { }	// Let subsclasses perform own position update behaviours

@@ -93,7 +93,6 @@ void W::Texture::destroy() {
 }
 
 void W::Texture::upload() {
-	std::cout << "uploading texture for file '" << filename << "'" << std::endl;
 	using std::string;
 	glTexId = SOIL_create_OGL_texture(
 		p2imagedata,
@@ -112,7 +111,6 @@ void W::Texture::upload() {
 }
 
 void W::Texture::createPlaceholderTexture() {
-	std::cout << "creating placeholder texture" << std::endl;
 	// Create a transparent, 8 x 8 texture to use as a placeholder
 	int sz = NCHANNELS * 8 * 8;
 	unsigned char *tdata = (unsigned char *) calloc(sz, sizeof(unsigned char));

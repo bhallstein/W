@@ -28,7 +28,7 @@ W::Button::Button(View *_view, const std::string &_name, W::Positioner *_pos, Ev
 	hover(false), active(false), view(_view),
 	buttonClickEvent(EventType::BUTTONCLICK)
 {
-	buttonClickEvent.setPayload(new std::string(name));
+	buttonClickEvent._payload = new std::string(name);
 	btnrect = new DrawnRect(view, rct, Colour::Black);
 	
 	Callback cb(&Button::recEv, this);
