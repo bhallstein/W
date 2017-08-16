@@ -10,8 +10,10 @@ W::UpdateTimer::UpdateTimer(Callback *_c) : objs(NULL), running(false), c(_c)
 {
 	createTimer();
 }
-W::UpdateTimer::~UpdateTimer(){
+W::UpdateTimer::~UpdateTimer()
+{
 	destroyTimer();
+	delete c;
 }
 
 

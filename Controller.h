@@ -12,6 +12,7 @@ namespace W {
 	
 	class Window;
 	class UpdateTimer;
+	class Timer;
 	
 	class Controller {
 	public:
@@ -31,12 +32,16 @@ namespace W {
 		bool firstUpdate;
 		
 		void quit();
+		
+		Timer *timer;
 	};
 	
 	
 	extern Controller _controller;
 	void createWindow(const W::size &sz, const std::string &title);
 	void start();
+	
+	extern int updateMicroseconds;
 	
 }
 

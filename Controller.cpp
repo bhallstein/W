@@ -4,6 +4,7 @@
 #include "GameState.h"
 #include "View.h"
 #include "MegaTexture.h"
+#include "Timer.h"
 
 #if defined WTARGET_MAC || WTARGET_IOS
 	#include <Cocoa/Cocoa.h>
@@ -17,6 +18,7 @@
 W::Controller::Controller() :
 	window(NULL),
 	updateTimer(new UpdateTimer(new Callback(&Controller::update, this))),
+	timer(new Timer),
 	firstUpdate(true)
 {
 	// hello controller
@@ -25,6 +27,7 @@ W::Controller::~Controller()
 {
 	updateTimer->stop();
 	delete updateTimer;
+	delete timer;
 	if (window) delete window;
 }
 
@@ -80,6 +83,9 @@ void W::Controller::update() {
 		quit();
 		return;
 	}
+	
+	updateMicroseconds = (int) timer->getMicroseconds();
+	timer->reset();
 	
 	/* 1. Event sending */
 	
@@ -198,3 +204,5 @@ void W::createWindow(const size &sz, const std::string &title) {
 void W::start() {
 	_controller.start();
 }
+
+int W::updateMicroseconds;

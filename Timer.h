@@ -36,16 +36,19 @@ THE SOFTWARE.
 
 #ifdef __APPLE__
 	#include <sys/time.h>
+
 #elif defined _WIN32 || _WIN64
 	#include <time.h>
-#ifndef WIN32_LEAN_AND_MEAN
-	#define WIN32_LEAN_AND_MEAN
-#endif
 
-#if !defined(NOMINMAX) && defined(_MSC_VER)
-	#define NOMINMAX // required to stop windows.h messing up std::min
-#endif
-#include "windows.h"
+	#ifndef WIN32_LEAN_AND_MEAN
+		#define WIN32_LEAN_AND_MEAN
+	#endif
+
+	#if !defined(NOMINMAX) && defined(_MSC_VER)
+		#define NOMINMAX // required to stop windows.h messing up std::min
+	#endif
+
+	#include "windows.h"
 
 #endif
 
@@ -53,51 +56,28 @@ namespace W
 {
 	
 	class Timer {
-    private:
-#ifdef __APPLE__
-		struct timeval start;
-		clock_t zeroClock;
-#elif defined _WIN32 || _WIN64
-		clock_t mZeroClock;
-        DWORD mStartTick;
-		LONGLONG mLastTime;
-        LARGE_INTEGER mStartTime;
-        LARGE_INTEGER mFrequency;
-		DWORD_PTR mTimerMask;
-#endif
     public:
-		/** Timer constructor.  MUST be called on same thread that calls getMilliseconds() */
 		Timer();
 		~Timer();
-
-		/** Method for setting a specific option of the Timer. These options are usually
-            specific for a certain implementation of the Timer class, and may (and probably
-            will) not exist across different implementations.  reset() must be called after
-			all setOption() calls.
-			@par
-			Current options supported are:
-			<ul><li>"QueryAffinityMask" (DWORD): Set the thread affinity mask to be used
-			to check the timer. If 'reset' has been called already this mask should
-			overlap with the process mask that was in force at that point, and should
-			be a power of two (a single core).</li></ul>
-            @param
-                strKey The name of the option to set
-            @param
-                pValue A pointer to the value - the size should be calculated by the timer
-                based on the key
-            @return
-                On success, true is returned.
-            @par
-                On failure, false is returned.
-        */
-//        bool setOption( const String& strKey, const void* pValue );
-
 		void reset();		// Reset timer
 		unsigned long getMilliseconds();	// ms since init/reset
 		unsigned long getMicroseconds();	// µs since init/reset
 		unsigned long getMillisecondsCPU();	// "only cpu time measured"
 		unsigned long getMicrosecondsCPU();	// ~
+	private:
+		#ifdef __APPLE__
+			struct timeval start;
+			clock_t zeroClock;
+		#elif defined _WIN32 || _WIN64
+			clock_t mZeroClock;
+			DWORD mStartTick;
+			LONGLONG mLastTime;
+			LARGE_INTEGER mStartTime;
+			LARGE_INTEGER mFrequency;
+			DWORD_PTR mTimerMask;
+		#endif
     };
+	
 }
 
 #endif

@@ -154,9 +154,9 @@ bool W::Messenger::dispatchEvent(Event *ev) {
 		for (std::vector<Callback*>::reverse_iterator it2 = cblist.rbegin(); it2 != cblist.rend(); ++it2)
 			if (cblist.size()) {
 				Callback &cb = **it2;
-				if (cb.call(ev) == W::EventPropagation::ShouldStop)
-					return true;
 				dispatched = true;
+				if (cb.call(ev) == W::EventPropagation::ShouldStop)
+					break;
 			}
 	}
 	return dispatched;
@@ -171,9 +171,9 @@ bool W::Messenger::dispatchPositionalEvent(Event *ev) {
 	for (std::vector<cbAndRect*>::reverse_iterator it = pos_sublist.rbegin(); it != pos_sublist.rend(); it++) {
 		cbAndRect &cnr = **it;
 		if (cnr.rct->overlapsWith(ev->pos)) {
-			if (cnr.cb->call(ev) == W::EventPropagation::ShouldStop)
-				return true;
 			dispatched = true;
+			if (cnr.cb->call(ev) == W::EventPropagation::ShouldStop)
+				break;
 		}
 	}
 	return dispatched;
