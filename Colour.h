@@ -33,7 +33,6 @@ namespace W {
 		static Colour Brown;
 	};
 	
-	
 }
 
 #endif

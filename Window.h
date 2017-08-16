@@ -1,11 +1,8 @@
 /*
  * Window.h
  *
- * Window encapsulates both a Window on the device, and the View and OpenGL
+ * Window encapsulates a Window on the device, and the View and OpenGL
  * state associated with it.
- *
- * The base class defines an abstract interface; different platform-specific
- * implementations are encapsulated as subclasses.
  *
  */
 
@@ -37,7 +34,7 @@ namespace W {
 			// Call from the desired thread to obtain access to the GL context
 		
 		void setUpViewport();
-		
+		void beginDrawing(const W::size &winSize);	// Prepare to start new drawing cycle
 		void flushBuffer(); // Draw to the screen
 		
 		enum Mode { Windowed, FullScreen } mode;
@@ -52,6 +49,7 @@ namespace W {
 		void createWindow();
 		void closeWindow();
 		void setUpOpenGL();
+		void setUpForDrawing();
 		position getMousePosition();
 		
 		size sz;

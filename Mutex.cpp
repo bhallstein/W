@@ -15,7 +15,7 @@ W::Mutex::~Mutex()
 /*** Mutex: Mac-specific implementation ***/
 /******************************************/
 
-#ifdef WTARGET_MAC
+#if defined WTARGET_MAC || defined WTARGET_IOS
 
 #include <pthread.h>
 

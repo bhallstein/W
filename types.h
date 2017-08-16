@@ -84,6 +84,14 @@ namespace W {
 		size operator-  (const size &sz) const { return size(width-sz.width,height-sz.height); }
 		void operator+= (const size &sz) { width += sz.width; height += sz.height; }
 		void operator-= (const size &sz) { width -= sz.width; height -= sz.height; }
+		size operator*  (float x) const { return size(width*x,height*x); }
+		size operator*  (int x)   const { return size(width*x,height*x); }
+		size operator/  (float x) const { return size(width/x,height/x); }
+		size operator/  (int x)   const { return size(width/x,height/x); }
+		void operator*= (float x) { width *= x; height *= x; }
+		void operator*= (int x)   { width *= x; height *= x; }
+		void operator/= (float x) { width /= x; height /= x; }
+		void operator/= (int x)   { width /= x; height /= x; }
 		std::string str() const {
 			std::stringstream ss;
 			ss << width << "x" << height;

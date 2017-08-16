@@ -37,7 +37,11 @@ namespace W {
 	
 	
 	extern Controller _controller;
-	void createWindow(const W::size &sz, const std::string &title);
+	#ifdef WTARGET_IOS
+		void createWindow();
+	#else
+		void createWindow(const W::size &sz, const std::string &title);
+	#endif
 	void start();
 	
 	extern int updateMicroseconds;

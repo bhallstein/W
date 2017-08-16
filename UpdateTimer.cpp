@@ -16,13 +16,17 @@ W::UpdateTimer::~UpdateTimer()
 }
 
 
-/************************************************/
-/*** UpdateTimer: Mac-specific implementation ***/
-/************************************************/
+/********************************************************/
+/*** UpdateTimer: Mac- & iOS- specific implementation ***/
+/********************************************************/
+
+#if defined WTARGET_MAC || defined WTARGET_IOS
 
 #ifdef WTARGET_MAC
-
-#include "MacOSXClasses.h"
+	#include "MacOSXClasses.h"
+#else
+	#include "iOSClasses.h"
+#endif
 
 struct W::UpdateTimer::Objs {
 	W_UpdateTimer *timer;
@@ -44,21 +48,6 @@ void W::UpdateTimer::destroyTimer() {
 }
 void W::UpdateTimer::start() { [objs->timer start]; }
 void W::UpdateTimer::stop() { [objs->timer stop]; }
-
-
-/************************************************/
-/*** UpdateTimer: iOS-specific implementation ***/
-/************************************************/
-
-#elif defined WTARGET_IOS
-
-#include "iOSClasses.h"
-
-struct W::UpdateTimer::Objs {
-	// ...
-};
-
-// ...
 
 
 /************************************************/
@@ -106,7 +95,7 @@ void W::UpdateTimer::start() {
 	MMRESULT mmr = timeSetEvent(20, 40, &_mmtCallback, NULL, TIME_PERIODIC);
 	if (mmr == NULL)
 		throw Exception("UpdateTimer: Error starting multimedia timer");
-		objs->timer = mmr;
+	objs->timer = mmr;
 }
 void W::UpdateTimer::stop() {
 	timeKillEvent(objs->timer);

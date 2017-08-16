@@ -1,13 +1,7 @@
 #include "MegaTexture.h"
 #include "Log.h"
 
-#ifdef __APPLE__
-	#include <OpenGL/gl.h>
-#elif defined _WIN32 || _WIN64
-	#include <gl\gl.h>
-	#include <gl\glu.h>
-#endif
-
+#include "oglInclude.h"
 #include "SOIL.h"
 
 #define MT_INITIAL_POWER 8	// i.e. 2^8 = 256
@@ -75,7 +69,6 @@ bool W::MegaTexture::addTex(const std::string &filename, W::Texture *_tex) {
 		debug("/Users/bh/Desktop/mtdebug.bmp");
 	#endif
 	
-	if (success) setModified();
 	return success;
 }
 bool W::MegaTexture::addTex(unsigned char *imagedata, const size &imageSz, W::Texture *_tex) {

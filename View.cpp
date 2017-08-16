@@ -2,12 +2,7 @@
 #include "DObj.h"
 #include "Controller.h"
 
-#ifdef __APPLE__
-	#include <OpenGL/gl.h>
-#elif defined _WIN32 || _WIN64
-	#include <gl\gl.h>
-	#include <gl\glu.h>
-#endif
+#include "oglInclude.h"
 
 #define GL_ARRAY_INITIAL_SIZE 256
 

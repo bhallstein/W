@@ -1,6 +1,6 @@
 #include "Event.h"
-#ifdef __APPLE__
-#include <Cocoa/Cocoa.h>
+#if defined WTARGET_MAC
+	#include <Cocoa/Cocoa.h>
 #endif
 
 W::EventType::T W::Event::_typecounter = 100;

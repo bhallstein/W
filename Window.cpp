@@ -1,12 +1,12 @@
 #include "Window.h"	
 #include "W.h"
 #include "Log.h"
+#include "MegaTexture.h"
 
-#if defined WTARGET_MAC || WTARGET_IOS
-	#include <OpenGL/gl.h>
-#elif defined WTARGET_WIN
-	#include <gl\gl.h>
-	#include <gl\glu.h>
+#include "oglInclude.h"
+
+#ifdef WTARGET_IOS
+	#define glOrtho glOrthof
 #endif
 
 /*************************************/
@@ -54,6 +54,20 @@ void W::Window::setUpViewport() {
 	
 	glMatrixMode(GL_MODELVIEW);
 }
+void W::Window::beginDrawing(const size &winSize) {
+	glScissor(0, 0, winSize.width, winSize.height);
+	glClearColor(0.525, 0.187, 0.886, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glBindTexture(GL_TEXTURE_2D, MegaTexture::getGLTexId());
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//	glTexParameteri(GL_TEXTURE_2D, GL_MIN_FILTER, GL_LINEAR);
+//	glTexParameteri(GL_TEXTURE_2D, GL_MAG_FILTER, GL_LINEAR);
+	
+	#ifdef WTARGET_IOS
+		setUpForDrawing();	// On iOS, need to bind the frame buffer
+	#endif
+}
 void W::Window::generateMouseMoveEvent() {
 	position p = getMousePosition();
 	if (p.x >= 0 && p.y >= 0 && p.x < sz.width && p.y < sz.height)
@@ -98,7 +112,7 @@ W::Window::Initializer *W::Window::init;
 
 void W::Window::createWindow() {
 	if (objs) {
-		W::log << "createWindow() called, but seems to already exist\n";
+		W::log << "createWindow() called, but seems already to exist\n";
 		return;
 	}
 		// At some point, want to take mode, check if different, then destroy
@@ -140,6 +154,58 @@ W::position W::Window::getMousePosition() {
 
 #elif defined WTARGET_IOS
 
+#include "iOSClasses.h"
+
+struct W::Window::Objs {
+	UIWindow *window;
+	W_ViewController *vc;
+	EAGLView *view;
+	EAGLContext *context;
+};
+
+void W::Window::createWindow() {
+	if (objs) {
+		W::log << "createWindow() called, but seems to already exist\n";
+		return;
+	}
+	
+	objs = new Objs();
+	
+	CGRect windowFrame = [[UIScreen mainScreen] bounds];
+	sz = size(windowFrame.size.width, windowFrame.size.height);
+	
+	objs->window = [[UIWindow alloc] initWithFrame:windowFrame];
+	if (objs->window == nil)
+		throw Exception("Could not create UIWindow");
+	
+	objs->window.rootViewController = objs->vc = [[W_ViewController alloc] init];
+	[objs->window makeKeyAndVisible];
+	
+	objs->view = objs->vc.v;
+	objs->context = objs->view.context;
+	
+	sz *= objs->view.contentScaleFactor;
+}
+void W::Window::closeWindow() {
+	if (objs) {
+		delete objs;
+		objs = NULL;
+	}
+}
+void W::Window::setOpenGLThreadAffinity() {
+	[objs->view setOpenGLThreadAffinity];
+}
+void W::Window::clearOpenGLThreadAffinity() {
+	[objs->view clearOpenGLThreadAffinity];
+}
+void W::Window::flushBuffer() {
+	[objs->view flushBuffer];
+}
+void W::Window::setUpForDrawing() {
+	[objs->view bindFramebuffer];
+}
+void W::Window::setTitle(const std::string &t) { }
+W::position W::Window::getMousePosition() { return position(); }
 
 
 /******************************************/

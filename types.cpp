@@ -1,14 +1,17 @@
 #include "types.h"
 #include <sstream>
 
-#if defined WTARGET_MAC || WTARGET_IOS
+#ifdef WTARGET_MAC
 	#include <Cocoa/Cocoa.h>
+#elif defined WTARGET_IOS
+	#include <Foundation/Foundation.h>
 #elif defined WTARGET_WIN
 	#include "Windows.h"
 #endif
 
-
-/* W::Exception */
+/********************/
+/*** W::Exception ***/
+/********************/
 
 W::Exception::Exception(const std::string &_msg, int _err)
 {

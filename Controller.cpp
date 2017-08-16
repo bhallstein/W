@@ -6,12 +6,11 @@
 #include "MegaTexture.h"
 #include "Timer.h"
 
-#if defined WTARGET_MAC || WTARGET_IOS
-	#include <Cocoa/Cocoa.h>
-	#include <OpenGL/gl.h>
+#include "oglInclude.h"
+
+#ifdef WTARGET_MAC
+	#import <Cocoa/Cocoa.h>
 #elif defined WTARGET_WIN
-	#include <gl\gl.h>
-	#include <gl\glu.h>
 	bool _quit = false;
 #endif
 
@@ -45,7 +44,10 @@ W::Controller::~Controller()
 }
 
 void W::Controller::createWindow(const W::size &sz, const std::string &title) {
-	if (window) return;
+	if (window) {
+		log << "Warning: createWindow() called, but window already exists\n";
+		return;
+	}
 	window = new Window(sz, title);
 }
 
@@ -166,18 +168,9 @@ void W::Controller::update() {
 	
 	
 	/* 5. Drawing */
-
-	size window_size = window->getSize();
-	int &winW = window_size.width, &winH= window_size.height;
 	
-	glScissor(0, 0, winW, winH);
-	glClearColor(0.525, 0.187, 0.886, 1);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glBindTexture(GL_TEXTURE_2D, MegaTexture::getGLTexId());
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//	glTexParameteri(GL_TEXTURE_2D, GL_MIN_FILTER, GL_LINEAR);
-//	glTexParameteri(GL_TEXTURE_2D, GL_MAG_FILTER, GL_LINEAR);
+	size window_size = window->getSize();
+	window->beginDrawing(window_size);
 	
 	if (int n = (int)GameState::_gsStack.size()) {
 		// Draw all GameStates back to the last that was translucent - 1
@@ -211,9 +204,15 @@ void W::Controller::updateAllViewPositions() {
 
 W::Controller W::_controller;
 
+#ifdef WTARGET_IOS
+void W::createWindow() {
+	_controller.createWindow(size(), "");
+}
+#else
 void W::createWindow(const size &sz, const std::string &title) {
 	_controller.createWindow(sz, title);
 }
+#endif
 void W::start() {
 	_controller.start();
 }
