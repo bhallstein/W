@@ -119,7 +119,7 @@ W::WObjs::~WObjs()
 }
 
 
-void W::_createWindow(const W::size &sz, const std::string &title) {
+void W::_createWindow(const W::v2i &sz, const std::string &title) {
 	// Initialize W objects
 	if (wObjs.window) {
 		std::string s("Warning: createWindow() called, but window already exists\n");
@@ -170,7 +170,7 @@ void W::_popState(const Returny &r) {
 	wObjs.returny = r;
 }
 
-const W::size& W::windowSize() {
+const W::v2i& W::windowSize() {
 	return wObjs.window->getSize();
 }
 
@@ -233,11 +233,11 @@ void _update() {
 			g->handleCloseEvent();
 		else {
 			// Correct any touch events that are misplaced due to calibration error
-			const W::size &wSz = objs.window->getSize();
-			if (ev->pos.x < 0) ev->pos.x = 0;
-			else if (ev->pos.x >= wSz.width) ev->pos.x = wSz.width - 1;
-			if (ev->pos.y < 0) ev->pos.y = 0;
-			else if (ev->pos.y >= wSz.height) ev->pos.y = wSz.height - 1;
+			const W::v2i &wSz = objs.window->getSize();
+			if (ev->pos.a < 0) ev->pos.a = 0;
+			else if (ev->pos.a >= wSz.a) ev->pos.a = wSz.a - 1;
+			if (ev->pos.b < 0) ev->pos.b = 0;
+			else if (ev->pos.b >= wSz.b) ev->pos.b = wSz.b - 1;
 			// Dispatch event
 			W::Messenger::dispatchEvent(ev);
 		}
@@ -280,7 +280,7 @@ void _update() {
 	
 	/* 4. Drawing */
 	
-	const W::size &window_size = objs.window->getSize();
+	const W::v2i &window_size = objs.window->getSize();
 	objs.window->beginDrawing();
 	
 	if (int n = (int)objs.gsStack.size()) {
@@ -301,7 +301,7 @@ void _update() {
 }
 
 void _updateAllViewPositions() {
-	const W::size &s = W::wObjs.window->getSize();
+	const W::v2i &s = W::wObjs.window->getSize();
 	for (std::vector<W::GameState*>::iterator itgs = W::wObjs.gsStack.begin(); itgs < W::wObjs.gsStack.end(); ++itgs) {
 		W::GameState::Viewlist &vlist = (*itgs)->_vlist;
 		for (W::GameState::Viewlist::iterator itv = vlist.begin(); itv != vlist.end(); itv++)

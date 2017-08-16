@@ -68,18 +68,18 @@ namespace W {
 	
 	class Event {
 	public:
-		Event(W::EventType::T);
-		Event(W::EventType::T, const W::position &);
-		Event(W::EventType::T, W::KeyCode::T);
-		Event(W::EventType::T, float _x);
-		Event(EventType::T, int _touchID, const position &_pos, const position &_prev_pos = position(-1,-1));
+		Event(EventType::T);
+		Event(EventType::T, const v2i &);
+		Event(EventType::T, KeyCode::T);
+		Event(EventType::T, float _x);
+		Event(EventType::T, int _touchID, const v2i &_pos, const v2i &_prev_pos = v2i(-1,-1));
 		
 		std::string _printType();
 		
-		W::position pos;
-		W::position prev_pos;
-		W::EventType::T type;
-		W::KeyCode::T key;
+		v2i pos;
+		v2i prev_pos;
+		EventType::T type;
+		KeyCode::T key;
 		float x;
 		int touchID;
 		void *_payload;

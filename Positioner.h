@@ -24,6 +24,7 @@ namespace W {
 			TopLeft, TopRight, BottomLeft, BottomRight
 		};
 	}
+	
 	namespace PosType {
 		enum T {
 			Fixed, Proportional
@@ -39,9 +40,9 @@ namespace W {
 			float _x, float _y, float _w, float _h
 		);
 		Positioner(LuaObj *);
-		W::rect& refresh(const size &container_size);
-
-		void nudge(const position &delta);
+		iRect& refresh(const v2f &container_size);
+		
+		void nudge(const v2f &delta);
 		bool isDraggable() { return draggable; }
 		
 		static const Positioner *WholeAreaPositioner;
@@ -61,7 +62,7 @@ namespace W {
 		float corner_x, corner_y, w, h;
 		bool draggable;
 		
-		rect _p;
+		iRect _p;
 		
 	};
 	

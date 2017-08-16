@@ -99,30 +99,30 @@ W::View::~View()
 void W::View::_updatePosition() {
 	_updatePosition(windowSize());
 }
-void W::View::_updatePosition(const size &winsize) {
+void W::View::_updatePosition(const v2i &winsize) {
 	if (_positioner)
 		rct = _positioner->refresh(winsize);
 	updatePosition(winsize);
 }
 
 void W::View::_convertEventCoords(Event *ev) {
-	ev->pos -= rct.pos;
+	ev->pos -= rct.position;
 	ev->pos -= _offset;
 	convertEventCoords(ev);
 }
 
-void W::View::_draw(const size &winSz) {
+void W::View::_draw(const v2i &winSz) {
 	w_dout << "View::_draw(const size &winSz)\n";
 	w_dout << " winsize: " << winSz.str() << "\n";
-	w_dout << " position:" << rct.pos.xyStr() << ", size:" << rct.sz.str() << ", offset:" << _offset.xyStr() << "\n";
+	w_dout << " position:" << rct.position.str() << ", size:" << rct.size.str() << ", offset:" << _offset.str() << "\n";
 	
-	size &sz = rct.sz;			// Note: these properties are copied, to avoid artifacts in the event
-	position &pos = rct.pos;	// that the view's position is updated while its objects are being drawn
+	v2i &sz = rct.size;			// Note: these properties are copied, to avoid artifacts in the event
+	v2i &pos = rct.position;	// that the view's position is updated while its objects are being drawn
 	
 	// Set up OGL: scissor to view bounds, translate to view pos w/ modelview matrix
-	glScissor(pos.x, winSz.height - pos.y - sz.height, sz.width, sz.height);
+	glScissor(pos.a, winSz.b - pos.b - sz.b, sz.a, sz.b);
 	glLoadIdentity();
-	glTranslatef(pos.x + _offset.x, pos.y + _offset.y, 0);
+	glTranslatef(pos.a + _offset.a, pos.b + _offset.b, 0);
 	
 	// Users can write custom OpenGL code
 	customOpenGLDrawing();

@@ -160,37 +160,37 @@ W::Positioner::Positioner(LuaObj *_l)
 	}
 }
 
-W::rect& W::Positioner::refresh(const size &container_size) {
-	const int &Ww = container_size.width;
-	const int &Wh = container_size.height;
+W::iRect& W::Positioner::refresh(const v2f &container_size) {
+	const int &Ww = container_size.a;
+	const int &Wh = container_size.b;
 	
-	if (sizing_method_x == PosType::Fixed) _p.sz.width = w;
-	else _p.sz.width = w * Ww;
+	if (sizing_method_x == PosType::Fixed) _p.size.a = w;
+	else _p.size.a = w * Ww;
 	
-	if (sizing_method_y == PosType::Fixed) _p.sz.height = h;
-	else _p.sz.height = h * Wh;
+	if (sizing_method_y == PosType::Fixed) _p.size.b = h;
+	else _p.size.b = h * Wh;
 	
 	// Set x
 	if (fixed_corner == Corner::TopLeft || fixed_corner == Corner::BottomLeft)
-		_p.pos.x = (pos_method_x == PosType::Fixed ? corner_x : corner_x * Ww);
+		_p.position.a = (pos_method_x == PosType::Fixed ? corner_x : corner_x * Ww);
 	else {
 		int rval = Ww - (pos_method_x == PosType::Fixed ? corner_x : corner_x * Ww);
-		_p.pos.x = rval - _p.sz.width;
+		_p.position.a = rval - _p.size.a;
 	}
 	// Set y
 	if (fixed_corner == Corner::TopLeft || fixed_corner == Corner::TopRight)
-		_p.pos.y = (pos_method_y == PosType::Fixed ? corner_y : corner_y * Wh);
+		_p.position.b = (pos_method_y == PosType::Fixed ? corner_y : corner_y * Wh);
 	else {
 		int bval = Wh - (pos_method_y == PosType::Fixed ? corner_y : corner_y * Wh);
-		_p.pos.y = bval - _p.sz.height;
+		_p.position.b = bval - _p.size.b;
 	}
 	
 	return _p;
 }
 
-void W::Positioner::nudge(const position &delta) {
-	corner_x += (fixed_corner == Corner::TopLeft || fixed_corner == Corner::BottomLeft ? delta.x : -delta.x);
-	corner_y += (fixed_corner == Corner::TopLeft || fixed_corner == Corner::TopRight   ? delta.y : -delta.y);
+void W::Positioner::nudge(const v2f &delta) {
+	corner_x += (fixed_corner == Corner::TopLeft || fixed_corner == Corner::BottomLeft ? delta.a : -delta.a);
+	corner_y += (fixed_corner == Corner::TopLeft || fixed_corner == Corner::TopRight   ? delta.b : -delta.b);
 }
 
 

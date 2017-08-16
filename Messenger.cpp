@@ -24,8 +24,8 @@ using std::string;
 
 struct cbAndRect {
 	W::Callback *cb;
-	W::rect *rct;
-	cbAndRect(W::Callback *_cb, W::rect *_rct) { cb = _cb; rct = _rct; }
+	W::iRect *rct;
+	cbAndRect(W::Callback *_cb, W::iRect *_rct) { cb = _cb; rct = _rct; }
 	~cbAndRect() { delete cb; }
 };
 struct cbAndView {
@@ -246,7 +246,7 @@ void W::Messenger::unsubscribe(EventType::T t, void *r) {
 		else it++;
 }
 
-void W::Messenger::subscribeInView(View *v, W::EventType::T t, const W::Callback &c, rect *rct) {
+void W::Messenger::subscribeInView(View *v, W::EventType::T t, const W::Callback &c, iRect *rct) {
 	if (!s) return;
 	unsubscribeInView(v, t, c.resp);
 	s->positionalSubs[v][t].push_back(new cbAndRect(c.copy(), rct));
@@ -281,7 +281,7 @@ void W::Messenger::unsubscribeInView(View *v, W::EventType::T t, void *r) {
 		s->positionalSubs.erase(itV);
 }
 
-void W::Messenger::subscribeToMouseEvents(W::View *v, const W::Callback &c, W::rect *rct) {
+void W::Messenger::subscribeToMouseEvents(View *v, const Callback &c, iRect *rct) {
 	if (!s) return;
 	using namespace EventType;
 	subscribeInView(v, MouseMove, c, rct);

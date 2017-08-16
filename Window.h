@@ -30,10 +30,10 @@ namespace W {
 	
 	class Window {
 	public:
-		Window(const W::size &, const std::string &title);
+		Window(const v2i &, const std::string &title);
 		virtual ~Window();
 		
-		const size& getSize() { return sz; }
+		const v2i& getSize() { return sz; }
 		void setTitle(const std::string &);
 		
 		void setOpenGLThreadAffinity();
@@ -48,7 +48,7 @@ namespace W {
 		
 		void generateMouseMoveEvent();
 		
-		void updateSize(const W::size &);
+		void updateSize(const v2i &);
 			// Mac - called by the Window object
 			// iOS - called by the EAGLView object
 			// Win - ...
@@ -64,9 +64,9 @@ namespace W {
 		void closeWindow();
 		void setUpOpenGL();
 		void setUpForDrawing();
-		position getMousePosition();
+		v2i getMousePosition();
 		
-		size sz;
+		v2i sz;
 		
 		struct Objs;
 		Objs *objs;

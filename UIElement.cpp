@@ -25,7 +25,7 @@ W::UIElement::~UIElement()
 	delete positioner;
 }
 
-void W::UIElement::_updatePosition(const W::size &_s) {
+void W::UIElement::_updatePosition(const v2i &_s) {
 	rct = positioner->refresh(_s);
 	updatePosition();
 }
@@ -89,11 +89,11 @@ W::EventPropagation::T W::Button::recEv(W::Event *ev) {
 	return EventPropagation::ShouldStop;
 }
 void W::Button::updatePosition() {
-	btnrect->setPos(rct.pos);		// Update D.O.
-	btnrect->setSz(rct.sz);
+	btnrect->setPos(rct.position);		// Update D.O.
+	btnrect->setSz(rct.size);
 }
 void W::Button::activate() {
-	btnrect = new Rectangle(view, rct.pos, rct.sz, Colour::Black);
+	btnrect = new Rectangle(view, rct.position, rct.size, Colour::Black);
 }
 void W::Button::deactivate() {
 	if (btnrect) {

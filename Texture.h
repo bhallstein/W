@@ -37,7 +37,7 @@ namespace W {
 			// Take a pixel-coord relative to the tex, return a %-coord
 			// relative to the MT.
 		
-		const size& getSize() { return sz; }
+		const v2i& getSize() { return sz; }
 		
 		// PLACEHOLDER REQD STILL?
 		// If the texture is uploaded into a "fresh" area of the MT,
@@ -55,7 +55,7 @@ namespace W {
 		
 		TANode *taNode;
 		int atlasA, atlasB;	// Pixel coordinates of the Texture within the Atlas
-		size sz;
+		v2i sz;
 			// All set by TextureAtlas in addTex()
 	};
 	

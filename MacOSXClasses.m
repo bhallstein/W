@@ -34,22 +34,22 @@
 -(void)mouseDown:(NSEvent *)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::Event::_addEvent(new W::Event(W::EventType::LMouseDown, W::position((int)p.x, (int)p.y)));
+	W::Event::_addEvent(new W::Event(W::EventType::LMouseDown, W::v2i((int)p.x, (int)p.y)));
 }
 -(void)mouseUp:(NSEvent*)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::Event::_addEvent(new W::Event(W::EventType::LMouseUp, W::position((int)p.x, (int)p.y)));
+	W::Event::_addEvent(new W::Event(W::EventType::LMouseUp, W::v2i((int)p.x, (int)p.y)));
 }
 -(void)rightMouseDown:(NSEvent *)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::Event::_addEvent(new W::Event(W::EventType::RMouseDown, W::position((int)p.x, (int)p.y)));
+	W::Event::_addEvent(new W::Event(W::EventType::RMouseDown, W::v2i((int)p.x, (int)p.y)));
 }
 -(void)rightMouseUp:(NSEvent *)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::Event::_addEvent(new W::Event(W::EventType::RMouseUp, W::position((int)p.x, (int)p.y)));
+	W::Event::_addEvent(new W::Event(W::EventType::RMouseUp, W::v2i((int)p.x, (int)p.y)));
 }
 -(void)keyDown:(NSEvent *)nsev {
 	W::Event::_addEvent(new W::Event(
@@ -179,10 +179,10 @@
 -(void)frameChanged:(id)notification {
 	[self.context update];
 
-	W::size sz(view.bounds.size.width, view.bounds.size.height);
+	W::v2i sz(view.bounds.size.width, view.bounds.size.height);
 	
 	// Resize the backing buffer
-	GLint size[] = { sz.width, sz.height };
+	GLint size[] = { sz.a, sz.b };
 	CGLContextObj ctx = (CGLContextObj) [context CGLContextObj];
 	CGLSetParameter(ctx, kCGLCPSurfaceBackingSize, size);
 	CGLEnable(ctx, kCGLCESurfaceBackingSize);

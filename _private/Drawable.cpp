@@ -20,7 +20,7 @@
 
 #pragma mark Rect coord fns
 
-void generateRectCoords(const W::position &, const W::size &, float rotation, W::v3f *);
+void generateRectCoords(const W::v2f &pos, const W::v2f &size, float rotation, W::v3f *);
 
 
 /*** Drawable ***/
@@ -34,7 +34,13 @@ W::Drawable::Drawable(View *_v, int _len, int _lay, BlendMode::T _blend) :
 	blendMode(_blend),
 	preceding_free_space(0)
 {
-	// hi
+	v_array = (v3f*) malloc(sizeof(v3f) * length);
+	c_array = (v4f*) malloc(sizeof(v4f) * length);
+}
+W::Drawable::~Drawable()
+{
+	free(v_array);
+	free(c_array);
 }
 void W::Drawable::recopyV() { for (int i=0; i < length; ++i) vptr[i] = v_array[i]; }
 void W::Drawable::recopyC() { for (int i=0; i < length; ++i) cptr[i] = c_array[i]; }
@@ -51,17 +57,11 @@ W::DColouredShape::DColouredShape(View *_v, int _len, int _lay, BlendMode::T _bl
 	prev(NULL),
 	next(NULL)
 {
-	v_array = (v3f*) malloc(sizeof(v3f) * length);
-	c_array = (c4f*) malloc(sizeof(c4f) * length);
-	
 	view->addDrawable(this);
 }
 W::DColouredShape::~DColouredShape()
 {
 	view->removeDrawable(this);
-	
-	free(v_array);
-	free(c_array);
 }
 void W::DColouredShape::setLayer(int _layer) {
 	if (layer == _layer) return;
@@ -89,45 +89,45 @@ void W::DColouredShape::recopyBoth() {
 
 #pragma mark - DTri
 
-W::DTri::DTri(View *_v, const position &_p1, const position &_p2, const position &_p3, const Colour &_col, int _lay, BlendMode::T _blend) :
+W::DTri::DTri(View *_v, const v2f &_p1, const v2f &_p2, const v2f &_p3, const Colour &_col, int _lay, BlendMode::T _blend) :
 	DColouredShape(_v, 3, _lay, _blend)
 {
 	setP123(_p1, _p2, _p3);
 	setCol(_col);
 }
-void W::DTri::setP123(const W::position &p1, const W::position &p2, const W::position &p3) {
+void W::DTri::setP123(const v2f &p1, const v2f &p2, const v2f &p3) {
 	v_array[0] = p1;
 	v_array[1] = p2;
 	v_array[2] = p3;
 	recopyV();
 }
-void W::DTri::setCol(const W::Colour &c) {
-	c_array[0] = c;
-	c_array[1] = c;
-	c_array[2] = c;
+void W::DTri::setCol(const Colour &c) {
+	c_array[0] = &c;
+	c_array[1] = &c;
+	c_array[2] = &c;
 	recopyC();
 }
 
 
 #pragma mark - DRect
 
-W::DRect::DRect(View *_v, const position &_p, const size &_sz, const Colour &_col, float _rot, int _lay, BlendMode::T _blend) :
+W::DRect::DRect(View *_v, const v2f &_pos, const v2f &_sz, const Colour &_col, float _rot, int _lay, BlendMode::T _blend) :
 	DColouredShape(_v, 6, _lay, _blend)
 {
-	setPosSzRot(_p, _sz, _rot);
+	setPosSzRot(_pos, _sz, _rot);
 	setCol(_col);
 }
-void W::DRect::setPosSzRot(const position &p, const size &s, float r) {
-	generateRectCoords(p, s, r, v_array);
+void W::DRect::setPosSzRot(const v2f &_pos, const v2f &_sz, float r) {
+	generateRectCoords(_pos, _sz, r, v_array);
 	recopyV();
 }
 void W::DRect::setCol(const W::Colour &c) {
-	c_array[0] = c;
-	c_array[1] = c;
-	c_array[2] = c;
-	c_array[3] = c;
-	c_array[4] = c;
-	c_array[5] = c;
+	c_array[0] = &c;
+	c_array[1] = &c;
+	c_array[2] = &c;
+	c_array[3] = &c;
+	c_array[4] = &c;
+	c_array[5] = &c;
 	recopyC();
 }
 
@@ -144,9 +144,7 @@ W::DTexturedShape::DTexturedShape(View *_v, Texture *_t, int _len, int _lay, Ble
 	prev(NULL),
 	next(NULL)
 {
-	v_array = (v3f*) malloc(sizeof(v3f) * length);
-	c_array = (c4f*) malloc(sizeof(c4f) * length);
-	t_array = (t2f*) malloc(sizeof(t2f) * length);
+	t_array = (v2f*) malloc(sizeof(v2f) * length);
 	
 	view->addDrawable(this);
 	tex->incrementUsageCount();
@@ -158,8 +156,6 @@ W::DTexturedShape::~DTexturedShape()
 	tex->decrementUsageCount();
 	tex->atlas->remDrawable(this);
 	
-	free(v_array);
-	free(c_array);
 	free(t_array);
 }
 void W::DTexturedShape::setLayer(int _layer) {
@@ -190,22 +186,22 @@ void W::DTexturedShape::recopyAll() {
 
 #pragma mark - DSprite
 
-W::DSprite::DSprite(View *_v, Texture *_t, const position &_p, const size &_sz, float _opac, float _rot, int _lay, BlendMode::T _blend) :
+W::DSprite::DSprite(View *_v, Texture *_t, const v2f &_p, const v2f &_sc, float _opac, float _rot, int _lay, BlendMode::T _blend) :
 	DTexturedShape(_v, _t, 6, _lay, _blend)
 {
-	setPosSzRot(_p, _sz, _rot);
+	setPosScaleRot(_p, _sc, _rot);
 	setOpac(_opac);
 	
 	regenAndCopyTexCoords();
 }
-void W::DSprite::setPosSzRot(const position &p, const size &s, float r) {
-	generateRectCoords(p, s, r, v_array);
+void W::DSprite::setPosScaleRot(const v2f &p, const v2f &sc, float r) {
+	generateRectCoords(p + sc * 0.5, v2f(tex->getSize()) - sc, r, v_array);
 	recopyV();
 }
 void W::DSprite::setOpac(float _opac) {
 	for (int i=0; i < length; ++i) {
-		c_array[i].r = c_array[i].g = c_array[i].b = 1;
-		c_array[i].a = _opac;
+		c_array[i].a = c_array[i].b = c_array[i].c = 1;
+		c_array[i].d = _opac;
 	}
 	recopyC();
 }
@@ -215,19 +211,19 @@ void W::DSprite::regenAndCopyTexCoords() {
 		tB = tex->floatCoordB(),
 		tC = tex->floatCoordC(),
 		tD = tex->floatCoordD();
-	W::t2f
+	W::v2f
 		&tc1 = t_array[0],
 		&tc2 = t_array[1],
 		&tc3 = t_array[2],
 		&tc4 = t_array[3],
 		&tc5 = t_array[4],
 		&tc6 = t_array[5];
-	tc1.x = tA, tc1.y = tB;
-	tc2.x = tA, tc2.y = tD;
-	tc3.x = tC, tc3.y = tD;
-	tc4.x = tA, tc4.y = tB;
-	tc5.x = tC, tc5.y = tB;
-	tc6.x = tC, tc6.y = tD;
+	tc1.a = tA, tc1.b = tB;
+	tc2.a = tA, tc2.b = tD;
+	tc3.a = tC, tc3.b = tD;
+	tc4.a = tA, tc4.b = tB;
+	tc5.a = tC, tc5.b = tB;
+	tc6.a = tC, tc6.b = tD;
 	
 	recopyT();
 }
@@ -245,7 +241,7 @@ void W::DSprite::regenAndCopyTexCoords() {
 #define DEG2RAD (M_PI/180.0)
 
 void generateRectCoords(
-	const W::position &pos, const W::size &sz, float rotation, W::v3f *v_array
+	const W::v2f &pos, const W::v2f &sz, float rotation, W::v3f *v_array
 ) {
 	W::v3f
 		&v1 = v_array[0],
@@ -255,45 +251,45 @@ void generateRectCoords(
 		&v5 = v_array[4],
 		&v6 = v_array[5];
 	
-	v1.z = v2.z = v3.z = v4.z = v5.z = v6.z = 0;
+	v1.c = v2.c = v3.c = v4.c = v5.c = v6.c = 0;
 	
-	v1.x = 0,        v1.y = 0;
-	v2.x = 0,        v2.y = sz.height;
-	v3.x = sz.width, v3.y = sz.height;
-	v5.x = sz.width, v5.y = 0;
-	//	v1.x = 0.5,            v1.y = 0.5;
-	//	v2.x = 0.5,            v2.y = sz.height - 0.5;
-	//	v3.x = sz.width - 0.5, v3.y = sz.height - 0.5;
-	//	v5.x = sz.width - 0.5, v5.y = 0.5;
+//	v1.x = 0,                v1.y = 0;
+//	v2.x = 0,                v2.y = nativeSize.height;
+//	v3.x = nativeSize.width, v3.y = nativeSize.height;
+//	v5.x = nativeSize.width, v5.y = 0;
+	v1.a = 0.5,            v1.b = 0.5;
+	v2.a = 0.5,            v2.b = sz.b - 0.5;
+	v3.a = sz.a - 0.5,     v3.b = sz.b - 0.5 ;
+	v5.a = sz.a - 0.5,     v5.b = 0.5;
 	
 	if (rotation != 0.0) {
 		float rot = rotation * DEG2RAD;
 		float cosR = cos(rot), sinR = sin(rot);
-		int centreX = 0.5*sz.width, centreY = 0.5*sz.height;
+		int centreX = 0.5*sz.a, centreY = 0.5*sz.b;
 		
 		W::v3f v1r, v2r, v3r, v5r;
 		
-		v1r.x = (v1.x-centreX)*cosR - (v1.y-centreY)*sinR + centreX;
-		v2r.x = (v2.x-centreX)*cosR - (v2.y-centreY)*sinR + centreX;
-		v3r.x = (v3.x-centreX)*cosR - (v3.y-centreY)*sinR + centreX;
-		v5r.x = (v5.x-centreX)*cosR - (v5.y-centreY)*sinR + centreX;
+		v1r.a = (v1.a-centreX)*cosR - (v1.b-centreY)*sinR + centreX;
+		v2r.a = (v2.a-centreX)*cosR - (v2.b-centreY)*sinR + centreX;
+		v3r.a = (v3.a-centreX)*cosR - (v3.b-centreY)*sinR + centreX;
+		v5r.a = (v5.a-centreX)*cosR - (v5.b-centreY)*sinR + centreX;
 		
-		v1r.y = (v1.x-centreX)*sinR + (v1.y-centreY)*cosR + centreY;
-		v2r.y = (v2.x-centreX)*sinR + (v2.y-centreY)*cosR + centreY;
-		v3r.y = (v3.x-centreX)*sinR + (v3.y-centreY)*cosR + centreY;
-		v5r.y = (v5.x-centreX)*sinR + (v5.y-centreY)*cosR + centreY;
+		v1r.b = (v1.a-centreX)*sinR + (v1.b-centreY)*cosR + centreY;
+		v2r.b = (v2.a-centreX)*sinR + (v2.b-centreY)*cosR + centreY;
+		v3r.b = (v3.a-centreX)*sinR + (v3.b-centreY)*cosR + centreY;
+		v5r.b = (v5.a-centreX)*sinR + (v5.b-centreY)*cosR + centreY;
 		
-		v1.x = v1r.x, v1.y = v1r.y;
-		v2.x = v2r.x, v2.y = v2r.y;
-		v3.x = v3r.x, v3.y = v3r.y;
-		v5.x = v5r.x, v5.y = v5r.y;
+		v1.a = v1r.a, v1.b = v1r.b;
+		v2.a = v2r.a, v2.b = v2r.b;
+		v3.a = v3r.a, v3.b = v3r.b;
+		v5.a = v5r.a, v5.b = v5r.b;
 	}
 	
-	v1.x += pos.x, v1.y += pos.y;
-	v2.x += pos.x, v2.y += pos.y;
-	v3.x += pos.x, v3.y += pos.y;
-	v5.x += pos.x, v5.y += pos.y;
+	v1.a += pos.a, v1.b += pos.b;
+	v2.a += pos.a, v2.b += pos.b;
+	v3.a += pos.a, v3.b += pos.b;
+	v5.a += pos.a, v5.b += pos.b;
 	
-	v4.x = v1.x, v4.y = v1.y;
-	v6.x = v3.x, v6.y = v3.y;
+	v4.a = v1.a, v4.b = v1.b;
+	v6.a = v3.a, v6.b = v3.b;
 }

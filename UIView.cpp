@@ -38,7 +38,7 @@ W::UIView::UIView(const std::string &viewname) :
 		);
 	updatePosition(windowSize());
 	
-	bgrect = new Rectangle(this, position(), rct.sz, W::Colour::TransparentBlack);
+	bgrect = new Rectangle(this, v2i(), rct.size, W::Colour::TransparentBlack);
 }
 
 W::UIView::~UIView()
@@ -70,9 +70,9 @@ W::EventPropagation::T W::UIView::dragLoopEvent(Event *ev) {
 	return W::EventPropagation::ShouldStop;
 }
 
-void W::UIView::updatePosition(const size &winsize) {
+void W::UIView::updatePosition(const v2i &winsize) {
 	if (orientation_check)
-		orientation = (winsize.width >= winsize.height ? O_LANDSCAPE : O_PORTRAIT);
+		orientation = (winsize.a >= winsize.b ? O_LANDSCAPE : O_PORTRAIT);
 	
 	std::vector<int> *limit_vec;
 	positioner_list *psnr_vec;
@@ -95,7 +95,7 @@ void W::UIView::updatePosition(const size &winsize) {
 	// - If width larger than greatest limit, the last limit is used
 	int new_positioning_index = -1;
 	for (std::vector<int>::iterator it = limit_vec->begin(); it < limit_vec->end(); it++, new_positioning_index++)
-		if (*it > winsize.width)
+		if (*it > winsize.a)
 			break;
 	
 	// If change in index, deactivate current elements, activate new ones
@@ -122,7 +122,7 @@ void W::UIView::updatePosition(const size &winsize) {
 	// Update element positions
 	ellist = &ellist_vec->at(cur_positioning_index);
 	for (element_list::iterator it = ellist->begin(); it < ellist->end(); it++)
-		(*it)->_updatePosition(rct.sz);
+		(*it)->_updatePosition(rct.size);
 }
 
 bool W::UIView::initialize(const std::string &viewname) {
