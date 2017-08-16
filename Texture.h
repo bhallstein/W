@@ -37,6 +37,8 @@ namespace W {
 			// Take a pixel-coord relative to the tex, return a %-coord
 			// relative to the MT.
 		
+		const size& getSize() { return sz; }
+		
 		// PLACEHOLDER REQD STILL?
 		// If the texture is uploaded into a "fresh" area of the MT,
 		// will be transp. & don't need a placeholder transp. tex

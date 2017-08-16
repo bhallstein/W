@@ -19,6 +19,8 @@
 	#define M_PI 3.14159265358979
 #endif
 #define RAD2DEG (180.0/M_PI)
+#define DEG2RAD (M_PI/180.0)
+#define ROOT3 1.732050808
 
 #define CIRCLE_NPOINTS 15
 #define GEOM_LENGTH_FOR_CIRCLE 3*CIRCLE_NPOINTS
@@ -41,6 +43,9 @@ W::Triangle::~Triangle()
 void W::Triangle::setP1(const position &x){ dTri->setP123(p1 = x, p2, p3); }
 void W::Triangle::setP2(const position &x){ dTri->setP123(p1, p2 = x, p3); }
 void W::Triangle::setP3(const position &x){ dTri->setP123(p1, p2, p3 = x); }
+void W::Triangle::setP123(const position &_p1, const position &_p2, const position &_p3) {
+	dTri->setP123(p1 = _p1, p2 = _p2, p3 = _p3);
+}
 void W::Triangle::nudge(const position &delta) {
 	p1 += delta, p2 += delta, p3 += delta;
 	dTri->setP123(p1, p2, p3);
@@ -54,6 +59,149 @@ void W::Triangle::setLayer(int l) {
 void W::Triangle::setBlendMode(BlendMode::T m) {
 	dTri->setBlendMode(m);
 }
+
+
+#pragma mark - EquiTriangle
+
+W::EqTriangle::EqTriangle(View *_v, const position &_p, float _rad, const Colour &_col, float _rot, int _lay, BlendMode::T _blend) :
+	pos(_p),
+	radius(_rad),
+	rotation(_rot),
+	col(_col)
+{
+	genTriProperties();
+	dTri = new DTri(_v, p1, p2, p3, _col, _lay, _blend);
+}
+W::EqTriangle::~EqTriangle()
+{
+	delete dTri;
+}
+void W::EqTriangle::setPosition(const position &_p) {
+	pos = _p;
+	genTriProperties();
+	dTri->setP123(p1, p2, p3);
+}
+void W::EqTriangle::setRadius(float _rad) {
+	radius = _rad;
+	genTriProperties();
+	dTri->setP123(p1, p2, p3);
+}
+void W::EqTriangle::nudge(const position &delta) {
+	pos += delta;
+	p1 += delta, p2 += delta, p3 += delta;
+	dTri->setP123(p1, p2, p3);
+}
+void W::EqTriangle::setCol(const Colour &_col) {
+	dTri->setCol(col = _col);
+}
+void W::EqTriangle::setLayer(int l) {
+	dTri->setLayer(l);
+}
+void W::EqTriangle::setBlendMode(BlendMode::T m) {
+	dTri->setBlendMode(m);
+}
+void W::EqTriangle::genTriProperties() {
+	float sideLength = radius * ROOT3;
+	float apothem = radius * 0.5;
+	
+	p1.x = 0,               p1.y = -radius;
+	p2.x = sideLength*0.5,  p2.y = apothem;
+	p3.x = -sideLength*0.5, p3.y = apothem;
+	
+	if (rotation != 0.0) {
+		float rot = rotation * DEG2RAD;
+		float cosR = cos(rot), sinR = sin(rot);
+		position p1r, p2r, p3r;
+		
+		p1r.x = p1.x*cosR - p1.y*sinR,
+		p2r.x = p2.x*cosR - p2.y*sinR;
+		p3r.x = p3.x*cosR - p3.y*sinR;
+		
+		p1r.y = p1.x*sinR + p1.y*cosR;
+		p2r.y = p2.x*sinR + p2.y*cosR;
+		p3r.y = p3.x*sinR + p3.y*cosR;
+		
+		p1.x = p1r.x, p1.y = p1r.y;
+		p2.x = p2r.x, p2.y = p2r.y;
+		p3.x = p3r.x, p3.y = p3r.y;
+	}
+	
+	p1.x += pos.x, p1.y += pos.y;
+	p2.x += pos.x, p2.y += pos.y;
+	p3.x += pos.x, p3.y += pos.y;
+}
+
+
+#pragma mark - IsoTriangle
+
+W::IsoTriangle::IsoTriangle(View *_v, const position &_p, const size &_sz, const Colour &_col, float _rot, int _lay, BlendMode::T _blend) :
+pos(_p),
+sz(_sz),
+rotation(_rot),
+col(_col)
+{
+	genTriProperties();
+	dTri = new DTri(_v, p1, p2, p3, _col, _lay, _blend);
+}
+W::IsoTriangle::~IsoTriangle()
+{
+	delete dTri;
+}
+void W::IsoTriangle::setPosition(const position &_p) {
+	pos = _p;
+	genTriProperties();
+	dTri->setP123(p1, p2, p3);
+}
+void W::IsoTriangle::setSize(const size &_sz) {
+	sz = _sz;
+	genTriProperties();
+	dTri->setP123(p1, p2, p3);
+}
+void W::IsoTriangle::nudge(const position &delta) {
+	pos += delta;
+	p1 += delta, p2 += delta, p3 += delta;
+	dTri->setP123(p1, p2, p3);
+}
+void W::IsoTriangle::setCol(const Colour &_col) {
+	dTri->setCol(col = _col);
+}
+void W::IsoTriangle::setLayer(int l) {
+	dTri->setLayer(l);
+}
+void W::IsoTriangle::setBlendMode(BlendMode::T m) {
+	dTri->setBlendMode(m);
+}
+void W::IsoTriangle::genTriProperties() {
+	float halfWidth = sz.width * 0.5;
+	float halfHeight = sz.height * 0.5;
+	
+	p1.x = 0,               p1.y = -halfHeight;
+	p2.x = -halfWidth,      p2.y = halfHeight;
+	p3.x = halfWidth,       p3.y = halfHeight;
+	
+	if (rotation != 0.0) {
+		float rot = rotation * DEG2RAD;
+		float cosR = cos(rot), sinR = sin(rot);
+		position p1r, p2r, p3r;
+		
+		p1r.x = p1.x*cosR - p1.y*sinR,
+		p2r.x = p2.x*cosR - p2.y*sinR;
+		p3r.x = p3.x*cosR - p3.y*sinR;
+		
+		p1r.y = p1.x*sinR + p1.y*cosR;
+		p2r.y = p2.x*sinR + p2.y*cosR;
+		p3r.y = p3.x*sinR + p3.y*cosR;
+		
+		p1.x = p1r.x, p1.y = p1r.y;
+		p2.x = p2r.x, p2.y = p2r.y;
+		p3.x = p3r.x, p3.y = p3r.y;
+	}
+	
+	p1.x += pos.x, p1.y += pos.y;
+	p2.x += pos.x, p2.y += pos.y;
+	p3.x += pos.x, p3.y += pos.y;
+}
+
 
 
 #pragma mark - Rectangle
@@ -218,78 +366,7 @@ void W::Sprite::setLayer(int l) {
 }
 void W::Sprite::setBlendMode(BlendMode::T m) {
 	dSprite->setBlendMode(m);
-}	
-
-
-/*******************************/
-/*** DEquiTri implementation ***/
-/*******************************/
-
-#pragma mark - DEquiTri
-
-//W::DEquiTri::DEquiTri(View *_v, const position &_pos, float _rad, const Colour &_col, float _rot) :
-//	DObj(_v, _col, 3),
-//	pos(_pos),
-//	radius(_rad),
-//	col(_col),
-//	rotation(_rot),
-//	tex(Texture::_whiteTexture)
-//{
-//	tex->incrementUsageCount();
-//	updateVertices();
-//	updateColour();
-//	updateTexcoords();
-//}
-//W::DEquiTri::~DEquiTri()
-//{
-//	tex->decrementUsageCount();
-//}
-//void W::DEquiTri::updateVertices() {
-//	v3f &v1 = vert_ptr[0],
-//		&v2 = vert_ptr[1],
-//		&v3 = vert_ptr[2];
-//	
-//	v1.z = v2.z = v3.z = 0;
-//	
-//	float sideLength = radius * ROOT3;
-//	float apothem = radius * 0.5;
-//	
-//	v1.x = 0,               v1.y = -radius;
-//	v2.x = sideLength*0.5,  v2.y = apothem;
-//	v3.x = -sideLength*0.5, v3.y = apothem;
-//	
-//	if (rotation != 0.0) {
-//		float rot = rotation * DEG2RAD;
-//		float cosR = cos(rot), sinR = sin(rot);
-//		v3f v1r, v2r, v3r;
-//		
-//		v1r.x = v1.x*cosR - v1.y*sinR,
-//		v2r.x = v2.x*cosR - v2.y*sinR;
-//		v3r.x = v3.x*cosR - v3.y*sinR;
-//		
-//		v1r.y = v1.x*sinR + v1.y*cosR;
-//		v2r.y = v2.x*sinR + v2.y*cosR;
-//		v3r.y = v3.x*sinR + v3.y*cosR;
-//		
-//		v1.x = v1r.x, v1.y = v1r.y;
-//		v2.x = v2r.x, v2.y = v2r.y;
-//		v3.x = v3r.x, v3.y = v3r.y;
-//	}
-//	
-//	v1.x += pos.x, v1.y += pos.y;
-//	v2.x += pos.x, v2.y += pos.y;
-//	v3.x += pos.x, v3.y += pos.y;
-//}
-//void W::DEquiTri::updateTexcoords() {
-//	float tA = tex->floatCoordA(0),
-//		tB = tex->floatCoordB(0),
-//		tC = tex->floatCoordC(tex->sz.width),
-//		tD = tex->floatCoordD(tex->sz.height);
-//	
-//	texcoord_ptr[0].x = tA, texcoord_ptr[0].y = tB;
-//	texcoord_ptr[1].x = tA, texcoord_ptr[1].y = tD;
-//	texcoord_ptr[2].x = tC, texcoord_ptr[2].y = tD;
-//}
+}
 
 ///******************************/
 ///*** DCircle implementation ***/

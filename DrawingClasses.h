@@ -33,6 +33,7 @@ namespace W {
 		void setP1(const position &);
 		void setP2(const position &);
 		void setP3(const position &);
+		void setP123(const position &, const position &, const position &);
 		
 		void nudge(const position &);
 		
@@ -45,6 +46,64 @@ namespace W {
 		Colour col;
 		
 	private:
+		DTri *dTri;
+		
+	};
+	
+	
+	class EqTriangle {
+	public:
+		EqTriangle(View *, const position &, float radius, const Colour &, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		~EqTriangle();
+		
+		void setPosition(const position &);
+		void setRadius(float);
+		
+		void nudge(const position &);
+		
+		void setCol(const Colour &);
+
+		void setLayer(int);
+		void setBlendMode(BlendMode::T);
+		
+		position pos;
+		float radius;
+		float rotation;
+		Colour col;
+		
+	private:
+		position p1, p2, p3;
+		void genTriProperties();
+			// Gen from public properties, save result in p1-3
+		DTri *dTri;
+		
+	};
+	
+	
+	class IsoTriangle {
+	public:
+		IsoTriangle(View *, const position &, const size &, const Colour &, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		~IsoTriangle();
+		
+		void setPosition(const position &);
+		void setSize(const size &);
+		void setRotation(float);
+		
+		void nudge(const position &);
+		
+		void setCol(const Colour &);
+		
+		void setLayer(int);
+		void setBlendMode(BlendMode::T);
+		
+		position pos;
+		size sz;
+		float rotation;
+		Colour col;
+	
+	private:
+		position p1, p2, p3;
+		void genTriProperties();
 		DTri *dTri;
 		
 	};
@@ -129,30 +188,6 @@ namespace W {
 	};
 
 	
-	/***
-		DEquiTri draws an equilateral triangle
-	 ***/
-	
-//	class DEquiTri : public DObj {
-//	public:
-//		DEquiTri(View *, const position &, float _radius, const W::Colour &, float rotation = 0);
-//		~DEquiTri();
-//		void setPos(const position &_p) { pos = _p; updateVertices(); }
-//		void setRadius(float _r) { radius = _r; updateVertices(); }
-//		void setRot(float _r) { rotation = _r; updateVertices(); }
-//		
-//		position pos;
-//		float radius;
-//		Colour col;
-//		float rotation;
-//		Texture *tex;
-//		
-//	protected:
-//		void updateVertices();
-//		void updateTexcoords();
-//	};
-//
-//	
 //	/***
 //		DCircle
 //	 ***/

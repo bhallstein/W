@@ -105,6 +105,7 @@ void W::DTri::setCol(const W::Colour &c) {
 	c_array[0] = c;
 	c_array[1] = c;
 	c_array[2] = c;
+	recopyC();
 }
 
 
@@ -242,7 +243,6 @@ void W::DSprite::regenAndCopyTexCoords() {
 #endif
 #define RAD2DEG (180.0/M_PI)
 #define DEG2RAD (M_PI/180.0)
-#define ROOT3 1.732050808
 
 void generateRectCoords(
 	const W::position &pos, const W::size &sz, float rotation, W::v3f *v_array
