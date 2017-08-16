@@ -79,7 +79,6 @@ namespace W {
 		bool _isPositional();
 		bool _isUI();
 		
-		void _derawify();
 		std::string _printType();
 		
 		W::position pos;
