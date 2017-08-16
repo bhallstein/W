@@ -122,7 +122,7 @@ void W::Window::generateMouseMoveEvent() {
 		W::_addEvent(ev);
 	#endif
 	// Generate screenedge events, useful for scrolling the map
-	size s = getDimensions(this);
+	size s = getDimensions();
 	int w = s.width, h = s.height;
 	if (ev.pos.x < scrollmargin)           W::_addEvent(Event(EventType::SCREENEDGE_LEFT));
 	else if (ev.pos.x >= w - scrollmargin) W::_addEvent(Event(EventType::SCREENEDGE_RIGHT));
@@ -316,16 +316,14 @@ void W::Window::clearOpenGLThreadAffinity() {
 	#endif
 }
 
-W::size W::Window::getDimensions(W::Window *w) {
-	if (w == NULL) return size(800, 600);
-	NativeObjs *ob = w->_objs;
+W::size W::Window::getDimensions() {
 	#ifdef __APPLE__
-		NSSize bounds = [ob->view bounds].size;
+		NSSize bounds = [_objs->view bounds].size;
 	//	CGSize bounds = [ob->view bounds].size;
 		return size((int)bounds.width, (int)bounds.height);
 	#elif defined WIN32 || WIN64
 		RECT rect;
-		GetClientRect(ob->windowHandle, &rect);
+		GetClientRect(_objs->windowHandle, &rect);
 		return size(rect.right - rect.left, rect.bottom - rect.top);
 	#endif
 }

@@ -26,7 +26,7 @@ namespace W {
 	std::vector<Event> _events;
 	
 	std::vector<Texture*> _textures_to_upload;
-	std::vector<unsigned int> _textures_to_unload;
+	std::vector<Texture*> _textures_to_unload;
 	
 	Window *_window = NULL;
 
@@ -334,7 +334,7 @@ DWORD WINAPI W::drawingThreadFn(LPVOID lpParam)
 	while (!_quit) {
 //		gettimeofday(&t1, NULL);
 		// Initial setup
-		size window_size = Window::getDimensions(_window);
+		size window_size = _window->getDimensions();
 		int winW = window_size.width, winH= window_size.height;
 		
 		glScissor(0, 0, winW, winH);
@@ -360,7 +360,7 @@ DWORD WINAPI W::drawingThreadFn(LPVOID lpParam)
 		
 		_window->swapBuffers();
 		
-		// Texture uploading
+		// Texture uploading/unloading
 		if (_textures_to_upload.size()) {
 			_lock_mutex(&texture_mutex);
 			for (std::vector<Texture*>::iterator it = _textures_to_upload.begin(); it < _textures_to_upload.end(); it++)
@@ -368,7 +368,13 @@ DWORD WINAPI W::drawingThreadFn(LPVOID lpParam)
 			_textures_to_upload.clear();
 			_unlock_mutex(&texture_mutex);
 		}
-
+		if (_textures_to_unload.size()) {
+			_lock_mutex(&texture_mutex);
+			for (std::vector<Texture*>::iterator it = _textures_to_unload.begin(); it < _textures_to_unload.end(); it++)
+				delete *it;
+			_textures_to_unload.clear();
+			_unlock_mutex(&texture_mutex);
+		}
 //		gettimeofday(&t2, NULL);
 //		lastNFrameDurations[f] =
 //			t2.tv_sec - t1.tv_sec
@@ -394,7 +400,7 @@ void W::createWindow(const size &_size, const char *_title) {
 	_window = new Window(_size, _title);
 }
 void W::_updateAllViewPositions() {
-	const size &s = Window::getDimensions(_window);
+	const size &s = _window->getDimensions();
 	for (std::vector<GameState*>::iterator itgs = _gs.begin(); itgs < _gs.end(); itgs++) {
 		GameState::Viewlist *vlist = (*itgs)->_getViews();
 		for (GameState::Viewlist::iterator itv = vlist->begin(); itv != vlist->end(); itv++)

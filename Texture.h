@@ -16,6 +16,12 @@ namespace W {
 		Texture(const std::string &_filename);
 		~Texture();
 		
+		void destroy();
+			// User should not call a texture’s destructor, but call destroy().
+			// The texture will then be deallocated from the appropriate thread.
+			// Before destroying the texture, all DrawnImgs using the texture
+			// should be deallocated.
+		
 		void incrementUsageCount() { ++usageCount; }
 		void decrementUsageCount() { --usageCount; }
 		

@@ -45,7 +45,7 @@ namespace W {
 	
 	/* Texturing */
 	extern std::vector<Texture*> _textures_to_upload;
-	extern std::vector<unsigned int> _textures_to_unload;
+	extern std::vector<Texture*> _textures_to_unload;
 		// Must lock the texture mutex before using these
 	
 	/* Window */

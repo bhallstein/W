@@ -18,7 +18,7 @@ namespace W {
 		Window(const W::size &, const char *_title);
 		~Window();
 		
-		static W::size getDimensions(W::Window *);
+		W::size getDimensions();
 		
 		void setTitle(const std::string &);
 		void setTitle(const char *);

@@ -7,7 +7,7 @@ W::View::View(Positioner *_pos) :
 {
 	plan.resize(1);
 	if (_positioner)
-		_updatePosition(Window::getDimensions(_window));
+		_updatePosition(_window->getDimensions());
 }
 W::View::~View()
 {

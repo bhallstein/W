@@ -79,6 +79,17 @@ W::Texture::~Texture()
 	glDeleteTextures(1, &glTexId);
 }
 
+void W::Texture::destroy() {
+	if (usageCount > 0) {
+		std::stringstream ss;
+		ss
+			<< "Error unloading texture '" << filename << "': "
+			<< usageCount << " DrawnObjs are still using it.";
+		throw Exception(ss.str());
+	}
+	_textures_to_unload.push_back(this);
+}
+
 void W::Texture::upload() {
 	std::cout << "uploading texture for file '" << filename << "'" << std::endl;
 	using std::string;
