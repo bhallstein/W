@@ -28,9 +28,11 @@ namespace W {
 			_recopy(v+array_start_index, c+array_start_index, t+array_start_index);
 			has_set_recopy = false;
 		}
+	
+	protected:
 		virtual void _recopy(v3f*, c4f*, t2f*) = 0;
 			// Override to copy data into arrays
-
+		
 	private:
 		DObj *prevDObj, *nextDObj;
 		View *view;
@@ -57,7 +59,6 @@ namespace W {
 	public:
 		_UniRectDObj(View *, const W::position &, const W::size &, const W::Colour &, W::Texture *, float rotation);
 		~_UniRectDObj();
-		void _recopy(v3f*, c4f*, t2f*);	// Recopy geom data into supplied arrays
 		
 		void setPos(const W::position &_p) { pos = _p; setNeedsRecopy(); }
 		void setSz(const W::size &_sz) { sz = _sz; setNeedsRecopy(); }
@@ -72,6 +73,9 @@ namespace W {
 			// in relation to it itself. Initially {0,0,tw,th}.
 			// The conversion to float coords of the MegaTexture is done by the
 			// GeometryChunk when generating GL array data.
+	protected:
+		void _recopy(v3f*, c4f*, t2f*);	// Recopy geom data into supplied arrays
+		
 	};
 	
 	
@@ -110,6 +114,31 @@ namespace W {
 	
 	
 	/***
+		DCircle
+	 ***/
+	
+	class DCircle : public DObj {
+	public:
+		DCircle(View *, const W::position &_centrePos, int _radius, const W::Colour &);
+		void setCentrePos(const W::position &_p) { centrePos = _p; setNeedsRecopy(); }
+		void setRadius(int _r) { radius = _r; setNeedsRecopy(); }
+		void setCol(const W::Colour &_c) { col = _c; setNeedsRecopy(); }
+		
+		position centrePos;
+		int radius;
+		Colour col;
+		
+	protected:
+		void _recopy(v3f*, c4f*, t2f*);	// Recopy geom data into supplied arrays
+
+	private:
+		static v3f *circleGeom;
+		struct init;
+		static init *Initializer;
+	};
+	
+	
+	/***
 		DImage draws an image
 	 ***/
 	
@@ -133,7 +162,6 @@ namespace W {
 	public:
 		DText(View *, const W::position &, const std::string &_txt, const W::Colour &, bool r_align = false);
 		~DText();
-		void _recopy(v3f*, c4f*, t2f*);
 		
 		void setPos(const W::position &_pos);
 		void setCol(Colour _c) { col = _c; setNeedsRecopy(); }
@@ -145,6 +173,10 @@ namespace W {
 		position pos;
 		W::Colour col;
 		bool r_align;
+		
+	protected:
+		void _recopy(v3f*, c4f*, t2f*);
+		
 	private:
 		static int _geomLengthForText(const std::string &);
 		Texture *tex;

@@ -147,7 +147,7 @@ void W::View::_draw(const size &winSz) {
 	// Set up OGL: scissor to view bounds, translate to view pos w/ modelview matrix
 	glScissor(pos.x, winSz.height - pos.y - sz.height, sz.width, sz.height);
 	glLoadIdentity();
-	glTranslatef(pos.x, pos.y, 0);
+	glTranslatef(pos.x + _offset.x, pos.y + _offset.y, 0);
 	
 	// Users can write custom OpenGL code
 	customOpenGLDrawing();

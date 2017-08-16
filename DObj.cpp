@@ -5,6 +5,9 @@
 #define GEOM_LENGTH_FOR_RECT 6
 #define RAD2DEG 180/M_PI
 
+#define CIRCLE_NPOINTS 15
+#define GEOM_LENGTH_FOR_CIRCLE 3*CIRCLE_NPOINTS
+
 //#define GEOM_DEBUG
 
 /*** Quad-geom copying helper function ***/
@@ -143,6 +146,71 @@ void W::DLine::recalculateRectProperties() {
 	pos.y = p1.y + (p2.y - p1.y)*0.5 - lineWidth/2;
 	
 	rotation = asin((p2.y-p1.y) / lineLength) * RAD2DEG;
+}
+
+
+/******************************/
+/*** DCircle implementation ***/
+/******************************/
+
+struct W::DCircle::init {
+	init() {
+		// Generate unit circle geometry
+		circleGeom = (v3f*)malloc(sizeof(v3f) * CIRCLE_NPOINTS * 3);
+		
+		float alpha = 0, dAlpha = 2*M_PI/CIRCLE_NPOINTS;
+		v3f origin = {0,0,0},
+			initialExternalVertex = {0,1,0};
+		
+		for (int i=0; i < CIRCLE_NPOINTS; ++i) {
+			v3f &v1 = circleGeom[i*3],
+				&v2 = circleGeom[i*3+1],
+				&v3 = circleGeom[i*3+2];
+			
+			alpha += dAlpha;
+			
+			v1 = origin;
+			v2 = (i == 0 ? initialExternalVertex : circleGeom[(i-1)*3+2]);
+			if (i == CIRCLE_NPOINTS-1)
+				v3 = initialExternalVertex;
+			else
+				v3.x = sin(alpha), v3.y = cos(alpha), v3.z = 0;
+		}
+	}
+};
+
+W::v3f *W::DCircle::circleGeom;
+W::DCircle::init *W::DCircle::Initializer = new W::DCircle::init();
+
+W::DCircle::DCircle(View *_v, const W::position &_centrePos, int _radius, const Colour &_col) :
+	DObj(_v, GEOM_LENGTH_FOR_CIRCLE),
+	centrePos(_centrePos),
+	radius(_radius),
+	col(_col)
+{
+	// Hai circle
+}
+void W::DCircle::_recopy(v3f *vert_array, c4f *col_array, t2f *texcoord_array) {
+	Texture &tex = *Texture::_whiteTexture;
+	float texA = tex.floatCoordA(0),
+		texB = tex.floatCoordB(0),
+		texC = tex.floatCoordC(tex.sz.width),
+		texD = tex.floatCoordD(tex.sz.height);
+	
+	for (int i=0; i < GEOM_LENGTH_FOR_CIRCLE; ++i) {
+		v3f &vA = circleGeom[i],
+			&vB = vert_array[i];
+		vB.x = vA.x * radius + centrePos.x;
+		vB.y = vA.y * radius + centrePos.y;
+		vB.z = 0;
+		
+		col_array[i] = col;
+		
+		t2f &tc = texcoord_array[i];
+		if (i%3 == 0)      tc.x = texA, tc.y = texB;
+		else if (i%3 == 1) tc.x = texA, tc.y = texD;
+		else               tc.x = texC, tc.y = texD;	
+	}
 }
 
 
