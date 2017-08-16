@@ -2,6 +2,10 @@
 #include "GenericRetro.h"
 #include <cmath>
 
+#ifndef M_PI
+	#define M_PI 3.14159265358979
+#endif
+
 #define GEOM_LENGTH_FOR_RECT 6
 #define RAD2DEG 180/M_PI
 
