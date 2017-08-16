@@ -83,6 +83,18 @@ namespace W {
 	};
 	
 	
+	class DLine : public DColouredShape {
+	public:
+		DLine(View *, const v2f &p1, const v2f &p2, const v2f &delta, const Colour &, int layer, BlendMode::T);
+		
+		void setP1P2Delta(const v2f &p1, const v2f &p2, const v2f &d);
+		void setCol(const Colour &);
+		
+		// The "delta" param to DLine is a vector that is added to/subtracted from points P1
+		// and P2 to give the corners of a rect used to draw the line
+	};
+	
+	
 	class DTexturedShape : public Drawable {
 	public:
 		DTexturedShape(View *, Texture *, int _len, int _lay, BlendMode::T _bMode);

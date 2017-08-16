@@ -150,14 +150,17 @@ namespace W {
 		Colour col;
 		
 	private:
-		void genRectProperties(v2f &pos, v2f &sz, float &rot);
-		Rectangle *rectangle;
+		void genDelta();
+		v2f delta;
+			// We add/sub delta*width from p1 & p2 to get the
+			// rect's corners
+		void *dLine;
 	};
 	
 	
 	class Sprite {
 	public:
-		Sprite(View *, Texture *, const v2f &pos, const v2f &scale, float opacity = 1, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		Sprite(View *, Texture *, const v2f &pos, const v2f &scale = v2f(1.0,1.0), float opacity = 1, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
 		~Sprite();
 		
 		void setPos(const v2f &);

@@ -261,56 +261,57 @@ W::Line::Line(View *_v, const v2f &_p1, const v2f &_p2, const W::Colour _col, fl
 	lineWidth(_width),
 	col(_col)
 {
-	v2f rPos, rSz;
-	float rRot;
-	
-	genRectProperties(rPos, rSz, rRot);
-	rectangle = new Rectangle(_v, rPos, rSz, col, rRot, _lay, _blend);
+	genDelta();
+	dLine = new DLine(_v, p1, p2, delta, col, _lay, _blend);
 }
 W::Line::~Line()
 {
-	delete rectangle;
+	delete ((DLine*) dLine);
 }
 void W::Line::setP1(const v2f &_p) {
 	p1 = _p;
-	genRectProperties(rectangle->pos, rectangle->size, rectangle->rot);
-	rectangle->setAll(rectangle->pos, rectangle->size, rectangle->rot);
+	genDelta();
+	((DLine*)dLine)->setP1P2Delta(p1, p2, delta);
 }
 void W::Line::setP2(const v2f &_p) {
 	p2 = _p;
-	genRectProperties(rectangle->pos, rectangle->size, rectangle->rot);
-	rectangle->setAll(rectangle->pos, rectangle->size, rectangle->rot);
+	genDelta();
+	((DLine*)dLine)->setP1P2Delta(p1, p2, delta);
 }
 void W::Line::setP1And2(const v2f &_p1, const v2f &_p2) {
 	p1 = _p1;
 	p2 = _p2;
-	genRectProperties(rectangle->pos, rectangle->size, rectangle->rot);
-	rectangle->setAll(rectangle->pos, rectangle->size, rectangle->rot);
+	genDelta();
+	((DLine*)dLine)->setP1P2Delta(p1, p2, delta);
 }
-void W::Line::nudge(const v2f &delta) {
-	p1 += delta;
-	p2 += delta;
-	rectangle->nudge(delta);
+void W::Line::nudge(const v2f &dist) {
+	p1 += dist;
+	p2 += dist;
+	((DLine*)dLine)->setP1P2Delta(p1, p2, delta);
 }
-void W::Line::genRectProperties(v2f &pos, v2f &sz, float &rot) {
-	float lineLength = sqrt((p2.a-p1.a)*(p2.a-p1.a) + (p2.b-p1.b)*(p2.b-p1.b));
+void W::Line::genDelta() {
+	// Calculate delta
 	
-	sz.b = lineWidth;
-	sz.a = lineLength;
+	// First off, set delta to the vector between the 2 points
+	float da = p2.a - p1.a;
+	float db = p2.b - p1.b;
 	
-	pos.a = p1.a + (p2.a - p1.a)*0.5 - lineLength/2;
-	pos.b = p1.b + (p2.b - p1.b)*0.5 - lineWidth/2;
+	// Rotate it by -90 degrees
+	delta.a = -db;
+	delta.b = da;
 	
-	rot = asin((p2.b-p1.b) / lineLength) * RAD2DEG;
+	// Scale it to length of lineWidth/2
+	float lineLength = sqrt(da*da + db*db);
+	delta *= (lineWidth*0.5) / lineLength;	
 }
 void W::Line::setCol(const Colour &_c) {
-	rectangle->setCol(col = _c);
+	((DLine*)dLine)->setCol(col = _c);
 }
 void W::Line::setLayer(int l) {
-	rectangle->setLayer(l);
+	((DLine*)dLine)->setLayer(l);
 }
 void W::Line::setBlendMode(BlendMode::T m) {
-	rectangle->setBlendMode(m);
+	((DLine*)dLine)->setBlendMode(m);
 }
 
 

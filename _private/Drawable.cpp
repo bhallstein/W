@@ -134,6 +134,34 @@ void W::DRect::setCol(const W::Colour &c) {
 }
 
 
+#pragma mark - DLine
+
+W::DLine::DLine(View *_v, const v2f &_p1, const v2f &_p2, const v2f &_delta, const Colour &_col, int _lay, BlendMode::T _blend) :
+	DColouredShape(_v, 6, _lay, _blend)
+{
+	setP1P2Delta(_p1, _p2, _delta);
+	setCol(_col);
+}
+void W::DLine::setP1P2Delta(const v2f &p1, const v2f &p2, const v2f &delta) {
+	v_array[0] = p1 - delta;
+	v_array[1] = p2 - delta;
+	v_array[2] = p2 + delta;
+	v_array[3] = v_array[0];
+	v_array[4] = p1 + delta;
+	v_array[5] = v_array[2];
+	recopyV();
+}
+void W::DLine::setCol(const Colour &c) {
+	c_array[0] = &c;
+	c_array[1] = &c;
+	c_array[2] = &c;
+	c_array[3] = &c;
+	c_array[4] = &c;
+	c_array[5] = &c;
+	recopyC();
+}
+
+
 #pragma mark - DTexturedShape 
 
 /*************************************/
