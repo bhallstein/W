@@ -11,36 +11,34 @@
 
 #include "Messenger.h"
 
-#define MAX_PATH 250
+namespace W {
+	std::string   logFilePath, logFileName;
+	std::ofstream log;
 
-std::string   W::logFilePath, W::logFileName;
-std::ofstream W::log;
-MTRand_int32  W::twister;
-std::vector<W::GameState*> W::_gs;
-std::vector<W::Event> W::_evqueue;
-bool  W::_gsShouldPop;
-W::Returny W::_returny(W::ReturnyType::EMPTY_RETURNY);
-bool  W::_quit = false;
-void* W::_demon;
-std::vector<W::Window*> W::_windows;
-int W::INFINITATION = 99999999;
+	MTRand_int32  twister;
+	
+	std::vector<GameState*> _gs;
+	std::vector<Event>      _evqueue;
+	std::vector<Window*>    _windows;
+	W::Returny _returny(ReturnyType::EMPTY_RETURNY);
+	bool  _gsShouldPop;
+	bool  _quit = false;
+	void* _demon;
+	
+	int W_INFINITY = 99999999;
+	int W_MAXPATH = 300;
+}
 
 struct W::_init {
 	_init() {
-		// Set default log path
+		// Default log: /dev/null
 		std::string p;
 		#ifdef __APPLE__
-			char path[MAX_PATH] = "";
-			[NSHomeDirectory() getCString:path maxLength:MAX_PATH encoding:NSUTF8StringEncoding];
-			p = path;
-			p += "/Desktop/W_app_log.txt";
+			p = "/dev/null";
 		#elif defined WIN32 || WIN64
-			char path[MAX_PATH] = "";
-			SHGetFolderPath(NULL, CSIDL_DESKTOPDIRECTORY, NULL, 0, path);
-			p = path;
-			p += "/W_app_log.txt";
+			p = "\Device\Null";
 		#endif
-		setLogPath(p.c_str());
+		setLogFile(p.c_str());
 		
 		// Init MTRand
 		time_t timey;
@@ -59,10 +57,9 @@ struct W::_init {
 };
 struct W::_init *W::_initializer = new W::_init();
 
-
-void W::setLogPath(const char *p) {
-	logFilePath = p;
-	log.open((logFilePath + logFileName).c_str());
+void W::setLogFile(const char *path) {
+    if (log.is_open()) log.close();
+    log.open(path);
 }
 
 unsigned int W::randUpTo(int x) {

@@ -14,7 +14,7 @@ namespace W {
 		
 		std::map<std::string, std::map<
 			EventType::T, _callback_list
-		>> ui_subscriptions;
+		> > ui_subscriptions;
 		
 		_messenger_state() : privileged_event_responder(NULL) { }
 		~_messenger_state() {
@@ -169,7 +169,7 @@ void W::Messenger::_dispatchUIEvent(W::Event *ev) {
 
 	std::map<std::string, std::map<
 		EventType::T, _callback_list
-	>>::iterator it1 = _s->ui_subscriptions.find(*elname);
+	> >::iterator it1 = _s->ui_subscriptions.find(*elname);
 	if (it1 == _s->ui_subscriptions.end())
 		return;
 	
@@ -197,7 +197,7 @@ void W::Messenger::unsubscribeFromUIEvent(const char *_elname, EventType::T t, E
 	
 	std::map<std::string, std::map<
 		EventType::T, _callback_list
-	>>::iterator it1 = _s->ui_subscriptions.find(_elname);
+	> >::iterator it1 = _s->ui_subscriptions.find(_elname);
 	if (it1 == _s->ui_subscriptions.end())
 		return;
 	

@@ -36,7 +36,7 @@ namespace W {
 			LEFT_ARROW,	RIGHT_ARROW,
 			UP_ARROW,	DOWN_ARROW,
 			
-			ESC,   RETURN,  BACKSPACE,  DELETE,  TAB,
+			ESC,   RETURN,  BACKSPACE,  _DELETE,  TAB,
 			HOME,  END,
 			
 			K_OTHER
