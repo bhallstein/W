@@ -153,19 +153,21 @@ W::position W::Window::getMousePosition() {
 #include <map>
 
 struct W::Window::Objs {
-	
+	HWND windowHandle;
+	HDC deviceContext;
+	HGLRC renderingContext;
 };
 
 // Initialization
 
-LRESULT CALLBACK W::Window_WndProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK Window_WndProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM lParam) {
 	// If message if WM_NCCREATE, set pointer to MyWindow
-	// (Since in CreateWindowEx we set lpParam to 'this', lParam is here a ptr to the window
+	// (Since in CreateWindowEx we set lpParam to 'this', lParam is here a ptr to the window)
 	if (msg == WM_NCCREATE) {
 		LPCREATESTRUCT cs = (LPCREATESTRUCT) lParam;
 		SetWindowLongPtr(windowHandle, GWL_USERDATA, (long) cs->lpCreateParams);
 	}
-	// Otherwise, get window pointer previous set as above
+	// Otherwise, get window pointer previously set as above
 	W::Window *win = (W::Window *) GetWindowLongPtr(windowHandle, GWL_USERDATA);
 	return win ? win->_WndProc(windowHandle, msg, wParam, lParam) : DefWindowProc(windowHandle, msg, wParam, lParam);
 }
@@ -185,7 +187,7 @@ struct W::Window::Initializer {
 		
 		wc.cbSize = sizeof(wc);
 		wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;	// Force redraw on resize; has own device context
-		wc.lpfnWndProc = W::Window_WndProc;
+		wc.lpfnWndProc = &Window_WndProc;
 		wc.cbClsExtra = 0;						// No extra class memory
 		wc.cbWndExtra = sizeof(W::Window*);		// Extra window memory for pointer to corresponding Window instance
 		wc.hInstance = _appInstance;
@@ -217,9 +219,8 @@ void W::Window::createWindow() {
 		return;
 	}
 	
-	HWND windowHandle;
-	HDC deviceContext;
-	HGLRC renderingContext;
+	objs = new Objs();
+
 	// Set window style & size
 	DWORD windowStyle = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 	DWORD extendedWindowStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
@@ -317,7 +318,7 @@ void W::Window::closeWindow() {
 		MessageBox(NULL, "Error unregistering the window class", "Error", MB_OK | MB_ICONEXCLAMATION);
 	_appInstance = NULL;
 }
-void W::Window::setTitle() {
+void W::Window::setTitle(const std::string &t) {
 	SetWindowText(objs->windowHandle, t.c_str());
 }
 void W::Window::setOpenGLThreadAffinity() {
@@ -342,7 +343,7 @@ W::position W::Window::getMousePosition() {
 LRESULT CALLBACK W::Window::_WndProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM lParam) {
 	if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP || msg == WM_RBUTTONDOWN || msg == WM_RBUTTONUP) {
 		W::Event::_addEvent(new W::Event(
-			Window::_win_event_type_map[msg],
+			_win_event_type_map[msg],
 			W::position((int)LOWORD(lParam), (int)HIWORD(lParam))
 		));
 		return 0;
@@ -368,7 +369,7 @@ LRESULT CALLBACK W::Window::_WndProc(HWND windowHandle, UINT msg, WPARAM wParam,
 		return 0;
 	}
 	else if (msg ==  WM_CLOSE) {
-		W::_addEvent(W::Event(W::EventType::CLOSED));
+		W::Event::_addEvent(new W::Event(W::EventType::CLOSED));
 		return 0;
 	}
 	else if (msg == WM_KEYUP) {

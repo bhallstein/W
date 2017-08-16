@@ -54,10 +54,10 @@ void W::Mutex::unlock() {
 
 #include "Windows.h"
 
-struct W::Objs {
+struct W::Mutex::Objs {
 	CRITICAL_SECTION mutex;
 };
-void createMutex() {
+void W::Mutex::createMutex() {
 	if (objs) {
 		W::log << "Mutex: createMutex() called, but 'objs' already exists\n";
 		return;
@@ -65,17 +65,17 @@ void createMutex() {
 	objs = new Objs();
 	InitializeCriticalSection(&objs->mutex);
 }
-void destroyMutex() {
+void W::Mutex::destroyMutex() {
 	if (objs) {
 		delete objs;
 		objs = NULL;
 	}
 }
-void lock() {
-	EnterCriticalSection(m);
+void W::Mutex::lock() {
+	EnterCriticalSection(&objs->mutex);
 }
-void unlock() {
-	LeaveCriticalSection(m);
+void W::Mutex::unlock() {
+	LeaveCriticalSection(&objs->mutex);
 }
 
 #endif

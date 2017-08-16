@@ -11,6 +11,7 @@
 #elif defined WTARGET_WIN
 	#include <gl\gl.h>
 	#include <gl\glu.h>
+	bool _quit = false;
 #endif
 
 W::Controller::Controller() :
@@ -43,8 +44,8 @@ void W::Controller::start() {
 	// Win: enter message pump
 	#if defined WTARGET_WIN
 		MSG msg;
-		while (!W::_quit) {
-			if (GetMessage, NULL, 0, 0)) {
+		while (!_quit) {
+			if (GetMessage(&msg, NULL, 0, 0)) {
 				if (msg.message == WM_QUIT) {
 					//W::_quit = true;
 				}
@@ -54,6 +55,7 @@ void W::Controller::start() {
 				}
 			}
 		}
+		window->setOpenGLThreadAffinity();
 	#endif
 }
 void W::Controller::quit() {
@@ -62,6 +64,7 @@ void W::Controller::quit() {
 	#ifdef WTARGET_MAC
 		[NSApp performSelector:@selector(terminate:) withObject:nil afterDelay:0];
 	#elif defined WTARGET_WIN
+		window->clearOpenGLThreadAffinity();
 		_quit = true;
 	#endif
 }
@@ -102,6 +105,10 @@ void W::Controller::update() {
 //		if (GameState::_pop) break;
 	}
 	Event::_events.clear();
+
+	#ifdef WTARGET_WIN
+		Event::_mutex.unlock();
+	#endif
 	
 	// Check for poppage due to event input
 	if (GameState::_pop) {
@@ -148,8 +155,8 @@ void W::Controller::update() {
 	glClearColor(0.525, 0.187, 0.886, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glBindTexture(GL_TEXTURE_2D, MegaTexture::getGLTexId());
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 //	glTexParameteri(GL_TEXTURE_2D, GL_MIN_FILTER, GL_LINEAR);
 //	glTexParameteri(GL_TEXTURE_2D, GL_MAG_FILTER, GL_LINEAR);
 	
@@ -191,4 +198,3 @@ void W::createWindow(const size &sz, const std::string &title) {
 void W::start() {
 	_controller.start();
 }
-

@@ -172,7 +172,7 @@ int W::DText::widthForChar(char c) {
 /*********************************************/
 
 #include <cmath>
-#define DEG2RAD (M_PI/180.0f)
+#define DEG2RAD (3.1415926536/180.0f)
 
 void copyQuadGeomToArrays(
 	W::v3f *vert_array, W::c4f *col_array, W::t2f *texcoord_array,

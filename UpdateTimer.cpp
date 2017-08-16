@@ -67,12 +67,13 @@ struct W::UpdateTimer::Objs {
 #elif defined WTARGET_WIN
 
 struct W::UpdateTimer::Objs {
-	extern UINT timer;
+	UINT timer;
 };
 
-Callback *_W_running_callback;
-void CALLBACK W::_mmtCallback(UINT timerid, UINT uMsg, DWORD userdata, DWORD d1, DWORD d2) {
-	_W_running_callback->call();
+W::Callback *_W_running_callback = NULL;
+void CALLBACK _mmtCallback(UINT timerid, UINT uMsg, DWORD userdata, DWORD d1, DWORD d2) {
+	if (_W_running_callback)
+		_W_running_callback->call();
 }
 struct W::UpdateTimer::Init {
 	Init() {
@@ -89,7 +90,7 @@ void W::UpdateTimer::createTimer() {
 		return;
 	}
 	objs = new Objs();
-	_W_running_callback = &c;
+	_W_running_callback = c;
 }
 void W::UpdateTimer::destroyTimer() {
 	if (objs) {
@@ -97,7 +98,7 @@ void W::UpdateTimer::destroyTimer() {
 		objs = NULL;
 	}
 }
-void W::UpdateTimer::start {
+void W::UpdateTimer::start() {
 	// Create mmt
 	MMRESULT mmr = timeSetEvent(20, 40, &_mmtCallback, NULL, TIME_PERIODIC);
 	if (mmr == NULL)

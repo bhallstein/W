@@ -16,6 +16,10 @@
 #include "Colour.h"
 #include "Event.h"
 
+#ifdef WTARGET_WIN
+	#include "Windows.h"
+#endif
+
 namespace W {
 
 	class View;
@@ -40,7 +44,7 @@ namespace W {
 		
 		void generateMouseMoveEvent();
 		
-		#if defined _WIN32 || _WIN64
+		#if defined WTARGET_WIN
 			LRESULT CALLBACK _WndProc(HWND, UINT, WPARAM, LPARAM);
 		#endif
 		

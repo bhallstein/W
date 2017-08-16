@@ -3,6 +3,8 @@
 
 #if defined WTARGET_MAC || WTARGET_IOS
 	#include <Cocoa/Cocoa.h>
+#elif defined WTARGET_WIN
+	#include "Windows.h"
 #endif
 
 
