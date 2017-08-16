@@ -49,6 +49,15 @@ namespace W {
 		void _addDObj(DObj *);	// Allocate storage, add to list, set ptrs
 		void _remDObj(DObj *);	// Remove from list, make triangles degen, set preceding_empty on following DObj
 		
+		void _updateDObjTexcoords();
+			// Calls updateTexcoords() on all DObjs. Called when MT changes in size:
+			//    -> Controller::regenDObjTexcoords()
+			// Then at update:
+			//  -> GS::_updateAllDObjTexcoords()
+			//  -> GS::_updateAllDObjTexcoordsInThisState()
+			//  -> View::_updateDObjTexcoords()
+			//  -> DObj::updateTexCoords();
+		
 		void dumpDObjs();
 		
 	protected:

@@ -37,11 +37,15 @@ namespace  W {
 			// The user may make multiple changes to the MT per cycle; we
 			// don't want to upload it more than once per cycle, though.
 		
+		static bool was_reallocated;
+			// Set to true when MT size changes
+			// Checked by Controller in update() to see if must regen all DObj texcoords
+		
 		static unsigned int getGLTexId() { return glTexId; }
 		
 		inline static unsigned int width() { return 1 << curTexPower; }
 		
-		static void debug(const std::string &saveto);
+		static void debug(const std::string &saveto = "");
 		
 	private:
 		
@@ -52,9 +56,8 @@ namespace  W {
 		static unsigned int curTexPower;	// i.e. the power of 2, eg '8' => 256 x 256
 		static void createMegaTex(int newTexPower);
 			// Allocates the memory repr. of the megatexture, copying
-			// any previous contents into the texture.
-		
-		// TODO: when MT size changes, existing textures’ coords will need updating.
+			// any previous contents into the texture, and sets
+			// was_reallocated to true
 		
 		static bool was_modified;
 		

@@ -68,9 +68,13 @@ namespace W {
 		static Returny _returny;
 		static void _popState();
 		
-	protected:
+		// DObj texcoord updating
+		static void _updateAllDObjTexcoords();
+		void _updateAllDObjTexcoordsInThisState();
+		
+	private:
 		bool translucent;	// If true, the previous state will be drawn too.
-
+		
 	};
 	
 	extern Returny KillerReturny;

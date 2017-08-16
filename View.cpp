@@ -18,6 +18,7 @@
 
 #define GL_ARRAY_INITIAL_SIZE 256
 #define SECONDS_PER_COMPACT 5
+#define COMPACTION_THRESHOLD 0.3	// Compact if (used_size <= CT * size)
 
 
 /***************************/
@@ -166,7 +167,7 @@ void W::View::compact() {
 	array_used_size -= runningMoveBackAmount;
 
 	// Compact the data arrays if their used_size has smallened sufficiently
-	if (array_used_size <= array_size / 3) {
+	if (array_used_size <= array_size * COMPACTION_THRESHOLD) {
 		v3f *new_vertArray     = (v3f*) malloc(sizeof(v3f) * array_size / 2);
 		c4f *new_colArray      = (c4f*) malloc(sizeof(c4f) * array_size / 2);
 		t2f *new_texcoordArray = (t2f*) malloc(sizeof(t2f) * array_size / 2);
@@ -191,6 +192,10 @@ void W::View::compact() {
 void W::View::updateDObjPtrs() {
 	for (DObj *d = firstDObj; d; d = d->nextDObj)
 		d->_setArrayPtrs(vertArray, colArray, texcoordArray);
+}
+void W::View::_updateDObjTexcoords() {
+	for (DObj *d = firstDObj; d; d = d->nextDObj)
+		d->updateTexcoords();
 }
 void W::View::dumpDObjs() {
 	std::cout << "  array_size:" << array_size << " used_size:" << array_used_size << "\n";

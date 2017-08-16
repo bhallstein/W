@@ -112,6 +112,11 @@ void W::Controller::update() {
 		window->winSizeHasChanged = false;
 	}
 	
+	if (MegaTexture::was_reallocated) {
+		GameState::_updateAllDObjTexcoords();
+		MegaTexture::was_reallocated = false;
+	}
+	
 	if (!GameState::_gsStack.size()) {
 		quit();
 		return;
@@ -119,6 +124,7 @@ void W::Controller::update() {
 	
 	updateMicroseconds = (int) timer->getMicroseconds();
 	timer->reset();
+	
 	
 	/* 1. Event sending */
 	

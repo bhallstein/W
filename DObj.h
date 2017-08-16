@@ -46,6 +46,8 @@ namespace W {
 			return ss.str();
 		}
 		
+		virtual void updateTexcoords() = 0;
+		
 	protected:
 		View *view;
 		void updateColour() {

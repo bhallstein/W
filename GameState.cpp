@@ -34,6 +34,7 @@ void W::popState(W::Returny &r) {
 bool W::GameState::_pop = false;
 W::Returny W::GameState::_returny(ReturnyType::Empty);
 std::vector<W::GameState*> W::GameState::_gsStack;
+W::GameState *W::GameState::_gsUnderConstruction = NULL;
 
 
 W::GameState::GameState(GameStateTranslucency _tr) :
@@ -81,4 +82,13 @@ void W::GameState::_popState() {
 			new_gs->resume(&_returny);
 		}
 	} while (_pop && _gsStack.size());
+}
+
+void W::GameState::_updateAllDObjTexcoords() {
+	for (std::vector<GameState*>::iterator it = _gsStack.begin(); it < _gsStack.end(); ++it)
+		(*it)->_updateAllDObjTexcoordsInThisState();
+}
+void W::GameState::_updateAllDObjTexcoordsInThisState() {
+	for (Viewlist::iterator it = _vlist.begin(); it != _vlist.end(); ++it)
+		(*it)->_updateDObjTexcoords();
 }

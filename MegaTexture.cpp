@@ -30,6 +30,7 @@
 
 W::MTNode *W::MegaTexture::topNode;
 bool W::MegaTexture::was_modified = false;
+bool W::MegaTexture::was_reallocated = false;
 unsigned char *W::MegaTexture::megatexture = NULL;
 unsigned int W::MegaTexture::curTexPower = 0;
 unsigned int W::MegaTexture::glTexId = 0;
@@ -78,7 +79,7 @@ bool W::MegaTexture::addTex(const std::string &filename, W::Texture *_tex) {
 	free(imagedata);
 	
 	#ifdef MT_DEBUG
-		debug("/Users/bh/Desktop/mtdebug.bmp");
+		debug();
 	#endif
 	
 	return success;
@@ -146,6 +147,7 @@ void W::MegaTexture::createMegaTex(int newTexPower) {
 	curTexPower = newTexPower;
 	
 	setModified();
+	was_reallocated = true;
 }
 void W::MegaTexture::upload() {
 	if (megatexture == NULL) return;
@@ -159,9 +161,16 @@ void W::MegaTexture::upload() {
 	if (!glTexId) throw W::Exception("Error: could not upload the MegaTexture to the GPU");
 	was_modified = false;
 }
+int debugCount = 0;
 void W::MegaTexture::debug(const std::string &saveto) {
+	std::string f = saveto;
+	if (saveto == "") {
+		std::stringstream ss;
+		ss << "/Users/bh/Desktop/mtdebug-" << ++debugCount << ".bmp";
+		f = ss.str();
+	}
 	SOIL_save_image(
-		saveto.c_str(),
+		f.c_str(),
 		SOIL_SAVE_TYPE_BMP,
 		width(), width(), N_CHANNELS,
 		megatexture
