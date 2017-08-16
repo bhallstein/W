@@ -28,7 +28,8 @@ namespace W {
 		UIView(const std::string &viewname);
 		~UIView();
 		
-		EventPropagation::T mouseEvent(Event *);
+		void mouseEvent(Event *);
+		EventPropagation::T dragLoopEvent(Event *);
 //		void draw();
 		
 	protected:
@@ -36,7 +37,7 @@ namespace W {
 			// Override for custom drawing behind elements in UIView
 		void updatePosition(const size &winsize);
 			// Override; note we do not call _updatePosition because that method of
-			// View doesn’t have access to all the positioner arrays of UIView
+			// View doesn't have access to all the positioner arrays of UIView
 		
 		bool allowDrag;		// Set from positioner when refreshed
 		bool dragloop;

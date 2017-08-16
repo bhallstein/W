@@ -37,8 +37,6 @@ W::UIView::UIView(const std::string &viewname) :
 		);
 	updatePosition(_controller.window->getSize());
 	
-	Messenger::subscribeToMouseEvents(this, Callback(&UIView::mouseEvent, this), &rct);
-	
 	bgDRect = new DRect(this, position(), rct.sz, W::Colour::TransparentBlack);
 }
 
@@ -48,29 +46,27 @@ W::UIView::~UIView()
 	delete bgDRect;
 }
 
-W::EventPropagation::T W::UIView::mouseEvent(Event *ev) {
+void W::UIView::mouseEvent(Event *ev) {
 	using namespace EventType;
-	
-	if (dragloop) {
-		if (ev->type == MouseMove) {
-			cur_positioner->nudge(ev->pos - drag_initial);
-			_updatePosition();
-		}
-		else if (ev->type == LMouseUp) {
-			Messenger::relinquishPrivilegedEventResponderStatus(this, MouseMove, this);
-			Messenger::relinquishPrivilegedEventResponderStatus(this, LMouseUp, this);
-			dragloop = false;
-		}
-	}
-	
-	else if (ev->type == EventType::LMouseDown && allowDrag
-		&& Messenger::requestPrivilegedEventResponderStatus(this, MouseMove, Callback(&UIView::mouseEvent, this))
-		&& Messenger::requestPrivilegedEventResponderStatus(this, LMouseUp, Callback(&UIView::mouseEvent, this))) {
+	if (ev->type == LMouseDown && allowDrag
+		&& Messenger::requestPrivilegedEventResponderStatus(this, MouseMove, Callback(&UIView::dragLoopEvent, this), true)
+		&& Messenger::requestPrivilegedEventResponderStatus(this, LMouseUp, Callback(&UIView::dragLoopEvent, this), true)) {
 		drag_initial = ev->pos;
 		dragloop = true;
 	}
-	
-	return EventPropagation::ShouldStop;
+}
+W::EventPropagation::T W::UIView::dragLoopEvent(Event *ev) {
+	using namespace EventType;
+	if (ev->type == MouseMove) {
+		cur_positioner->nudge(ev->pos - drag_initial);
+		_updatePosition();
+	}
+	else if (ev->type == LMouseUp) {
+		Messenger::relinquishPrivilegedEventResponderStatus(this, MouseMove, this, true);
+		Messenger::relinquishPrivilegedEventResponderStatus(this, LMouseUp, this, true);
+		dragloop = false;
+	}
+	return W::EventPropagation::ShouldStop;
 }
 
 void W::UIView::updatePosition(const size &winsize) {

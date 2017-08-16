@@ -34,22 +34,22 @@
 -(void)mouseDown:(NSEvent *)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::Event::_addEvent(new W::Event(W::EventType::RawLMouseDown, W::position((int)p.x, (int)p.y)));
+	W::Event::_addEvent(new W::Event(W::EventType::LMouseDown, W::position((int)p.x, (int)p.y)));
 }
 -(void)mouseUp:(NSEvent*)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::Event::_addEvent(new W::Event(W::EventType::RawLMouseUp, W::position((int)p.x, (int)p.y)));
+	W::Event::_addEvent(new W::Event(W::EventType::LMouseUp, W::position((int)p.x, (int)p.y)));
 }
 -(void)rightMouseDown:(NSEvent *)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::Event::_addEvent(new W::Event(W::EventType::RawRMouseDown, W::position((int)p.x, (int)p.y)));
+	W::Event::_addEvent(new W::Event(W::EventType::RMouseDown, W::position((int)p.x, (int)p.y)));
 }
 -(void)rightMouseUp:(NSEvent *)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::Event::_addEvent(new W::Event(W::EventType::RawRMouseUp, W::position((int)p.x, (int)p.y)));
+	W::Event::_addEvent(new W::Event(W::EventType::RMouseUp, W::position((int)p.x, (int)p.y)));
 }
 -(void)keyDown:(NSEvent *)nsev {
 	W::Event::_addEvent(new W::Event(
@@ -91,11 +91,7 @@
 /*** W_Window implementation ***/
 /*******************************/
 
-@interface W_Window () {
-//	W_WindowDelegate *windowDelegate;
-//	W_View *view;
-//	NSOpenGLContext *context;
-}
+@interface W_Window ()
 @property(nonatomic, strong) W_WindowDelegate *windowDelegate;
 @property(nonatomic, strong) W_View *view;
 @property (nonatomic, strong) NSOpenGLContext *context;
@@ -141,7 +137,7 @@
 			return nil;
 		}
 		[self setContentView:view];
-		[context setView:view];		// Set view as context’s drawable object
+		[context setView:view];		// Set view as context's drawable object
 		
 		// Set delegate
 		if ((windowDelegate = [[W_WindowDelegate alloc] init]) == nil) {

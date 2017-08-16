@@ -21,6 +21,8 @@
 	#define glOrtho glOrthof
 #endif
 
+#pragma mark Common implementation
+
 /*************************************/
 /*** Window: common implementation ***/
 /*************************************/
@@ -84,7 +86,7 @@ void W::Window::beginDrawing(const size &winSize) {
 void W::Window::generateMouseMoveEvent() {
 	position p = getMousePosition();
 	if (p.x >= 0 && p.y >= 0 && p.x < sz.width && p.y < sz.height)
-		W::Event::_addEvent(new W::Event(EventType::RawMouseMove, p));
+		W::Event::_addEvent(new W::Event(EventType::MouseMove, p));
 	
 	static int generosity = 20, scrollMargin = 20;
 	// If within the view + generosity margin...
@@ -113,6 +115,8 @@ void W::Window::updateSize(const W::size &_sz) {
 		winSizeHasChanged = true;
 	}
 }
+
+#pragma mark - Mac implementation
 
 /****************************************/
 /*** Mac-specific Window implemention ***/
@@ -167,6 +171,7 @@ W::position W::Window::getMousePosition() {
 	return position((int)p.x, (int)p.y);
 }
 
+#pragma mark - iOS implementation
 
 /******************************************/
 /*** iOS-specific Window implementation ***/
@@ -225,6 +230,7 @@ void W::Window::setUpForDrawing() {
 void W::Window::setTitle(const std::string &t) { }
 W::position W::Window::getMousePosition() { return position(); }
 
+#pragma mark - Windows implementation
 
 /******************************************/
 /*** Win-specific Window implementation ***/

@@ -217,7 +217,7 @@ bool W::NavMap::getRoute(int fromX, int fromY, int toX, int toY, std::vector<pos
 	
 	// Navigate from A to B
 	// Note: pathfinding is actually done backwards: from the destination to the start.
-	// This is so we don’t have to reverse the route after extracting it, since it arrives in reverse order.
+	// This is so we don't have to reverse the route after extracting it, since it arrives in reverse order.
 	NavNode &A = nodes[w*toY + toX], &B = nodes[w*fromY + fromX];
 	if (!A.passable || !B.passable)
 		return false;
@@ -227,11 +227,11 @@ bool W::NavMap::getRoute(int fromX, int fromY, int toX, int toY, std::vector<pos
 	open_nodes.reset();
 	for (int i=0; i < n; i++) {
 		NavNode *node = &nodes[i];
-		node->min_dist = NAV_INFINITY;				// Set nodes’ min_dist to infinity
+		node->min_dist = NAV_INFINITY;				// Set nodes' min_dist to infinity
 		if (node->passable)
 			open_nodes.fast_push(node), _i++;		// Populate heap vector with passable nodes
 	}
-	A.min_dist = 0;					// Set start node’s min_dist to 0
+	A.min_dist = 0;					// Set start node's min_dist to 0
 	open_nodes.reheapify();			// Re-sort heap
 	
 	/* Run */
@@ -251,8 +251,8 @@ bool W::NavMap::getRoute(int fromX, int fromY, int toX, int toY, std::vector<pos
 			break;
 		}
 		
-		// Recalc neighbours’ min_dists
-		//cout << "recalculate neighbours’ min_dists:" << endl;
+		// Recalc neighbours' min_dists
+		//cout << "recalculate neighbours' min_dists:" << endl;
 		for (std::vector<NavNode*>::iterator it = X->neighbours.begin(); it != X->neighbours.end(); it++) {
 			neighbour = (*it);
 			dist_via_X = X->min_dist + ((neighbour->x == X->x || neighbour->y == X->y) ? 1 : 1.41421356);

@@ -12,9 +12,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface W_View : NSView {
-	NSOpenGLContext *context;
-}
+@interface W_View : NSView
 -(void)__convertMouseCoords:(NSPoint*)point;
 @end
 

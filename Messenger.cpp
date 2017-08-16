@@ -25,15 +25,14 @@ using std::string;
 struct cbAndRect {
 	W::Callback *cb;
 	W::rect *rct;
-	cbAndRect(W::Callback *_cb, W::rect *_rct)
-	{
-		cb = _cb;
-		rct = _rct;
-	}
-	~cbAndRect()
-	{
-		delete cb;
-	}
+	cbAndRect(W::Callback *_cb, W::rect *_rct) { cb = _cb; rct = _rct; }
+	~cbAndRect() { delete cb; }
+};
+struct cbAndView {
+	W::Callback *cb;
+	W::View *v;
+	cbAndView(W::Callback *_cb, W::View *_v) { cb = _cb; v = _v; }
+	~cbAndView() { delete cb; }
 };
 
 struct W::Messenger::MState {
@@ -51,7 +50,8 @@ struct W::Messenger::MState {
 	map<int, Callback*>                               touchSubs;
 	map<string, map<EventType::T, vector<Callback*>>> uiSubs;
 	
-	map<View*, map<EventType::T, Callback *>> typePers;
+	map<View*, map<EventType::T, Callback*>> viewPERs;
+	map<EventType::T, cbAndView*> globalPERs;
 };
 
 
@@ -63,107 +63,101 @@ std::map<W::GameState*, W::Messenger::MState*> W::Messenger::stateMap;
 W::Messenger::MState *W::Messenger::s = NULL;
 W::GameState *W::Messenger::activeGS = NULL;
 
-/*
- * Dispatch:
- *	All events are dispatched through the dispatchEvent() method.
- *  - Positional events:
- *		- finds the appropriate view V, if any
- *		- if event is a RawX type, its pos is translated via V
- *		- event then dispatched positionally, to V's subscribers, if any, or
- *		- touch-ically, if a TouchMoved/Up/Cancelled event
- * - UIEvents:
- *		- dispatched UI-istically
- * - Normal events:
- *		- dispatched normally (by type)
- */
-
 #pragma mark - Dispatch methods
 
 bool W::Messenger::dispatchEvent(Event *ev) {
 	if (!s) return false;
+	if (!activeGS) return false;
 	
 	if (ev->_isPositional()) {
-		if (!activeGS) return false;
-		
-		View *v = NULL;
-		for (GameState::Viewlist::reverse_iterator itV = activeGS->_vlist.rbegin(); itV != activeGS->_vlist.rend(); ++itV)
-			if ((*itV)->getRct().overlapsWith(ev->pos)) {
-				v = *itV;
-				break;
-			}
-		if (!v) return false;
-		
-		if (ev->_isRaw()) {
-			v->_convertEventCoords(ev);
-			ev->_derawify();
+		// If there is a global PER for this event type, translate coords using its view & dispatch
+		map<EventType::T, cbAndView*>::iterator itGPER = s->globalPERs.find(ev->type);
+		if (itGPER != s->globalPERs.end()) {
+			itGPER->second->v->_convertEventCoords(ev);
+			itGPER->second->cb->call(ev);
+			return true;
 		}
 		
-		if (dispatchToPERs(ev, v)) return true;
-		if (ev->_isTouch()) return dispatchTouchically(ev);
-		else                return dispatchPositionally(ev, v);
+		// Find view underneath event, if any
+		View *v = lastViewBeneathEvent(ev);
+		if (!v) return false;
+		
+		// Convert event's coords to view frame
+		v->_convertEventCoords(ev);
+		
+		// Dispatch using mouse or touch system
+		if (ev->_isMouse()) return dispMouse(ev, v);
+		if (ev->_isTouch()) return dispTouch(ev, v);
 	}
 	
-	if (ev->_isUI()) return dispatchUIEvent(ev);
+	if (ev->_isUI()) return dispUI(ev);
 	
-	// Event type subscriptions
-	bool dispatchedByType = false;
+	// Dispatch to "normal" event type subscriptions
+	bool dispatched = false;
 	map<EventType::T, vector<Callback*>>::iterator it = s->typeSubs.find(ev->type);
 	if (it != s->typeSubs.end()) {
 		vector<Callback*> &cblist = it->second;
 		for (std::vector<Callback*>::reverse_iterator it2 = cblist.rbegin(); it2 != cblist.rend(); ++it2)
 			if (cblist.size()) {
 				Callback &cb = **it2;
-				dispatchedByType = true;
+				dispatched = true;
 				if (cb.call(ev) == W::EventPropagation::ShouldStop)
 					break;
 			}
 	}
-	return dispatchedByType;
-}
-
-bool W::Messenger::dispatchPositionally(Event *ev, View *v) {
-	if (!s) return false;
-	
-	// If no view in s.positionalSubs, return false
-	map<View*, map<EventType::T, vector<cbAndRect*>>>::iterator itV = s->positionalSubs.find(v);
-	if (itV == s->positionalSubs.end())
-		return false;
-	
-	// If no subscriptions to this event type for that view, return false
-	map<EventType::T, vector<cbAndRect*>> &typeSubsForView = itV->second;
-	map<EventType::T, vector<cbAndRect*>>::iterator itT = typeSubsForView.find(ev->type);
-	if (itT == typeSubsForView.end())
-		return false;
-	
-	// Call callbacks sub'd to this event type for this view, in reverse order
-	bool dispatched = false;
-	std::vector<cbAndRect*> &callbacks = itT->second;
-	for (std::vector<cbAndRect*>::reverse_iterator it = callbacks.rbegin(); it != callbacks.rend(); ++it) {
-		cbAndRect &cnr = **it;
-		if (cnr.rct->overlapsWith(ev->pos)) {
-			dispatched = true;
-			if (cnr.cb->call(ev) == W::EventPropagation::ShouldStop)
-				break;
-		}
-	}
 	return dispatched;
 }
 
-bool W::Messenger::dispatchTouchically(W::Event *ev) {
-	if (!s) return false;
+bool W::Messenger::dispMouse(Event *ev, View *v) {
+	// If there is a view-specific PER for this event type, dispatch to it
+	map<View*, map<EventType::T, Callback*>>::iterator itVPER = s->viewPERs.find(v);
+	if (itVPER != s->viewPERs.end()) {
+		map<EventType::T, Callback*> &typeSubsForView = itVPER->second;
+		map<EventType::T, Callback*>::iterator it = typeSubsForView.find(ev->type);
+		if (it != typeSubsForView.end()) {
+			it->second->call(ev);			// Dispatch
+			return true;
+		}
+	}
 	
+	// Try dispatching using normal positioning system
+	if (dispPositionalInView(ev, v)) return true;
+	
+	// As a final resort, send the event to the view underneath it
+	v->mouseEvent(ev);
+	return true;
+}
+
+bool W::Messenger::dispTouch(Event *ev, View *v) {
+	// For TouchDown events, test for view-specific PERs then try dispatching positionally
+	if (ev->type == EventType::TouchDown) {
+		// Test for PER
+		map<View*, map<EventType::T, Callback*>>::iterator itVPER = s->viewPERs.find(v);
+		if (itVPER != s->viewPERs.end()) {
+			map<EventType::T, Callback*> &typeSubsForView = itVPER->second;
+			map<EventType::T, Callback*>::iterator it = typeSubsForView.find(ev->type);
+			if (it != typeSubsForView.end()) {
+				it->second->call(ev);			// Dispatch
+				return true;
+			}
+		}
+		// Try positionally
+		if (dispPositionalInView(ev, v)) return true;
+		// As last resort, send to view underneath event
+		v->touchDown(ev);
+		return true;
+	}
+	
+	// For other touch events, send to subscriber to that touch id, if any
 	std::map<int, Callback*>::iterator it = s->touchSubs.find(ev->touchID);
 	if (it != s->touchSubs.end()) {
 		it->second->call(ev);
 		return true;
 	}
-
 	return false;
 }
 
-bool W::Messenger::dispatchUIEvent(W::Event *ev) {
-	if (!s) return false;
-	
+bool W::Messenger::dispUI(W::Event *ev) {
 	const std::string &elname = *(std::string*)(ev->_payload);
 	
 	// If no subscriptions to this element, return false
@@ -189,23 +183,42 @@ bool W::Messenger::dispatchUIEvent(W::Event *ev) {
 	return dispatched;
 }
 
-bool W::Messenger::dispatchToPERs(W::Event *ev, View *v) {
-	if (!s) return false;
-	
-	// If no P.E.R. type maps exist for this view, return false
-	map<View*, map<EventType::T, Callback*>>::iterator itV = s->typePers.find(v);
-	if (itV == s->typePers.end())
+bool W::Messenger::dispPositionalInView(Event *ev, View *v) {
+	// If view not in s.positionalSubs, return false
+	map<View*, map<EventType::T, vector<cbAndRect*>>>::iterator itV = s->positionalSubs.find(v);
+	if (itV == s->positionalSubs.end())
 		return false;
 	
-	// Call PER callback if exists for this event type in this view
-	map<EventType::T, Callback*> &persForView = itV->second;
-	map<EventType::T, Callback*>::iterator it = persForView.find(ev->type);
-	if (it != persForView.end()) {
-		it->second->call(ev);
-		return true;
+	// If no subscriptions to this event type for that view, return false
+	map<EventType::T, vector<cbAndRect*>> &typeSubsForView = itV->second;
+	map<EventType::T, vector<cbAndRect*>>::iterator itT = typeSubsForView.find(ev->type);
+	if (itT == typeSubsForView.end())
+		return false;
+	
+	// Call callbacks sub'd to this event type for this view, in reverse order
+	bool dispatched = false;
+	std::vector<cbAndRect*> &callbacks = itT->second;
+	for (std::vector<cbAndRect*>::reverse_iterator it = callbacks.rbegin(); it != callbacks.rend(); ++it) {
+		cbAndRect &cnr = **it;
+		if (cnr.rct->overlapsWith(ev->pos)) {
+			dispatched = true;
+			if (cnr.cb->call(ev) == W::EventPropagation::ShouldStop)
+				break;
+		}
 	}
+	if (dispatched) return true;
 	
 	return false;
+}
+
+W::View* W::Messenger::lastViewBeneathEvent(Event *ev) {
+	View *v = NULL;
+	for (GameState::Viewlist::reverse_iterator itV = activeGS->_vlist.rbegin(); itV != activeGS->_vlist.rend(); ++itV)
+		if ((*itV)->getRct().overlapsWith(ev->pos)) {
+			v = *itV;
+			break;
+		}
+	return v;
 }
 
 
@@ -344,27 +357,48 @@ void W::Messenger::unsubscribeFromUIEvent(const char *elname, EventType::T t, vo
 
 #pragma mark - Privileged Event Responder methods
 
-bool W::Messenger::requestPrivilegedEventResponderStatus(View *v, EventType::T t, const Callback &c) {
+bool W::Messenger::requestPrivilegedEventResponderStatus(View *v, EventType::T t, const Callback &c, bool global) {
 	if (!s) return false;
-	
+	return (global ? reqPERGlobally(v, t, c) : reqPERNonglobally(v, t, c));
+}
+void W::Messenger::relinquishPrivilegedEventResponderStatus(View *v, EventType::T t, void *r, bool global) {
+	if (!s) return;
+	global ? relinqPERGlobally(v, t, r) : relinqPERNonglobally(v, t, r);
+}
+bool W::Messenger::reqPERGlobally(View *v, EventType::T t, const Callback &c) {
+	// Check if exists already
+	map<EventType::T, cbAndView*>::iterator it = s->globalPERs.find(t);
+	if (it != s->globalPERs.end())
+		return false;
+	// Add per
+	s->globalPERs[t] = new cbAndView(c.copy(), v);
+	return true;
+}
+bool W::Messenger::reqPERNonglobally(View *v, EventType::T t, const Callback &c) {
 	// Check if exists already (without creating map entries)
-	map<View*, map<EventType::T, Callback*>>::iterator itV = s->typePers.find(v);
-	if (itV != s->typePers.end()) {
+	map<View*, map<EventType::T, Callback*>>::iterator itV = s->viewPERs.find(v);
+	if (itV != s->viewPERs.end()) {
 		map<EventType::T, Callback*> &typePersForView = itV->second;
 		map<EventType::T, Callback*>::iterator itT = typePersForView.find(t);
 		if (itT != typePersForView.end())
 			return false;
 	}
 	// Add PER
-	s->typePers[v][t] = c.copy();
+	s->viewPERs[v][t] = c.copy();
 	return true;
 }
-void W::Messenger::relinquishPrivilegedEventResponderStatus(View *v, EventType::T t, void *r) {
-	if (!s) return;
-	
+void W::Messenger::relinqPERGlobally(W::View *v, EventType::T t, void *r) {
+	// Delete entry if exists & resp == r
+	map<EventType::T, cbAndView*>::iterator it = s->globalPERs.find(t);
+	if (it != s->globalPERs.end() && it->second->cb->resp == r) {
+		delete it->second;
+		s->globalPERs.erase(it);
+	}
+}
+void W::Messenger::relinqPERNonglobally(W::View *v, EventType::T t, void *r) {
 	// Check type sub map exists for this view
-	map<View*, map<EventType::T, Callback*>>::iterator itV = s->typePers.find(v);
-	if (itV == s->typePers.end())
+	map<View*, map<EventType::T, Callback*>>::iterator itV = s->viewPERs.find(v);
+	if (itV == s->viewPERs.end())
 		return;
 	
 	// Delete callback if exists for this type & resp == r
@@ -375,7 +409,7 @@ void W::Messenger::relinquishPrivilegedEventResponderStatus(View *v, EventType::
 		typePersForView.erase(it);
 		// If no more PERs for view, remove from s.typePers
 		if (typePersForView.empty())
-			s->typePers.erase(itV);
+			s->viewPERs.erase(itV);
 	}
 }
 
@@ -388,7 +422,7 @@ void W::Messenger::_useTemporaryState() {
 }
 void W::Messenger::_setActiveGamestate(W::GameState *_gs) {
 	map<GameState*, MState*>::iterator it;
-	// If temporary state, save it as this GS’s state
+	// If temporary state, save it as this GS's state
 	if (s)
 		stateMap[_gs] = s;
 	// If GS has saved state, set as current

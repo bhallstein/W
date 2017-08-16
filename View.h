@@ -38,8 +38,11 @@ namespace W {
 		void _updatePosition();	// Gets the window size automatically
 		void _updatePosition(const size &winsize);
 		
-		void _convertEventCoords(Event *);				// Converts to view’s coordinates, and calls convertEventCoords() virtual
+		void _convertEventCoords(Event *);				// Converts to view's coordinates, and calls convertEventCoords() virtual
 		virtual void convertEventCoords(Event *) { }	// Override to perform further conversoin conversion of mouse events
+		
+		virtual void mouseEvent(Event *) { }
+		virtual void touchDown(Event *) { }
 		
 		void _draw(const W::size &winSz);
 		
