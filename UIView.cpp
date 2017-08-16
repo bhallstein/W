@@ -12,8 +12,8 @@
 
 #include <iostream>
 
-W::UIView::UIView(const char *viewname, Window *_win, Draggability _allowDrag) :
-	View(_win),
+W::UIView::UIView(const std::string &viewname, Window *_win, Draggability _allowDrag) :
+	View(NULL, _win),
 	allowDrag(_allowDrag), dragloop(false)
 {
 	createEvTypeMap();	// Make event type translation map for this uiview
@@ -26,6 +26,7 @@ W::UIView::UIView(const char *viewname, Window *_win, Draggability _allowDrag) :
 			string("' - see log file for further details")
 		);
 }
+
 W::UIView::~UIView()
 {
 	// bai then
@@ -112,12 +113,12 @@ void W::UIView::updatePosition(const size &winsize) {
 		(*it)->update(plan[0].sz);
 }
 
-bool W::UIView::initialize(const char *viewname) {
+bool W::UIView::initialize(const std::string &viewname) {
 	using std::string;
 	
 	LuaState ls;
-	if (!ls.loadFile(viewname)) {
-		W::log << "UIView: couldn’t open \"" << viewname << "\" file" << std::endl;
+	if (!ls.loadFile(viewname.c_str())) {
+		W::log << "UIView: couldn’t open file \"" << viewname << "\"" << std::endl;
 		return false;
 	}
 	

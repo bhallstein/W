@@ -51,7 +51,7 @@ struct W::_init {
 		#elif defined WIN32 || WIN64
 			// ...
 		#endif
-
+		
 		W::log << "W app inited" << std::endl;
 	}
 };
@@ -60,6 +60,10 @@ struct W::_init *W::_initializer = new W::_init();
 void W::setLogFile(const char *path) {
     if (log.is_open()) log.close();
     log.open(path);
+}
+void W::setLogFile(const std::string &path) {
+	if (log.is_open()) log.close();
+	log.open(path.c_str());
 }
 
 unsigned int W::randUpTo(int x) {

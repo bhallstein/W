@@ -8,17 +8,12 @@ W::View::View(Positioner *_pos, Window *_win) :
 	_positioner(_pos), _window(_win), _gamestate(NULL)
 {
 	plan.resize(1);
-	_updatePosition(_window->_getDimensions());
-}
-W::View::View(Window *_win) : _window(_win), _gamestate(NULL)
-{
-	// Positioner must be set up manually in derived class
-	// and _updatePosition then called
-	plan.resize(1);
+	if (_positioner)
+		_updatePosition(_window->_getDimensions());
 }
 W::View::~View()
 {
-	delete _positioner;
+	if (_positioner) delete _positioner;
 }
 
 void W::View::setWindow(Window *w) {

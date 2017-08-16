@@ -15,6 +15,7 @@ namespace W {
 	/* Logging */
 	extern std::ofstream log;
 	void setLogFile(const char *);
+	void setLogFile(const std::string &);
 
 	/* Mersenne Twister */
 	unsigned int randUpTo(int);

@@ -2,21 +2,29 @@
 #include <vector>
 
 bool checkDistStr(const std::string &s) {
+	int n = (int) s.length();
+	if (n == 0) return false;
+	
 	const char *c = s.c_str();
-	for (int i=0, n = (int)s.size(); i < n; i++)
-		if (i == n-1) {
-			if (!W::isNum(c[i]) || c[i] != '%' || i == 0)
+	
+	if (c[n-1] == '%') {
+		if (n < 2) return false;
+		for (int i=0; i < n-1; i++)
+			if (!W::isNum(c[i]))
 				return false;
-		}
-		else if (!W::isNum(c[i]))
+		return true;
+	}
+	
+	for (int i=0; i < n; i++)
+		if (!W::isNum(c[i]))
 			return false;
 	return true;
 }
 bool strToCorner(const std::string &s, W::corner &c) {
-	if (s == "top left" || s == "TOP LEFT")              c = W::TOP_LEFT;
-	else if (s == "top right" || s == "TOP RIGHT")       c = W::TOP_RIGHT;
-	else if (s == "bottom left" || s == "BOTTOM LEFT")   c = W::BOTTOM_LEFT;
-	else if (s == "bottom right" || s == "BOTTOM RIGHT") c = W::BOTTOM_RIGHT;
+	if (s == "top left")          c = W::TOP_LEFT;
+	else if (s == "top right")    c = W::TOP_RIGHT;
+	else if (s == "bottom left")  c = W::BOTTOM_LEFT;
+	else if (s == "bottom right") c = W::BOTTOM_RIGHT;
 	else return false;
 	return true;
 }
@@ -42,24 +50,25 @@ W::Positioner::Positioner(LHObj &l)
 	using std::string;
 
 	bool error = false;
-	string errmsg = "Error initializing Positioner: ";
+	std::vector<string> errmsgs;
+	errmsgs.push_back("Error initializing positioner:");
 	std::vector<string> sComponents;
 
 	// Get size params
 	LHObj &l_size = l["size"];
 	if (l_size.type != LHValueType::STRING) {
 		error = true;
-		errmsg += string("\"size\" property not found\n");
+		errmsgs.push_back("\"size\" property not found");
 	}
 	else {
 		string &s = l_size.str_value;
 		strSplit(s, sComponents, ',');
 		if (sComponents.size() != 2 || !checkDistStr(sComponents[0]) || !checkDistStr(sComponents[1])) {
 			error = true;
-			errmsg += string(
-				"\"size\" property incorrectly formed: must be "
-				"\"dist,dist\", where dist has the form \"15\" (for absolute pixel values) "
-				"or \"50%\" (for proportional values)"
+			errmsgs.push_back(
+				"'size' property incorrectly formed: must be "
+				"'dist,dist', where dist has the form '15' (for absolute pixel values) "
+				"or '50%' (for proportional values)"
 			);
 		}
 		else {
@@ -68,6 +77,9 @@ W::Positioner::Positioner(LHObj &l)
 			sizing_method_y = (c2[c2.size()-1] == '%' ? PPROPORTIONAL : PFIXED);
 			strToT<float>(w, c1);
 			strToT<float>(h, c2);
+//			std::cout
+//				<< "sizing_method_x: " << w << ", " << (sizing_method_x == PPROPORTIONAL ? "proportional" : "fixed") << "\n"
+//				<< "sizing_method_y: " << h << ", " << (sizing_method_y == PPROPORTIONAL ? "proportional" : "fixed") << "\n";
 		}
 	}
 	
@@ -75,17 +87,17 @@ W::Positioner::Positioner(LHObj &l)
 	LHObj &l_pos = l["position"];
 	if (l_pos.type != LHValueType::STRING) {
 		error = true;
-		errmsg += string("\"position\" property not found\n");
+		errmsgs.push_back("'position' property not found");
 	}
 	else {
 		string &s = l_pos.str_value;
 		strSplit(s, sComponents, ',');
 		if (sComponents.size() != 2 || !checkDistStr(sComponents[0]) || !checkDistStr(sComponents[1])) {
 			error = true;
-			errmsg += string(
-				"\"position\" property incorrectly formed: must be "
-				"\"dist,dist\", where dist has the form \"15\" (for absolute pixel values) "
-				"or \"50%\" (for proportional values)"
+			errmsgs.push_back(
+				"'position' property incorrectly formed: must be "
+				"'dist,dist', where dist has the form '15' (for absolute pixel values) "
+				"or '50%' (for proportional values)"
 			);
 		}
 		else {
@@ -94,23 +106,32 @@ W::Positioner::Positioner(LHObj &l)
 			pos_method_y = (c2[c2.size()-1] == '%' ? PPROPORTIONAL : PFIXED);
 			strToT<float>(corner_x, c1);
 			strToT<float>(corner_y, c2);
+//			std::cout
+//				<< "pos_method_x: " << corner_x << ", " << (pos_method_x == PPROPORTIONAL ? "proportional" : "fixed") << "\n"
+//				<< "pos_method_y: " << corner_y << ", " << (pos_method_y == PPROPORTIONAL ? "proportional" : "fixed") << "\n";
 		}
 	}
 	
 	// Get positioning corner
 	LHObj &l_corner = l["positioning_corner"];
+	downCase(l_corner.str_value);
 	if (l_corner.type == LHValueType::NIL)
 		fixed_corner = TOP_LEFT;
 	else if (!strToCorner(l_corner.str_value, fixed_corner)) {
 		error = true;
-		errmsg += string(
-			"\"positioning_corner\", if present, must be formatted as per: "
-			"\"[top/bottom] [left/right]\" (if not present, will be set to "
-			"\"top right\")"
+		errmsgs.push_back(
+			"'positioning_corner', if present, must be formatted as per: "
+			"'[top/bottom] [left/right]' (if not present, will be set to "
+			"'top left')"
 		);
 	}
 	
-	if (error) throw Exception(errmsg);
+	if (error) {
+		std::string errmsg;
+		implode(errmsgs, errmsg, "\n  ");
+		errmsg = string("  ") + errmsg;
+		throw Exception(errmsg);
+	}
 }
 
 W::rect& W::Positioner::refresh(const size &container_size) {

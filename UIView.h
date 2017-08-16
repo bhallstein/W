@@ -16,7 +16,7 @@ namespace W {
 	
 	class UIView : public View {
 	public:
-		UIView(const char *viewname, Window *, Draggability _allowDrag = DISALLOW_DRAG);
+		UIView(const std::string &viewname, Window *, Draggability _allowDrag = DISALLOW_DRAG);
 		~UIView();
 		
 		void processMouseEvent(Event *);
@@ -51,7 +51,7 @@ namespace W {
 		std::vector<element_list> portrait_elements;
 		
 		// Initialization from Lua
-		bool initialize(const char *viewname);
+		bool initialize(const std::string &viewname);
 		
 		void addPositioner(const std::string limit, LHObj &, orientation_enum);
 		void addElements(const std::string limit, LHObj &, orientation_enum);
