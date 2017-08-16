@@ -55,7 +55,7 @@ namespace W {
 		bool isPassableAt(const W::position &);
 		bool isPassableUnder(const W::rect &);
 		
-		bool getRoute(int fromX, int fromY, int toX, int toY, std::vector<position> *route);
+		bool getRoute(int fromX, int fromY, int toX, int toY, std::vector<position> &route);
 		
 		NavNode* _nodeAt(int atX, int atY);
 		NavNode* _nodeAt(const W::position &);

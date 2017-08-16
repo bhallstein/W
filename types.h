@@ -60,6 +60,9 @@ namespace W {
 		int width, height;
 		size() : width(0), height(0) { }
 		size(int _width, int _height) : width(_width), height(_height) { }
+		bool operator== (const size &s2) {
+			return width == s2.width && height == s2.height;
+		}
 		std::string str() const {
 			std::stringstream ss;
 			ss << width << "x" << height;

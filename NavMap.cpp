@@ -194,8 +194,8 @@ bool W::NavMap::isPassableUnder(const rect &r) {
 	return true;
 }
 
-bool W::NavMap::getRoute(int fromX, int fromY, int toX, int toY, std::vector<position> *route) {
-	route->clear();
+bool W::NavMap::getRoute(int fromX, int fromY, int toX, int toY, std::vector<position> &route) {
+	route.clear();
 	
 	if (fromX < 0 || fromX >= w || fromY < 0 || fromY >= h || toX < 0 || toX >= w || toY < 0 || toY >= h) {
 		W::log << "Navmap asked to find route to or from an out of bounds location.";
@@ -258,9 +258,9 @@ bool W::NavMap::getRoute(int fromX, int fromY, int toX, int toY, std::vector<pos
 	for (X = &B; X != &A; X = X->route_prev) {
 		position p;
 		p.x = X->x, p.y = X->y;
-		route->push_back(p);
+		route.push_back(p);
 	}
-	route->push_back(position(A.x, A.y));
+	route.push_back(position(A.x, A.y));
 	
 	return true;
 }
