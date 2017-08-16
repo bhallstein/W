@@ -15,6 +15,18 @@ namespace W {
 		position(int _x, int _y) : x(_x), y(_y), a(0), b(0) { }
 		position(float _a, float _b) : x(0), y(0), a(_a), b(_b) { }
 		position(int _x, int _y, float _a, float _b) : x(_x), y(_y), a(_a), b(_b) { }
+		position operator+ (const position &pos2) {
+			return position(
+				x + pos2.x, y + pos2.y,
+				a + pos2.a, b + pos2.b
+			);
+		}
+		position operator- (const position &pos2) {
+			return position(
+				x - pos2.x, y - pos2.y,
+				a - pos2.a, b - pos2.b
+			);
+		}
 	};
 	struct size {
 		int width, height;

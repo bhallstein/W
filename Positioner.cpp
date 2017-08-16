@@ -176,8 +176,9 @@ W::rect& W::Positioner::refresh(const size &container_size) {
 	return _p;
 }
 
-void W::Positioner::setCorner(int _x, int _y) {
-	corner_x = _x, corner_y = _y;
+void W::Positioner::nudge(const position &delta) {
+	corner_x += (fixed_corner == TOP_LEFT || fixed_corner == BOTTOM_LEFT ? delta.x : -delta.x);
+	corner_y += (fixed_corner == TOP_LEFT || fixed_corner == TOP_RIGHT ? delta.y : -delta.y);
 }
 
 bool W::Positioner::isDraggable() {

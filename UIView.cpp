@@ -36,7 +36,8 @@ W::UIView::~UIView()
 void W::UIView::processMouseEvent(Event *ev) {
 	if (dragloop) {
 		if (ev->type == EventType::MOUSEMOVE) {
-			_positioner->setCorner(pos.x + ev->pos.x - drag_initial.x, pos.y + ev->pos.y - drag_initial.y);
+			_positioner->nudge(ev->pos - drag_last);
+			drag_last = ev->pos;
 			size s = _window->_getDimensions();
 			_updatePosition(s);
 		}

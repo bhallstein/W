@@ -27,7 +27,7 @@ namespace W {
 		
 		bool allowDrag;		// Set from positioner when refreshed
 		bool dragloop;
-		position drag_initial;
+		position drag_last;
 		
 		typedef std::vector<UIElement*> element_list;
 		typedef std::vector<Positioner*> positioner_list;

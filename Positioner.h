@@ -23,7 +23,8 @@ namespace W {
 		);
 		Positioner(LHObj &);
 		W::rect& refresh(const size &container_size);
-		void setCorner(int _x, int _y);
+
+		void nudge(const position &delta);
 		bool isDraggable();
 		
 	private:
