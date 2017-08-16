@@ -78,12 +78,12 @@ W::Window::Window() {
 #ifdef __APPLE__
 	// Create OpenGL context
 	NSOpenGLPixelFormatAttribute attrs[] = { NSOpenGLPFADoubleBuffer, 0 };
-	objs->pf = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
-	if (objs->pf == nil)
+	_objs->pf = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
+	if (_objs->pf == nil)
 		throw Exception("Couldn't get an appropriate pixel format");
-	objs->context = [[NSOpenGLContext alloc] initWithFormat:objs->pf shareContext:nil];
-	if (objs->context == nil) {
-		[objs->pf release];
+	_objs->context = [[NSOpenGLContext alloc] initWithFormat:_objs->pf shareContext:nil];
+	if (_objs->context == nil) {
+		[_objs->pf release];
 		throw Exception("Couldn't create opengl context");
 	}
 #elif defined WIN32 || WIN64
@@ -107,7 +107,7 @@ W::Window::~Window() {
 
 void W::Window::setTitle(const char *t) {
 #ifdef __APPLE__
-	[objs->window setTitle:[NSString stringWithUTF8String:t]];
+	[_objs->window setTitle:[NSString stringWithUTF8String:t]];
 #elif defined WIN32 || WIN64
 	SetWindowText(_objs->windowHandle, t);
 #endif
@@ -117,8 +117,8 @@ void W::Window::_generateMouseMoveEvent() {
 	int scrollmargin = 20;
 	// TODO: check if mouse is within window bounds (plus some margin, for ease of scroll?)
 #ifdef __APPLE__
-	NSPoint p = [objs->window mouseLocationOutsideOfEventStream];
-	[objs->view __convertMouseCoords:&p];
+	NSPoint p = [_objs->window mouseLocationOutsideOfEventStream];
+	[_objs->view __convertMouseCoords:&p];
 	W::Event ev(EventType::MOUSEMOVE, p.x, p.y);
 	W::_addEvent(ev);
 #elif defined WIN32 || WIN64
@@ -140,29 +140,29 @@ void W::Window::_generateMouseMoveEvent() {
 void W::Window::_createWindow() {
 #ifdef __APPLE__
 	NSRect frame = NSMakeRect(0, 0, 800, 600);
-	objs->window = [[NSWindow alloc] initWithContentRect:frame
+	_objs->window = [[NSWindow alloc] initWithContentRect:frame
 											   styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask /*| NSResizableWindowMask*/
 												 backing:NSBackingStoreBuffered
 												   defer:NO];
-//	NSWindowCollectionBehavior coll = [objs->window collectionBehavior];	// Enable lion fullscreenery
+//	NSWindowCollectionBehavior coll = [_objs->window collectionBehavior];	// Enable lion fullscreenery
 //	coll |= NSWindowCollectionBehaviorFullScreenPrimary;					//
-//	[objs->window setCollectionBehavior:coll];								//
+//	[_objs->window setCollectionBehavior:coll];								//
 	
-	[objs->window center];
+	[_objs->window center];
 	
 	NSRect viewRect = NSMakeRect(0, 0, frame.size.width, frame.size.height);
-	objs->view = [[W_View alloc] initWithFrame:viewRect];
+	_objs->view = [[W_View alloc] initWithFrame:viewRect];
 	
-	[objs->window setContentView:objs->view];	// Add view to window
+	[_objs->window setContentView:_objs->view];	// Add view to window
 	
-	[objs->context setView:objs->view];			// Set view as context’s drawable object
+	[_objs->context setView:_objs->view];			// Set view as context’s drawable object
 	
-	objs->windowDelegate = [[W_WindowDelegate alloc] init];	// Create delegate to handle window close
-	[objs->window setDelegate:objs->windowDelegate];
+	_objs->windowDelegate = [[W_WindowDelegate alloc] init];	// Create delegate to handle window close
+	[_objs->window setDelegate:_objs->windowDelegate];
 	
-	[objs->window makeKeyAndOrderFront:NSApp];
-	[objs->window makeFirstResponder:objs->view];
-	setUpOpenGL();
+	[_objs->window makeKeyAndOrderFront:NSApp];
+	[_objs->window makeFirstResponder:_objs->view];
+	_setUpOpenGL();
 
 #elif defined WIN32 || WIN64
 	// Set window style & size
@@ -248,9 +248,9 @@ void W::Window::_createWindow() {
 }
 void W::Window::_closeWindow() {
 #ifdef __APPLE__
-	[objs->context clearDrawable];
-	[objs->window release];
-	[objs->windowDelegate release];
+	[_objs->context clearDrawable];
+	[_objs->window release];
+	[_objs->windowDelegate release];
 #elif defined WIN32 || WIN64
 	if (_objs->renderingContext) {
 		if (!wglMakeCurrent(NULL, NULL))
@@ -273,7 +273,7 @@ void W::Window::_closeWindow() {
 
 void W::Window::_setUpOpenGL() {
 #ifdef __APPLE__
-	[objs->context makeCurrentContext];
+	[_objs->context makeCurrentContext];
 #endif
 	{
 		glDisable(GL_DEPTH_TEST);
@@ -288,7 +288,7 @@ void W::Window::_setUpOpenGL() {
 
 void W::Window::_startDrawing() {
 #ifdef __APPLE__
-	[objs->context makeCurrentContext];
+	[_objs->context makeCurrentContext];
 #endif
 	
 	size s = _getDimensions();
@@ -309,7 +309,7 @@ void W::Window::_startDrawing() {
 void W::Window::_finishDrawing() {
 #ifdef __APPLE__
 	[NSOpenGLContext clearCurrentContext];
-	[objs->context flushBuffer];
+	[_objs->context flushBuffer];
 #elif defined WIN32 || WIN64
 	SwapBuffers(_objs->deviceContext);
 #endif
@@ -343,8 +343,8 @@ void W::Window::_drawRect(float x, float y, float w, float h, const W::Colour &c
 
 W::size W::Window::_getDimensions() {
 #ifdef __APPLE__
-	NSSize bounds = [objs->view bounds].size;
-//	CGSize bounds = [objs->view bounds].size;
+	NSSize bounds = [_objs->view bounds].size;
+//	CGSize bounds = [_objs->view bounds].size;
 	return size((int)bounds.width, (int)bounds.height);
 #elif defined WIN32 || WIN64
 	RECT rect;

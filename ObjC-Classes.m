@@ -1,25 +1,6 @@
 #import "ObjC-Classes.h"
 #include "W.h"
-
-void __setEventPositionAndType(W::Event *ev, int x, int y, W::EventType::T t) {
-	ev->type = t;
-	ev->pos.x = x;
-	ev->pos.y = y;
-}
-W::KeyCode::T __charToKeycode(unsigned int c) {
-	if (c >= 'a' && c <= 'z') return (W::KeyCode::T) ((int)W::KeyCode::K_A + c - 'a');
-	if (c >= 'A' && c <= 'Z') return (W::KeyCode::T) ((int)W::KeyCode::K_A + c - 'A');
-	if (c >= '0' && c <= '9') return (W::KeyCode::T) ((int)W::KeyCode::K_0 + c - '0');
-	if (c == 27) return W::KeyCode::K_ESC;		// These are standard ASCII codes
-	if (c == 13) return W::KeyCode::K_RETURN;		//
-	if (c == 8)  return W::KeyCode::K_BACKSPACE;	//
-	if (c == 9)  return W::KeyCode::K_TAB;		//
-	if (c == NSLeftArrowFunctionKey)	return W::KeyCode::K_LEFT_ARROW;
-	if (c == NSRightArrowFunctionKey)	return W::KeyCode::K_RIGHT_ARROW;
-	if (c == NSUpArrowFunctionKey)		return W::KeyCode::K_UP_ARROW;
-	if (c == NSDownArrowFunctionKey)	return W::KeyCode::K_DOWN_ARROW;
-	return W::KeyCode::K_OTHER;
-}
+#include "Event.h"
 
 
 @implementation W_View
@@ -58,7 +39,7 @@ W::KeyCode::T __charToKeycode(unsigned int c) {
 -(void)keyDown:(NSEvent *)nsev {
 	W::_addEvent(W::Event(
 		W::EventType::KEYPRESS,
-		__charToKeycode([[nsev characters] characterAtIndex:0])
+		W::Event::charToKeycode([[nsev characters] characterAtIndex:0])
 	));
 }
 

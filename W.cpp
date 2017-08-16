@@ -88,10 +88,11 @@ void W::_addEvent(const Event &ev) {
 	_evqueue.push_back(ev);
 }
 
-
+#if defined WIN32 || WIN64
 VOID CALLBACK W::TimerProc(HWND windowHandle, UINT msg, UINT_PTR idEvent, DWORD dwTime) {
 	W::_runGameLoop();
 }
+#endif
 void W::startGameLoop() {
 	#ifdef __APPLE__
 		[( W_Demon*)_demon gametimerStart];
