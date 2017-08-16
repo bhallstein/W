@@ -3,12 +3,18 @@
 #include "EventResponder.h"
 #include "MappedObj.h"
 
+#include <iostream>
+
 namespace W {
 
 	struct Messenger::_messenger_state {
 		std::map<EventType::T, _callback_list> type_subscriptions;
 		Callback *privileged_event_responder;
 		std::map<EventType::T, Callback *> type_pers;
+		
+		std::map<std::string, std::map<
+			EventType::T, _callback_list
+		>> ui_subscriptions;
 		
 		_messenger_state() : privileged_event_responder(NULL) { }
 		~_messenger_state() {
@@ -56,14 +62,15 @@ void W::Messenger::subscribeToEventType(EventType::T t, const Callback &c) {
 }
 void W::Messenger::unsubscribeFromEventType(EventType::T t, EventResponder *r) {
 	if (!_s) return;
-	_callback_list *l = &_s->type_subscriptions[t];
-	for (_callback_list::iterator it = l->begin(); it < l->end(); it++)
+	_callback_list &cblist = _s->type_subscriptions[t];
+	_callback_list::iterator it;
+	for (it = cblist.begin(); it < cblist.end(); )
 		if ((*it)->resp == r) {
-			//			std::cout << "unsub from event type " << t  << ": deleting subscription..." << std::endl;
+//			std::cout << "unsub from event type " << t  << ": deleting subscription..." << std::endl;
 			delete *it;
-			l->erase(it);
-			return;
+			it = cblist.erase(it);
 		}
+		else it++;
 }
 
 void W::Messenger::subscribeToMouseEvents(const Callback &c) {
@@ -106,15 +113,11 @@ bool W::Messenger::requestPrivilegedResponderStatusForEventType(EventType::T t, 
 void W::Messenger::relinquishPrivilegedResponderStatusForEventType(EventType::T t, EventResponder *r) {
 	if (!_s) return;
 	std::map<EventType::T, Callback*>::iterator it = _s->type_pers.find(t);
-	if (it == _s->type_pers.end())
-		return;
-	if (it->second->resp == r) {
+	if (it != _s->type_pers.end() && it->second->resp == r) {
 		delete it->second;
 		_s->type_pers.erase(it);
 	}
 }
-
-#include <iostream>
 
 void W::Messenger::dispatchEvent(Event *ev) {
 	if (!_s) return;
@@ -135,10 +138,11 @@ void W::Messenger::dispatchEvent(Event *ev) {
 		_dispatchMouseEvent(ev);
 	
 	// Event type subscriptions
-	else if ((it1 = _s->type_subscriptions.find(ev->type)) != _s->type_subscriptions.end())
-		it1->second.back()->call(ev);
+	else if ((it1 = _s->type_subscriptions.find(ev->type)) != _s->type_subscriptions.end()) {
+		_callback_list &cblist = it1->second;
+		if (cblist.size()) cblist.back()->call(ev);
+	}
 }
-#include <iostream>
 void W::Messenger::_dispatchMouseEvent(Event *ev) {
 //	printf("Dispatching mouse event (type %d) at %d,%d %.1f,%.1f\n", ev->type, ev->pos.x, ev->pos.y, ev->pos.a, ev->pos.b);
 	
@@ -157,4 +161,56 @@ void W::Messenger::_dispatchMouseEvent(Event *ev) {
 //	else {
 //		std::cout << "  no sub" << std::endl;
 //	}
+}
+void W::Messenger::_dispatchUIEvent(W::Event *ev) {
+	if (!_s) return;
+	
+	std::string *elname = (std::string *)ev->_payload;
+
+	std::map<std::string, std::map<
+		EventType::T, _callback_list
+	>>::iterator it1 = _s->ui_subscriptions.find(*elname);
+	if (it1 == _s->ui_subscriptions.end())
+		return;
+	
+	std::map<EventType::T, _callback_list> &subs_for_element = it1->second;
+	std::map<EventType::T, _callback_list>::iterator it2 = subs_for_element.find(ev->type);
+	if (it2 == subs_for_element.end())
+		return;
+	
+	_callback_list &cblist = it2->second;
+	_callback_list::iterator it3;
+	for (it3 = cblist.begin(); it3 < cblist.end(); it3++)
+		(*it3)->call(ev);
+}
+
+void W::Messenger::subscribeToUIEvent(const char *_elname, EventType::T t, const Callback &c) {
+	if (!_s) return;
+	unsubscribeFromUIEvent(_elname, t, c.resp);
+	
+	std::map<EventType::T, _callback_list> &subs_for_element = _s->ui_subscriptions[_elname];
+	_callback_list &subs_to_evtype_for_element = subs_for_element[t];
+	subs_to_evtype_for_element.push_back(c.copy());
+}
+void W::Messenger::unsubscribeFromUIEvent(const char *_elname, EventType::T t, EventResponder *r) {
+	if (!_s) return;
+	
+	std::map<std::string, std::map<
+		EventType::T, _callback_list
+	>>::iterator it1 = _s->ui_subscriptions.find(_elname);
+	if (it1 == _s->ui_subscriptions.end())
+		return;
+	
+	std::map<EventType::T, _callback_list>::iterator it2 = it1->second.find(t);
+	if (it2 == it1->second.end())
+		return;
+	
+	_callback_list &cblist = it2->second;
+	_callback_list::iterator it3;
+	for (it3 = cblist.begin(); it3 < cblist.end(); )
+		if ((*it3)->resp == r) {
+			delete *it3;
+			it3 = cblist.erase(it3);
+		}
+		else it3++;
 }

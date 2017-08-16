@@ -26,6 +26,10 @@ namespace W {
 		static void relinquishPrivilegedResponderStatusForEventType(W::EventType::T, W::EventResponder *);
 		
 		static void dispatchEvent(W::Event *);
+		static void _dispatchUIEvent(W::Event *);
+		
+		static void subscribeToUIEvent(const char *_element_name, W::EventType::T, const W::Callback &);
+		static void unsubscribeFromUIEvent(const char *_element_name, W::EventType::T, W::EventResponder *);
 		
 		static void _useTemporaryState();	// Save subscriptions in a temporary state, for transferal in setActive~
 		static void _setActiveGamestate(GameState *);
