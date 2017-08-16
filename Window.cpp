@@ -61,7 +61,7 @@ struct W::Window_NativeObjs {
 			wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 			wc.hbrBackground = NULL;		// GetStockObject(WHITE_BRUSH) ?
 			wc.lpszMenuName = NULL;			// Menu resource name... "MainMenu" ?
-			wc.lpszClassName = "DBTWindow";	// Window class name
+			wc.lpszClassName = "W_Window";	// Window class name
 			wc.hIconSm = (HICON) LoadImage(wc.hInstance, MAKEINTRESOURCE(5), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
 
 			if (!RegisterClassEx(&wc))
@@ -177,9 +177,9 @@ void W::Window::_createWindow() {
 	
 	// Create window
 	_objs->windowHandle = CreateWindowEx(
-		extendedWindowStyle,				//
-		"My Sexy W Application",
-		"Oh hai",		// title
+		extendedWindowStyle,
+		"W_Window",						// window class
+		"My Sexy W Application",		// title
 		windowStyle,
 		0, 0,			// position
 		rect.right - rect.left,
