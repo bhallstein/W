@@ -15,7 +15,7 @@ namespace W {
 	
 	class DObj {
 	public:
-		DObj(View *_v, const W::position &, int _length);
+		DObj(View *_v, int _length);
 		virtual ~DObj();
 
 		void setNeedsRecopy() {
@@ -30,9 +30,6 @@ namespace W {
 		}
 		virtual void _recopy(v3f*, c4f*, t2f*) = 0;
 			// Override to copy data into arrays
-
-		void setPos(const W::position &_p) { pos = _p; setNeedsRecopy(); }
-		W::position pos;
 
 	private:
 		DObj *prevDObj, *nextDObj;
@@ -62,8 +59,10 @@ namespace W {
 		~_UniRectDObj();
 		void _recopy(v3f*, c4f*, t2f*);	// Recopy geom data into supplied arrays
 		
+		void setPos(const W::position &_p) { pos = _p; setNeedsRecopy(); }
 		void setSz(const W::size &_sz) { sz = _sz; setNeedsRecopy(); }
 		
+		position pos;
 		size sz;
 		Colour col;
 		Texture *tex;
@@ -85,6 +84,28 @@ namespace W {
 		DRect(View *, const W::position &, const W::size &, const W::Colour &, float rotation = 0);
 		void setCol(const Colour &_c) { col = _c; setNeedsRecopy(); }
 		void setRot(float _r) { rotation = _r; setNeedsRecopy(); }
+	};
+	
+	
+	/***
+		DLine draws a line
+	 ***/
+	
+	class DLine : public _UniRectDObj {
+	public:
+		DLine(View *, const W::position &_p1, const W::position &_p2, const W::Colour &, int _width = 1);
+		void setPos1(const W::position &);
+		void setPos2(const W::position &);
+		void setWidth(int _w);
+		void setCol(const Colour &_c) { col = _c, setNeedsRecopy(); }
+		void nudge(const W::position &);
+		
+		position p1, p2;
+		Colour col;
+		int lineWidth;
+		
+	private:
+		void recalculateRectProperties();
 	};
 	
 	
@@ -121,6 +142,7 @@ namespace W {
 		
 		std::string txt;
 		
+		position pos;
 		W::Colour col;
 		bool r_align;
 	private:

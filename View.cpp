@@ -6,6 +6,17 @@
 
 #define GL_ARRAY_INITIAL_SIZE 256
 
+/*
+ NB: there’s one major drawback to this otherwise high-performance drawing
+ system: removing a single DObj invokes an O(N) copy, where N is the
+ number of DObjs currently in play, since all subsequent DObjs must be
+ recopied backwards in the arrays.
+ 
+ This could be improved by having View pad empty array sections with degenerate
+ triangles and perform lazy compacting, but perf is high enough for the moment
+ not to bother.
+*/
+
 /**************************************/
 /*** glDataArrays struct definition ***/
 /**************************************/

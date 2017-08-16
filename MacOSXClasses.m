@@ -192,6 +192,7 @@
 }
 -(void)stop {
 	[t invalidate];
+	t = nil;
 }
 -(void)callback:(NSTimer*)_t {
 	(*fp)();

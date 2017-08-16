@@ -1,7 +1,9 @@
 #include "DObj.h"
 #include "GenericRetro.h"
+#include <cmath>
 
 #define GEOM_LENGTH_FOR_RECT 6
+#define RAD2DEG 180/M_PI
 
 //#define GEOM_DEBUG
 
@@ -18,9 +20,8 @@ void copyQuadGeomToArrays(
 /*** DObj implementation ***/
 /***************************/
 
-W::DObj::DObj(View *_v, const W::position &_p, int _length) :
+W::DObj::DObj(View *_v, int _length) :
 	view(_v),
-	pos(_p),
 	array_length(_length),
 	prevDObj(NULL),
 	nextDObj(NULL),
@@ -63,7 +64,8 @@ W::DObj::~DObj()
 /***********************************/
 
 W::_UniRectDObj::_UniRectDObj(View *_view, const position &_pos, const size &_sz, const Colour &_col, Texture *_tex, float _rot) :
-	DObj(_view, _pos, GEOM_LENGTH_FOR_RECT),
+	DObj(_view, GEOM_LENGTH_FOR_RECT),
+	pos(_pos),
 	sz(_sz),
 	col(_col),
 	tex(_tex),
@@ -98,6 +100,52 @@ W::DRect::DRect(View *_v, const position &_p, const size &_s, const Colour &_col
 }
 
 
+/****************************/
+/*** DLine implementation ***/
+/****************************/
+
+W::DLine::DLine(View *_v, const position &_p1, const position &_p2, const W::Colour &_col, int _lineWidth) :
+	_UniRectDObj(_v, position(), size(), _col, Texture::_whiteTexture, 0),
+	p1(_p1),
+	p2(_p2),
+	lineWidth(_lineWidth)
+{
+	recalculateRectProperties();
+}
+void W::DLine::setPos1(const W::position &_p1) {
+	p1 = _p1;
+	recalculateRectProperties();
+	setNeedsRecopy();
+}
+void W::DLine::setPos2(const W::position &_p2) {
+	p2 = _p2;
+	recalculateRectProperties();
+	setNeedsRecopy();
+}
+void W::DLine::setWidth(int _w) {
+	lineWidth = _w;
+	recalculateRectProperties();
+	setNeedsRecopy();
+}
+void W::DLine::nudge(const W::position &x) {
+	p1 += x;
+	p2 += x;
+	pos += x;
+	setNeedsRecopy();
+}
+void W::DLine::recalculateRectProperties() {
+	sz.height = lineWidth;
+	
+	float lineLength = sqrt((p2.x-p1.x)*(p2.x-p1.x) + (p2.y-p1.y)*(p2.y-p1.y));
+	sz.width = lineLength;
+	
+	pos.x = p1.x + (p2.x - p1.x)*0.5 - lineLength/2;
+	pos.y = p1.y + (p2.y - p1.y)*0.5 - lineWidth/2;
+	
+	rotation = asin((p2.y-p1.y) / lineLength) * RAD2DEG;
+}
+
+
 /***************************/
 /*** DImg implementation ***/
 /***************************/
@@ -114,7 +162,8 @@ W::DImg::DImg(View *_v, const position &_p, const size &_s, Texture *_tex, float
 /****************************/
 
 W::DText::DText(View *_v, const position &_p, const std::string &_txt, const Colour &_col, bool _r_align) :
-	DObj(_v, _p, _geomLengthForText(_txt)),
+	DObj(_v, _geomLengthForText(_txt)),
+	pos(_p),
 	txt(_txt),
 	col(_col),
 	r_align(_r_align),
