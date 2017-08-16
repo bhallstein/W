@@ -55,7 +55,7 @@ namespace W {
 		static void unsubscribeFromUIEvent(const char *_element_name, EventType::T, void *);
 		
 		// GameState/State management
-		static void _useTemporaryState();	// Save subscriptions in a temporary state, for transferal in setActive~
+		static void _useTemporaryState();	// Save subscriptions in a temporary state, for transferral in setActive~
 		static void _setActiveGamestate(GameState *);
 		static void _gamestateDestroyed(GameState *);
 		

@@ -42,7 +42,7 @@ struct W::Messenger::MState {
 	}
 	~MState()
 	{
-		// TODO: destroy everything the user has omitted to unsubscribe
+		#pragma message("Messenger could destroy everything the user has forgotten to unsubscribe on destruct")
 	}
 	
 	map<EventType::T, vector<Callback*>>              typeSubs;

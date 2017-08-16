@@ -18,6 +18,8 @@
 /*** W_View implementation ***/
 /*****************************/
 
+#pragma mark W_View
+
 @implementation W_View
 
 -(id)initWithFrame:(NSRect)frame {
@@ -77,6 +79,8 @@
 /*** W_WindowDelegate implementation ***/
 /***************************************/
 
+#pragma mark - W_WindowDelegate
+
 @implementation W_WindowDelegate
 
 -(bool)windowShouldClose:(id)sender {
@@ -91,10 +95,12 @@
 /*** W_Window implementation ***/
 /*******************************/
 
+#pragma mark - W_Window
+
 @interface W_Window ()
 @property(nonatomic, strong) W_WindowDelegate *windowDelegate;
 @property(nonatomic, strong) W_View *view;
-@property (nonatomic, strong) NSOpenGLContext *context;
+@property(nonatomic, strong) NSOpenGLContext *context;
 -(void)frameChanged:(id)notification;
 @end
 
@@ -198,6 +204,8 @@
 /**********************************/
 /*** UpdateTimer implementation ***/
 /**********************************/
+
+#pragma mark - W_UpdateTimer
 
 #include "Callback.h"
 

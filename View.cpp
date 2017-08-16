@@ -118,6 +118,7 @@ void W::View::_draw(const v2i &winSz) {
 	
 	v2i &sz = rct.size;			// Note: these properties are copied, to avoid artifacts in the event
 	v2i &pos = rct.position;	// that the view's position is updated while its objects are being drawn
+		// Note: they are no longer copied
 	
 	// Set up OGL: scissor to view bounds, translate to view pos w/ modelview matrix
 	glScissor(pos.a, winSz.b - pos.b - sz.b, sz.a, sz.b);

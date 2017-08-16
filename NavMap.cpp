@@ -176,7 +176,7 @@ void W::NavMap::isolate(const iRect &r) {
 //	}
 }
 void W::NavMap::unisolate(const iRect &r) {
-	// TODO: unisolate
+	#pragma message("NavMap: unisolate not implemented")
 }
 
 void W::NavMap::createConnection(const v2i &p1, const v2i &p2) {
