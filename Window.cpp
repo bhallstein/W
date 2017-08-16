@@ -280,10 +280,10 @@ struct W::Window::Initializer {
 			throw Exception("Failed to register window class.");
 		
 		// Set translation map for windows events to W events
-		_win_event_type_map[WM_LBUTTONDOWN] = W::EventType::LEFTMOUSEDOWN;
-		_win_event_type_map[WM_RBUTTONDOWN] = W::EventType::RIGHTMOUSEDOWN;
-		_win_event_type_map[WM_LBUTTONUP]   = W::EventType::LEFTMOUSEUP;
-		_win_event_type_map[WM_RBUTTONUP]   = W::EventType::RIGHTMOUSEUP;
+		_win_event_type_map[WM_LBUTTONDOWN] = W::EventType::LMouseDown;
+		_win_event_type_map[WM_RBUTTONDOWN] = W::EventType::RMouseDown;
+		_win_event_type_map[WM_LBUTTONUP]   = W::EventType::LMouseUp;
+		_win_event_type_map[WM_RBUTTONUP]   = W::EventType::RMouseUp;
 	}
 };
 
@@ -441,13 +441,13 @@ LRESULT CALLBACK W::Window::_WndProc(HWND windowHandle, UINT msg, WPARAM wParam,
 		else if (wParam == VK_DELETE) k = KeyCode::_DELETE;
 		else k = Event::charToKeycode(wParam);
 		W::Event::_addEvent(new W::Event(
-			msg == WM_KEYDOWN ? W::EventType::KEYDOWN : W::EventType::KEYUP,
+			msg == WM_KEYDOWN ? W::EventType::KeyDown : W::EventType::KeyUp,
 			k
 		));
 		return 0;
 	}
 	else if (msg ==  WM_CLOSE) {
-		W::Event::_addEvent(new W::Event(W::EventType::CLOSED));
+		W::Event::_addEvent(new W::Event(W::EventType::Closed));
 		return 0;
 	}
 	else if (msg == WM_KEYUP) {
