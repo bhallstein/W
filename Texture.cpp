@@ -1,6 +1,12 @@
 #include "types.h"
 #include "W.h"
-#include <OpenGL/gl.h>
+
+#ifdef __APPLE__
+	#include <OpenGL/gl.h>
+#elif defined WIN32 || WIN64
+	#include <gl\gl.h>
+	#include <gl\glu.h>
+#endif
 
 #define NCHANNELS 4		// Textures are uploaded as RGBA
 

@@ -298,7 +298,7 @@ void W::Window::setOpenGLThreadAffinity() {
 	// Make opengl context current on the calling thread
 	#ifdef __APPLE__
 		[_objs->context makeCurrentContext];
-	#elif defined __WIN32 || __WIN64
+	#elif defined _WIN32 || _WIN64
 		if (!wglMakeCurrent(_objs->deviceContext, _objs->renderingContext)) {
 			closeWindow();
 			throw Exception("Error activating the rendering context");
@@ -309,7 +309,7 @@ void W::Window::clearOpenGLThreadAffinity() {
 	// Unmake opengl context current on the calling thread
 	#ifdef __APPLE__
 		[NSOpenGLContext clearCurrentContext];
-	#elif defined __WIN32 || __WIN64
+	#elif defined _WIN32 || _WIN64
 		if (!wglMakeCurrent(_objs->deviceContext, NULL)) throw Exception(
 			"Error deactivating the rendering context"
 		);
@@ -333,7 +333,7 @@ W::size W::Window::getDimensions(W::Window *w) {
 void W::Window::swapBuffers() {
 	#ifdef __APPLE__
 		[_objs->context flushBuffer];
-	#elif defined __WIN32 || __WIN64
+	#elif defined _WIN32 || _WIN64
 		SwapBuffers(_objs->deviceContext);
 	#endif
 }

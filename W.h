@@ -57,7 +57,7 @@ namespace W {
 	#ifdef __APPLE__
 		void* drawingThreadFn(void *);
 		extern pthread_t _drawingThread;
-	#elif defined __WIN32 || __WIN64
+	#elif defined _WIN32 || _WIN64
 		DWORD WINAPI drawingThreadFn(LPVOID);
 		extern DWORD _drawingThreadId;
 		extern HANDLE _drawingThreadHandle;
@@ -66,7 +66,7 @@ namespace W {
 	/* Update */
 	#ifdef __APPLE__
 		extern void *_updateTimer;
-	#elif defined __WIN32 || __WIN64
+	#elif defined _WIN32 || _WIN64
 		extern UINT _updateTimer;
 		void CALLBACK _mmtCallback(UINT, UINT, DWORD, DWORD, DWORD);
 	#endif
@@ -92,7 +92,7 @@ namespace W {
 			if (int err = pthread_mutex_unlock(m))
 				throw W::Exception("Error unlocking mutex", err);
 		}
-	#elif defined __WIN32 || __WIN64
+	#elif defined _WIN32 || _WIN64
 		extern CRITICAL_SECTION event_mutex, graphics_mutex, texture_mutex;
 		inline void _lock_mutex(CRITICAL_SECTION *m) {
 			EnterCriticalSection(m);

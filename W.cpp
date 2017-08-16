@@ -6,7 +6,9 @@
 	#include <Cocoa/Cocoa.h>
 	#include "ObjC-Classes.h"
 #elif defined WIN32 || WIN64
-	#include "shlobj.h"
+	/*#include "shlobj.h"*/
+	#include <gl\gl.h>
+	#include <gl\glu.h>
 #endif
 
 #include "Messenger.h"
@@ -30,23 +32,22 @@ namespace W {
 
 	#ifdef __APPLE__
 		pthread_t _drawingThread;
-	#elif defined __WIN32 || __WIN64
+	#elif defined _WIN32 || _WIN64
 		DWORD _drawingThreadId;
 		HANDLE _drawingThreadHandle;
 	#endif
 	
 	#ifdef __APPLE__
-		void *
-	#elif defined __WIN32 || __WIN64
-		UINT
+		void * _updateTimer;
+	#elif defined _WIN32 || _WIN64
+		UINT _updateTimer;
 	#endif
-		_updateTimer;
 	
 	bool _quit = false;
 	
 	#ifdef __APPLE__
 		pthread_mutex_t
-	#elif defined __WIN32 || __WIN64
+	#elif defined _WIN32 || _WIN64
 		CRITICAL_SECTION
 	#endif
 		event_mutex,
@@ -76,7 +77,7 @@ struct W::_init {
 		// Init timers
 		#ifdef __APPLE__
 			_updateTimer = [[UpdateTimer alloc] init];
-		#elif defined __WIN32 || __WIN64
+		#elif defined _WIN32 || _WIN64
 			// Set timer resolution
 			MMRESULT mmr = timeBeginPeriod(2);
 			if (mmr != TIMERR_NOERROR)
@@ -91,7 +92,7 @@ struct W::_init {
 				throw Exception("Couldn't initialize graphics mutex");
 			if (!!pthread_mutex_init(&texture_mutex, NULL))
 				throw Exception("Couldn't initialize texture mutex");
-		#elif defined __WIN32 | __WIN64
+		#elif defined _WIN32 | _WIN64
 			InitializeCriticalSection(&event_mutex);
 			InitializeCriticalSection(&graphics_mutex);
 			InitializeCriticalSection(&texture_mutex);
@@ -149,15 +150,9 @@ void W::_addEvent(const Event &ev) {
 	_unlock_mutex(&event_mutex);
 }
 
-#if defined WIN32 || WIN64
-VOID CALLBACK W::TimerProc(HWND windowHandle, UINT msg, UINT_PTR idEvent, DWORD dwTime) {
-	W::_runGameLoop();
-}
-#endif
 void W::start() {
-	if (!_window) throw Exception(
-		"Error: W::startGameLoop called, but no window has been created"
-	);
+	if (!_window)
+		throw Exception("Error: W::startGameLoop called, but no window has been created");
 	
 	// Create drawing thread
 	#ifdef __APPLE__
@@ -184,7 +179,7 @@ void W::start() {
 			0,			// ptr to SECURITY_ATTRIBUTES struct (0 for def.)
 			0,          // stack size (0 for def.)
 			&drawingThreadFn,			// ptr to fn to be executed
-			&something, // ptr to variable to be passed
+			NULL, // ptr to variable to be passed
 			0,          // flags
 			&_drawingThreadId   // ptr to dword to store thread id in
 		);
@@ -195,7 +190,7 @@ void W::start() {
 	// Begin updating
 	_updateTimerStart();
 	
-	#if defined __WIN32 || __WIN64
+	#if defined _WIN32 || _WIN64
 		// Win: enter message pump loop
 		MSG msg;
 		while (!W::_quit) {
@@ -285,7 +280,7 @@ void W::_update() {
 	else {
 		#ifdef __APPLE__
 			quit();
-		#elif defined __WIN32 || __WIN64
+		#elif defined _WIN32 || _WIN64
 			_quit = true;
 		#endif
 	}
@@ -299,7 +294,7 @@ void W::quit() {
 		void *_drawThrRetVal;	// Wait for drawing thread to detect _quit and return
 		if (int err = pthread_join(_drawingThread, &_drawThrRetVal))
 			throw Exception("Error joining drawing thread", err);
-	#elif defined __WIN32 || __WIN64
+	#elif defined _WIN32 || _WIN64
 		// Called after message pump loop detects _quit and breaks
 		DWORD exit_code;
 		bool drawThreadStillRunning = true;	// Wait for drawing thread
@@ -307,7 +302,7 @@ void W::quit() {
 			bool success = GetExitCodeThread(_drawingThreadHandle, &exit_code);
 			if (!success) throw Exception("Error getting drawing thread exit status");
 			drawThreadStillRunning = (exit_code == STILL_ACTIVE);
-			sleep(50);
+			Sleep(5);
 		}
 		CloseHandle(_drawingThreadHandle);
 		timeEndPeriod(2);
@@ -323,7 +318,7 @@ void W::quit() {
 
 #ifdef __APPLE__
 void* W::drawingThreadFn(void *)
-#elif defined __WIN32 || __WIN64
+#elif defined _WIN32 || _WIN64
 DWORD WINAPI W::drawingThreadFn(LPVOID lpParam)
 #endif
 {

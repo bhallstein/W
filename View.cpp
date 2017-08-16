@@ -2,8 +2,6 @@
 #include "DrawnObj.h"
 #include "oglDrawHelpers.h"
 
-#include <OpenGL/gl.h>
-
 W::View::View(Positioner *_pos) :
 	_positioner(_pos)
 {
