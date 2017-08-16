@@ -68,7 +68,7 @@ namespace W {
 		UIElement* createElement(const std::string &limit, const std::string &name, LuaObj *, orientation_enum);
 			// These will throw, w/ useful error msg, if problem
 		
-		DRect *bgDRect;
+		Rectangle *bgrect;
 	};
 
 }

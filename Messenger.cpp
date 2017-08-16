@@ -199,7 +199,6 @@ bool W::Messenger::dispPositionalInView(Event *ev, View *v) {
 	// Call callbacks sub'd to this event type for this view, in reverse order
 	bool dispatched = false;
 	std::vector<cbAndRect*> &callbacks = itT->second;
-	int i = 0;
 	for (std::vector<cbAndRect*>::reverse_iterator it = callbacks.rbegin(); it != callbacks.rend(); ++it) {
 		cbAndRect &cnr = **it;
 		if (cnr.rct->overlapsWith(ev->pos)) {

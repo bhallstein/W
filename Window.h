@@ -33,16 +33,16 @@ namespace W {
 		Window(const W::size &, const std::string &title);
 		virtual ~Window();
 		
-		const W::size& getSize() { return sz; }
+		const size& getSize() { return sz; }
 		void setTitle(const std::string &);
 		
 		void setOpenGLThreadAffinity();
 		void clearOpenGLThreadAffinity();
-			// Call from the desired thread to obtain access to the GL context
+			// Call to give the current thread access to the GL context
 		
 		void setUpViewport();
-		void beginDrawing(const W::size &winSize);	// Prepare to start new drawing cycle
-		void flushBuffer(); // Draw to the screen
+		void beginDrawing();	// Prepare to start new drawing cycle
+		void flushBuffer();		// Draw to the screen
 		
 		enum Mode { Windowed, FullScreen } mode;
 		

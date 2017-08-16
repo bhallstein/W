@@ -37,6 +37,15 @@
 
 namespace W {
 
+	extern int DEFAULT_LAYER;
+	
+	namespace DrawableType {
+		enum T { Coloured, Textured };
+	}
+	namespace BlendMode {
+		enum T { Normal, Additive };
+	}
+	
 	/* Coordinates & such */
 	struct size {
 		int width, height;
@@ -187,6 +196,9 @@ namespace W {
 			ss << '{' << x << ',' << y << ',' << z << '}';
 			return ss.str();
 		}
+		void operator= (const W::position &p) {
+			x = p.x, y = p.y, z = 0;
+		}
 	};
 	struct c4f {
 		float r, g, b, a;
@@ -196,6 +208,9 @@ namespace W {
 			return ss.str();
 		}
 		void operator= (const W::Colour &c) {
+			r = c.r, g = c.g, b = c.b, a = c.a;
+		}
+		void operator= (const c4f &c) {
 			r = c.r, g = c.g, b = c.b, a = c.a;
 		}
 	};

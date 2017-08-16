@@ -21,6 +21,10 @@
 	#include "Windows.h"
 #endif
 
+namespace W {
+	int DEFAULT_LAYER = 1;
+}
+
 /********************/
 /*** W::Exception ***/
 /********************/

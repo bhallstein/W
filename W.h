@@ -10,6 +10,8 @@
  *
  */
 
+// User-facing include file
+
 #ifndef __W__W
 #define __W__W
 
@@ -20,10 +22,9 @@
 
 #include "types.h"
 #include "Log.h"
-#include "Controller.h"
 #include "Rand.h"
 #include "Colour.h"
-#include "DObj.h"
+#include "DrawingClasses.h"
 #include "Event.h"
 #include "Window.h"
 #include "View.h"
@@ -36,5 +37,23 @@
 #include "NavMap.h"
 #include "Texture.h"
 #include "Timer.h"
+
+
+// External global interface functions
+
+namespace W {
+	
+	#ifdef WTARGET_IOS
+		void createWindow();
+	#else
+		void createWindow(const W::size &sz, const std::string &title);
+	#endif
+	void start();
+	void pushState(W::GameState *);
+	void popState(const W::Returny &);
+	
+	extern int updateMicroseconds;
+	
+}
 
 #endif

@@ -14,34 +14,17 @@
 #define __W__GameState
 
 #include "Messenger.h"
+#include "Returny.h"
 #include <vector>
 #include <list>
 
 namespace W {
 	
-	namespace ReturnyType {
-		enum T {
-			Empty,
-			Killer,
-			Payload		// has a string payload
-		};
-	}
-	
-	class Returny {
-	public:
-		Returny(ReturnyType::T _type) : type(_type) { }
-		bool operator==(Returny &r) {
-			return type == r.type;
-		}
-		ReturnyType::T type;
-		std::string payload;
-	};
-	
 	class Event;
 	class View;
 	
 	enum GameStateTranslucency { GS_OPAQUE = 0, GS_TRANSLUCENT };
-
+	
 	class GameState {
 	public:
 		typedef std::list<View*> Viewlist;
@@ -60,28 +43,10 @@ namespace W {
 		
 		bool isTranslucent() { return translucent; }
 		
-		// GameState pushing/popping
-		static void pushState(W::GameState *);
-		static void popState(W::Returny &);
-		static std::vector<GameState*> _gsStack;
-		static bool _pop;
-		static Returny _returny;
-		static void _popState();
-		
-		// DObj texcoord updating
-		static void _updateAllDObjTexcoords();
-		void _updateAllDObjTexcoordsInThisState();
-		
 	private:
 		bool translucent;	// If true, the previous state will be drawn too.
 		
 	};
-	
-	extern Returny KillerReturny;
-	extern Returny EmptyReturny;
-	
-	void pushState(W::GameState *);
-	void popState(W::Returny &);
 
 }
 

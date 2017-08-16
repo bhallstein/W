@@ -17,7 +17,8 @@
 #include "Messenger.h"
 #include "Positioner.h"
 #include "Window.h"
-#include "DObj.h"
+#include "DrawingClasses.h"
+#include "W_internal.h"
 
 #include "LuaObj.h"
 
@@ -35,15 +36,15 @@ W::UIView::UIView(const std::string &viewname) :
 			string("Error creating UIView '") + string(viewname) +
 			string("' - see log file for further details")
 		);
-	updatePosition(_controller.window->getSize());
+	updatePosition(windowSize());
 	
-	bgDRect = new DRect(this, position(), rct.sz, W::Colour::TransparentBlack);
+	bgrect = new Rectangle(this, position(), rct.sz, W::Colour::TransparentBlack);
 }
 
 W::UIView::~UIView()
 {
 	Messenger::unsubscribeFromMouseEvents(this, this);
-	delete bgDRect;
+	delete bgrect;
 }
 
 void W::UIView::mouseEvent(Event *ev) {

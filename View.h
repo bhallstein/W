@@ -26,7 +26,21 @@ namespace W {
 	class Event;
 	class Positioner;
 	class GameState;
-	class DObj;
+	class DColouredShape;
+	class DTexturedShape;
+	class TextureAtlas;
+	class StorageObjForColouredShapes;
+	class StorageObjForTexturedShapes;
+	
+	
+	struct Layer {
+		Layer();
+		~Layer();
+		std::map<BlendMode::T, StorageObjForColouredShapes*> cGroups;
+		std::map<BlendMode::T, std::map<TextureAtlas*, StorageObjForTexturedShapes*>> tGroups;
+		void compact();
+	};
+
 	
 	class View {
 	public:
@@ -39,28 +53,23 @@ namespace W {
 		void _updatePosition(const size &winsize);
 		
 		void _convertEventCoords(Event *);				// Converts to view's coordinates, and calls convertEventCoords() virtual
-		virtual void convertEventCoords(Event *) { }	// Override to perform further conversoin conversion of mouse events
+		virtual void convertEventCoords(Event *) { }	// Override to perform further conversion of mouse events
 		
 		virtual void mouseEvent(Event *) { }
 		virtual void touchDown(Event *) { }
 		
 		void _draw(const W::size &winSz);
 		
-		void _addDObj(DObj *);	// Allocate storage, add to list, set ptrs
-		void _remDObj(DObj *);	// Remove from list, make triangles degen, set preceding_empty on following DObj
-		
-		void _updateDObjTexcoords();
-			// Calls updateTexcoords() on all DObjs. Called when MT changes in size:
-			//    -> Controller::regenDObjTexcoords()
-			// Then at update:
-			//  -> GS::_updateAllDObjTexcoords()
-			//  -> GS::_updateAllDObjTexcoordsInThisState()
-			//  -> View::_updateDObjTexcoords()
-			//  -> DObj::updateTexCoords();
-		
-		void dumpDObjs();
-		
 		const rect& getRct() { return rct; }
+		
+		// New Drawable Stuff
+		void addDrawable(DColouredShape *);
+		void addDrawable(DTexturedShape *);
+		void removeDrawable(DColouredShape *);
+		void removeDrawable(DTexturedShape *);
+		void compactAllLayers();
+		
+		std::map<int, Layer> layers;
 		
 	protected:
 		Positioner *_positioner;
@@ -72,21 +81,7 @@ namespace W {
 		virtual void customOpenGLDrawing() { }
 		
 	private:
-		v3f *vertArray;
-		c4f *colArray;
-		t2f *texcoordArray;
-		int array_size;
-		int array_used_size;
-		
-		void increaseArraySize();	// Double size of arrays
-		void compact();				// Remove padding & halve size of arrays if below threshold usage
-		void updateDObjPtrs();		// Update all DObj ptrs (when reallocating the arrays)
-		
-		int frameCount;
-		
-		DObj *firstDObj, *lastDObj;
-			// DObjs form a doubly-linked list. View needs refs to the first &
-			// last, as do DObjs (for inserting into the list).
+		int frameCounter;
 		
 	};
 	

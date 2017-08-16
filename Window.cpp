@@ -13,9 +13,12 @@
 #include "Window.h"
 #include "W.h"
 #include "Log.h"
-#include "MegaTexture.h"
+#include "W_internal.h"
 
 #include "oglInclude.h"
+
+//#define __W_DEBUG
+#include "DebugMacro.h"
 
 #ifdef WTARGET_IOS
 	#define glOrtho glOrthof
@@ -43,26 +46,25 @@ W::Window::~Window()
 	closeWindow();
 }
 void W::Window::setUpOpenGL() {
+	w_dout << "Window::setUpOpenGL()\n";
 	setOpenGLThreadAffinity();
 	
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_DITHER);
-	glDisable(GL_ALPHA_TEST);
-	glDisable(GL_STENCIL_TEST);
-	glDisable(GL_FOG);
+	oglState.setUpInitially();
 	
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_SCISSOR_TEST);
-	glEnable(GL_TEXTURE_2D);
-	
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	#ifdef __W_DEBUG
+		int max_tex_size, max_layers;
+		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_tex_size);
+		glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS_EXT, &max_layers);
+		w_dout << " max tex size: " << max_tex_size << "\n";
+		w_dout << " max layers:   " << max_layers << "\n";
+	#endif
 	
 	clearOpenGLThreadAffinity();
+	w_dout << "\n";
 }
 void W::Window::setUpViewport() {
+	w_dout << "Window::setUpViewport()\n";
+	w_dout << " setting viewport to " << sz.str() << "\n";
 	glViewport(0, 0, sz.width, sz.height);
 	
 	glMatrixMode(GL_PROJECTION);
@@ -70,16 +72,12 @@ void W::Window::setUpViewport() {
 	glOrtho(0, sz.width, sz.height, 0, -1, 1);
 	
 	glMatrixMode(GL_MODELVIEW);
+	w_dout << "\n";
 }
-void W::Window::beginDrawing(const size &winSize) {
-	glScissor(0, 0, winSize.width, winSize.height);
+void W::Window::beginDrawing() {
+	glScissor(0, 0, sz.width, sz.height);
 	glClearColor(0.525, 0.187, 0.886, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glBindTexture(GL_TEXTURE_2D, MegaTexture::getGLTexId());
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//	glTexParameteri(GL_TEXTURE_2D, GL_MIN_FILTER, GL_LINEAR);
-//	glTexParameteri(GL_TEXTURE_2D, GL_MAG_FILTER, GL_LINEAR);
 	
 	#ifdef WTARGET_IOS
 		setUpForDrawing();	// On iOS, need to bind the frame buffer

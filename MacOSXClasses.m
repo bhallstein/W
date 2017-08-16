@@ -102,6 +102,8 @@
 
 @synthesize windowDelegate, view, context, window;
 
+#define W_MULTISAMPLE
+
 -(id)initWithWidth:(int)w height:(int)h {
 	NSRect frame = NSMakeRect(0,0,w,h);
 	if (self = [super initWithContentRect:frame
@@ -113,9 +115,11 @@
 		// Create OpenGL context
 		NSOpenGLPixelFormat *pf;
 		NSOpenGLPixelFormatAttribute attrs[] = {
-			NSOpenGLPFAMultisample,
-			NSOpenGLPFASampleBuffers, (NSOpenGLPixelFormatAttribute)1,
-			NSOpenGLPFASamples, (NSOpenGLPixelFormatAttribute)4,
+			#ifdef W_MULTISAMPLE
+				NSOpenGLPFAMultisample,
+				NSOpenGLPFASampleBuffers, (NSOpenGLPixelFormatAttribute)1,
+				NSOpenGLPFASamples, (NSOpenGLPixelFormatAttribute)4,
+			#endif
 			NSOpenGLPFADoubleBuffer,
 			0
 		};

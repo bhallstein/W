@@ -11,15 +11,53 @@
  */
 
 #include "W.h"
-#include "DObj.h"
-#include "Controller.h"
+#include "StorageObj.h"
+#include "Drawable.h"
+#include "W_internal.h"
 
 #include "oglInclude.h"
 
+//#define __W_DEBUG
+#include "DebugMacro.h"
+
 #define GL_ARRAY_INITIAL_SIZE 256
-#define SECONDS_PER_COMPACT 5
+#define SECONDS_PER_COMPACT 10
 #define COMPACTION_THRESHOLD 0.3	// View will compact if (used_size <= CT * size)
 
+
+#pragma mark - Layer
+
+/*************/
+/*** Layer ***/
+/*************/
+
+W::Layer::Layer()
+{
+	w_dout << " Layer() (" << this << ")\n";
+}
+W::Layer::~Layer()
+{
+	w_dout << " ~Layer() (" << this << ")\n";
+}
+void W::Layer::compact() {
+	std::map<BlendMode::T, StorageObjForColouredShapes*>::iterator itCGroups;
+	for (itCGroups = cGroups.begin(); itCGroups != cGroups.end(); ++itCGroups) {
+		w_dout << "  compacting coloured shapes group for blend mode " << itCGroups->first << "\n";
+		itCGroups->second->compact();
+	}
+	std::map<BlendMode::T, std::map<TextureAtlas*, StorageObjForTexturedShapes*> >::iterator itTGroups;
+	for (itTGroups = tGroups.begin(); itTGroups != tGroups.end(); ++itTGroups) {
+		std::map<TextureAtlas*, StorageObjForTexturedShapes*>::iterator itSObjs;
+		std::map<TextureAtlas*, StorageObjForTexturedShapes*> &sObjsMap = itTGroups->second;
+		for (itSObjs = sObjsMap.begin(); itSObjs != sObjsMap.end(); ++itSObjs) {
+			w_dout << "  compacting textured shapes group for blend mode " << itTGroups->first << " and tex atlas " << itSObjs->first << "\n";
+			itSObjs->second->compact();
+		}
+	}
+}
+
+
+#pragma mark - View
 
 /***************************/
 /*** View implementation ***/
@@ -27,35 +65,39 @@
 
 W::View::View(const Positioner *_pos) :
 	_positioner(NULL),
-	firstDObj(NULL), lastDObj(NULL),
-	vertArray(NULL),
-	colArray(NULL),
-	texcoordArray(NULL),
-	array_size(0),
-	array_used_size(0),
-	frameCount(0)
+	frameCounter(0)
 {
 	if (_pos) {
 		_positioner = new Positioner(*_pos),
 		_updatePosition();
 	}
-	
-	// Create gl arrays
-	array_size = GL_ARRAY_INITIAL_SIZE * 0.5;
-	increaseArraySize();
 }
 W::View::~View()
 {
 	if (_positioner) delete _positioner;
-	if (vertArray) {
-		delete vertArray;
-		delete colArray;
-		delete texcoordArray;
+
+	// Delete all storage objects in all layers
+	for (std::map<int, Layer>::iterator it = layers.begin(); it != layers.end(); ++it) {
+		Layer &l = it->second;
+		
+		// Delete all coloured shape storage objects
+		std::map<BlendMode::T, StorageObjForColouredShapes*>::iterator it2;
+		for (it2 = l.cGroups.begin(); it2 != l.cGroups.end(); ++it2)
+			delete it2->second;
+		
+		// Delete all textured shape storage objects
+		std::map<BlendMode::T, std::map<TextureAtlas*, StorageObjForTexturedShapes*>>::iterator itBl;
+		for (itBl = l.tGroups.begin(); itBl != l.tGroups.end(); ++itBl) {
+			std::map<TextureAtlas*, StorageObjForTexturedShapes*> &atlasToSOMap = itBl->second;
+			std::map<TextureAtlas*, StorageObjForTexturedShapes*>::iterator itTA;
+			for (itTA = atlasToSOMap.begin(); itTA != atlasToSOMap.end(); ++itTA)
+				delete itTA->second;
+		}
 	}
 }
 
 void W::View::_updatePosition() {
-	_updatePosition(_controller.window->getSize());
+	_updatePosition(windowSize());
 }
 void W::View::_updatePosition(const size &winsize) {
 	if (_positioner)
@@ -69,48 +111,13 @@ void W::View::_convertEventCoords(Event *ev) {
 	convertEventCoords(ev);
 }
 
-void W::View::_addDObj(W::DObj *d) {
-	int l = d->arrayLength();
-	
-	// Expand glData to accomm D if necessary
-	while(array_used_size + l > array_size) increaseArraySize();
-	int i = array_used_size;
-	array_used_size += l;
-	
-	// Give D glData array pointers & index
-	d->_setArrayPtrs(vertArray, colArray, texcoordArray, i);
-	
-	// Add DObj to chain
-	if (!firstDObj)
-		firstDObj = lastDObj = d;
-	else {
-		lastDObj->nextDObj = d;
-		d->prevDObj = lastDObj;
-		lastDObj = d;
-	}
-}
-void W::View::_remDObj(W::DObj *d) {
-	int l = d->arrayLength();
-	
-	// If D is last obj, just decrease array_used_size by D.length + D.preceding_removed
-	if (!d->nextDObj)
-		array_used_size -= l + d->_preceding_removed;
-
-	// Otherwise, increment D.next's preceding_removed
-	else
-		if (d->nextDObj) d->nextDObj->_preceding_removed += l + d->_preceding_removed;
-	
-	// Unlink D from chain
-	if (!d->prevDObj) firstDObj = d->nextDObj;	// If DObj was first in chain, set view.first to D.next
-	else d->prevDObj->nextDObj = d->nextDObj;	// Otherwise set D.prev's next to D.next
-	
-	if (!d->nextDObj) lastDObj = d->prevDObj;	// If DObj was last in chain, set view.last to this.prev
-	else d->nextDObj->prevDObj = d->prevDObj;	// Otherwise, set D.next's prev to D.prev
-}
-
 void W::View::_draw(const size &winSz) {
-	size sz = rct.sz;			// Note: these properties are copied, to avoid artifacts in the event
-	position pos = rct.pos;		// that the view's position is updated while its objects are being drawn
+	w_dout << "View::_draw(const size &winSz)\n";
+	w_dout << " winsize: " << winSz.str() << "\n";
+	w_dout << " position:" << rct.pos.xyStr() << ", size:" << rct.sz.str() << ", offset:" << _offset.xyStr() << "\n";
+	
+	size &sz = rct.sz;			// Note: these properties are copied, to avoid artifacts in the event
+	position &pos = rct.pos;	// that the view's position is updated while its objects are being drawn
 	
 	// Set up OGL: scissor to view bounds, translate to view pos w/ modelview matrix
 	glScissor(pos.x, winSz.height - pos.y - sz.height, sz.width, sz.height);
@@ -120,82 +127,136 @@ void W::View::_draw(const size &winSz) {
 	// Users can write custom OpenGL code
 	customOpenGLDrawing();
 	
-	// Submit data arrays to opengl
-	glVertexPointer(3, GL_FLOAT, 0, vertArray);
-	glColorPointer(4, GL_FLOAT, 0, colArray);
-	glTexCoordPointer(2, GL_FLOAT, 0, texcoordArray);
-	glDrawArrays(GL_TRIANGLES, 0, array_used_size);
+	// To draw:
+	//  - iterate over Storage Objects in layer order
+	//  - switch the necessary opengl state on/off
+	//  - submit data arrays
+	
+	// For each layer...
+	for (std::map<int, Layer>::iterator it = layers.begin(); it != layers.end(); ++it) {
+		Layer &l = it->second;
+		
+		// For each coloured shape storage object...
+		std::map<BlendMode::T, StorageObjForColouredShapes*>::iterator it2;
+		for (it2 = l.cGroups.begin(); it2 != l.cGroups.end(); ++it2) {
+			BlendMode::T blendMode = it2->first;
+			StorageObjForColouredShapes *&storageObj = it2->second;
+			if (!storageObj->isEmpty()) {
+				// Set up OGL features
+				oglState.setBlendMode(blendMode);
+				oglState.disableTexturing();
+				
+				// Submit data arrays
+				glVertexPointer(3, GL_FLOAT, 0, storageObj->v_array.array);
+				glColorPointer(4, GL_FLOAT, 0, storageObj->c_array.array);
+				glDrawArrays(GL_TRIANGLES, 0, storageObj->v_array.used_size);
+			}
+		}
+		
+		// For each textured shape storage object...
+		std::map<BlendMode::T, std::map<TextureAtlas*, StorageObjForTexturedShapes*>>::iterator itBl;
+		for (itBl = l.tGroups.begin(); itBl != l.tGroups.end(); ++itBl) {
+			std::map<TextureAtlas*, StorageObjForTexturedShapes*> &atlasToSOMap = itBl->second;
+			std::map<TextureAtlas*, StorageObjForTexturedShapes*>::iterator itTA;
+			for (itTA = atlasToSOMap.begin(); itTA != atlasToSOMap.end(); ++itTA) {
+				BlendMode::T blendMode = itBl->first;
+				TextureAtlas *texAtlas = itTA->first;
+				StorageObjForTexturedShapes *&storageObj = itTA->second;
+				if (!storageObj->isEmpty()) {
+					// Set up OGL
+					oglState.setBlendMode(blendMode);
+					oglState.enableTexturing();
+					
+					// Bind texture atlas
+					oglState.bindAtlas(texAtlas);
+					
+					// Submit
+					glVertexPointer(3, GL_FLOAT, 0, storageObj->v_array.array);
+					glColorPointer(4, GL_FLOAT, 0, storageObj->c_array.array);
+					glTexCoordPointer(2, GL_FLOAT, 0, storageObj->t_array.array);
+					glDrawArrays(GL_TRIANGLES, 0, storageObj->v_array.used_size);
+				}
+			}
+		}
+	}
 	
 	// Call compact() every so often
-	if (frameCount++ == 60*SECONDS_PER_COMPACT)
-		frameCount = 0, compact();
-}
-
-void W::View::increaseArraySize() {
-	v3f *new_vertArray     = (v3f*) malloc(sizeof(v3f) * array_size * 2);
-	c4f *new_colArray      = (c4f*) malloc(sizeof(c4f) * array_size * 2);
-	t2f *new_texcoordArray = (t2f*) malloc(sizeof(t2f) * array_size * 2);
-	if (vertArray) {
-		for (int i=0; i < array_used_size; ++i) {
-			new_vertArray[i]     = vertArray[i];
-			new_colArray[i]      = colArray[i];
-			new_texcoordArray[i] = texcoordArray[i];
-		}
-		free(vertArray);
-		free(colArray);
-		free(texcoordArray);
+	if (frameCounter++ == 60*SECONDS_PER_COMPACT) {
+		compactAllLayers();
+		frameCounter = 0;
 	}
-	vertArray     = new_vertArray;
-	colArray      = new_colArray;
-	texcoordArray = new_texcoordArray;
-	array_size *= 2;
 	
-	updateDObjPtrs();
+	w_dout << "\n";
 }
 
-void W::View::compact() {
-	// Remove padded areas
-	int runningMoveBackAmount = 0;
-	for (DObj *d = firstDObj; d; d = d->nextDObj) {
-		runningMoveBackAmount += d->_preceding_removed;
-		d->_preceding_removed = 0;
-		d->_moveBackBy(runningMoveBackAmount);
+void W::View::addDrawable(DColouredShape *d) {
+	w_dout << "View::addDrawable(DColouredShape*)\n";
+	w_dout << " getting layer " << d->layer << "\n";
+	Layer &l = layers[d->layer];
+	
+	w_dout << " getting storage object for blend mode " << d->blendMode << "\n";
+	StorageObjForColouredShapes *&storageForBlendMode = l.cGroups[d->blendMode];
+	if (!storageForBlendMode) {
+		w_dout << "  not found: creating\n";
+		storageForBlendMode = new StorageObjForColouredShapes();
 	}
-	array_used_size -= runningMoveBackAmount;
+	
+	w_dout << " adding coloured shape " << d << " (len: " << d->length << ") to storage object " << storageForBlendMode << " in layer " << d->layer << " with blending mode " << d->blendMode << "...\n";
+	storageForBlendMode->addDrawable(d);
+	
+	w_dout << "\n";
+}
+void W::View::addDrawable(DTexturedShape *d) {
+	w_dout << "View::addDrawable(DTexturedShape*)\n";
+	w_dout << " getting layer " << d->layer << "\n";
+	Layer &l = layers[d->layer];
+	
+	w_dout << " getting storage object for blend mode " << d->blendMode << " and atlas " << d->tex->atlas << "\n";
+	StorageObjForTexturedShapes *&storageForBlendModeAndAtlas = l.tGroups[d->blendMode][d->tex->atlas];
+	if (!storageForBlendModeAndAtlas) {
+		w_dout << "  not found: creating\n";
+		storageForBlendModeAndAtlas = new StorageObjForTexturedShapes();
+	}
+	
+	w_dout << " adding DTexturedShape " << d << " (len: " << d->length << ") to storage object " << storageForBlendModeAndAtlas << " in layer " << d->layer << " with blending mode " << d->blendMode << "...\n";
+	storageForBlendModeAndAtlas->addDrawable(d);
+	
+	w_dout << "\n";
+}
 
-	// Compact the data arrays if their used_size has smallened sufficiently
-	if (array_used_size <= array_size * COMPACTION_THRESHOLD) {
-		v3f *new_vertArray     = (v3f*) malloc(sizeof(v3f) * array_size / 2);
-		c4f *new_colArray      = (c4f*) malloc(sizeof(c4f) * array_size / 2);
-		t2f *new_texcoordArray = (t2f*) malloc(sizeof(t2f) * array_size / 2);
-		if (vertArray) {
-			for (int i=0; i < array_used_size; ++i) {
-				new_vertArray[i]     = vertArray[i];
-				new_colArray[i]      = colArray[i];
-				new_texcoordArray[i] = texcoordArray[i];
-			}
-			free(vertArray);
-			free(colArray);
-			free(texcoordArray);
-		}
-		vertArray     = new_vertArray;
-		colArray      = new_colArray;
-		texcoordArray = new_texcoordArray;
-		array_size *= 0.5;
-		
-		updateDObjPtrs();
+void W::View::removeDrawable(DColouredShape *d) {
+	w_dout << "View::removeDrawable(DColouredShape*)\n";
+
+	w_dout << " getting storage object from D property\n";
+	StorageObjForColouredShapes *storageForBlendMode = (StorageObjForColouredShapes*) d->storageObj;
+	if (!storageForBlendMode) {
+		w_dout << "  Error: storage object not found when removing Drawable\n";
+		return;
 	}
+	
+	w_dout << " removing drawable " << d << " from storage object " << storageForBlendMode << " in layer " << d->layer << " with blending mode " << d->blendMode << "...\n";
+	storageForBlendMode->removeDrawable(d);
+	
+	w_dout << "\n";
 }
-void W::View::updateDObjPtrs() {
-	for (DObj *d = firstDObj; d; d = d->nextDObj)
-		d->_setArrayPtrs(vertArray, colArray, texcoordArray);
+void W::View::removeDrawable(DTexturedShape *d) {
+	w_dout << "View::removeDrawable(DTexturedShape*)\n";
+
+	w_dout << " getting storage object from D property\n";
+	StorageObjForTexturedShapes *storageForBlendModeAndAtlas = (StorageObjForTexturedShapes*) d->storageObj;
+	if (!storageForBlendModeAndAtlas) {
+		w_dout << "  Error: storage object not found when removing Drawable\n";
+		return;
+	}
+	
+	w_dout << " removing DTexturedShape " << d << " from storage object " << storageForBlendModeAndAtlas << " in layer " << d->layer << " with blending mode " << d->blendMode << "...\n";
+	storageForBlendModeAndAtlas->removeDrawable(d);
+	
+	w_dout << "\n";
 }
-void W::View::_updateDObjTexcoords() {
-	for (DObj *d = firstDObj; d; d = d->nextDObj)
-		d->updateTexcoords();
-}
-void W::View::dumpDObjs() {
-	std::cout << "  array_size:" << array_size << " used_size:" << array_used_size << "\n";
-	for (DObj *d = firstDObj; d; d = d->nextDObj)
-		std::cout << "  " << d->str() << "\n";
+
+void W::View::compactAllLayers() {
+	w_dout << "View::compactAllLayers()\n";
+	for (std::map<int, Layer>::iterator it = layers.begin(); it != layers.end(); ++it)
+		it->second.compact();
 }

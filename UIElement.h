@@ -24,7 +24,7 @@
 namespace W {
 
 	class View;
-	class DRect;
+	class Rectangle;
 	
 	class UIElement {
 	public:
@@ -58,7 +58,7 @@ namespace W {
 		bool hover;
 		bool active;
 		Event buttonClickEvent;
-		DRect *btnrect;
+		Rectangle *btnrect;
 	};
 
 }

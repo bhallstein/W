@@ -13,7 +13,7 @@
 #include "UIElement.h"
 #include "Messenger.h"
 #include "Callback.h"
-#include "DObj.h"
+#include "DrawingClasses.h"
 
 W::UIElement::UIElement(const std::string &_name, W::Positioner *_pos, View *_v) :
 	name(_name), positioner(_pos), view(_v)
@@ -93,7 +93,7 @@ void W::Button::updatePosition() {
 	btnrect->setSz(rct.sz);
 }
 void W::Button::activate() {
-	btnrect = new DRect(view, rct.pos, rct.sz, Colour::Black);
+	btnrect = new Rectangle(view, rct.pos, rct.sz, Colour::Black);
 }
 void W::Button::deactivate() {
 	if (btnrect) {
