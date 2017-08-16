@@ -25,6 +25,7 @@
 
 
 @interface W_Window : NSWindow
+@property void *window;		// The parent W::Window
 -(id)initWithWidth:(int)w height:(int)h;
 -(void)setOpenGLThreadAffinity;
 -(void)clearOpenGLThreadAffinity;

@@ -33,7 +33,7 @@ namespace W {
 		Window(const W::size &, const std::string &title);
 		virtual ~Window();
 		
-		W::size getSize() { return sz; }
+		const W::size& getSize() { return sz; }
 		void setTitle(const std::string &);
 		
 		void setOpenGLThreadAffinity();

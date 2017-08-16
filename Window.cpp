@@ -141,6 +141,8 @@ void W::Window::createWindow() {
 	objs->w_window = [[W_Window alloc] initWithWidth:sz.width height:sz.height];
 	if (objs->w_window == nil)
 		throw Exception("Could not create window; see log file for details");
+	
+	objs->w_window.window = this;
 }
 void W::Window::closeWindow() {
 	if (objs) {

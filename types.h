@@ -45,7 +45,7 @@ namespace W {
 		position(int _x, int _y) : x(_x), y(_y), a(0), b(0) { }
 		position(float _a, float _b) : x(0), y(0), a(_a), b(_b) { }
 		position(int _x, int _y, float _a, float _b) : x(_x), y(_y), a(_a), b(_b) { }
-		position operator+ (const position &pos2) {
+		position operator+ (const position &pos2) const {
 			return position(
 				x + pos2.x, y + pos2.y,
 				a + pos2.a, b + pos2.b
@@ -55,7 +55,7 @@ namespace W {
 			x += pos2.x, y += pos2.y;
 			a += pos2.a, b += pos2.b;
 		}
-		position operator- (const position &pos2) {
+		position operator- (const position &pos2) const {
 			return position(
 				x - pos2.x, y - pos2.y,
 				a - pos2.a, b - pos2.b
@@ -65,12 +65,19 @@ namespace W {
 			x -= pos2.x, y -= pos2.y;
 			a -= pos2.a, b -= pos2.b;
 		}
-		bool operator== (const position &pos2) {
+		bool operator== (const position &pos2) const {
 			return
 				x == pos2.x &&
 				y == pos2.y &&
 				a == pos2.a &&
 				b == pos2.b;
+		}
+		bool operator!= (const position &pos2) const {
+			return
+				x != pos2.x ||
+				y != pos2.y ||
+				a != pos2.a ||
+				b != pos2.b;
 		}
 		std::string xyStr() const {
 			std::stringstream ss;

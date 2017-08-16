@@ -98,17 +98,18 @@
 }
 @property(nonatomic, strong) W_WindowDelegate *windowDelegate;
 @property(nonatomic, strong) W_View *view;
-@property(nonatomic, strong) NSOpenGLContext *context;
+@property (nonatomic, strong) NSOpenGLContext *context;
+-(void)frameChanged:(id)notification;
 @end
 
 @implementation W_Window
 
-@synthesize windowDelegate, view, context;
+@synthesize windowDelegate, view, context, window;
 
 -(id)initWithWidth:(int)w height:(int)h {
 	NSRect frame = NSMakeRect(0,0,w,h);
 	if (self = [super initWithContentRect:frame
-								styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask /*| NSResizableWindowMask*/
+								styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask
 								  backing:NSBackingStoreBuffered
 									defer:NO]) {
 		[self center];
@@ -134,11 +135,6 @@
 		int vsync = 1;
 		[context setValues:&vsync forParameter:NSOpenGLCPSwapInterval];
 		
-		// Enable lion fullscreenery
-		//	NSWindowCollectionBehavior coll = [_objs->window collectionBehavior];
-		//	coll |= NSWindowCollectionBehaviorFullScreenPrimary;
-		//	[_objs->window setCollectionBehavior:coll];
-		
 		// Add view to window
 		if ((view = [[W_View alloc] initWithFrame:frame]) == nil) {
 			W::log << "Window: Error creating W_View\n";
@@ -154,13 +150,23 @@
 		}
 		[self setDelegate:windowDelegate];
 		
+		// Make frontmost
 		[self makeKeyAndOrderFront:NSApp];
 		[self makeFirstResponder:view];
+		
+		// Subscribe to view frame changes (which happen automatically on resize)
+		[[NSNotificationCenter defaultCenter] addObserver:self
+												 selector:@selector(frameChanged:)
+													 name:NSViewGlobalFrameDidChangeNotification
+												   object:view];
 	}
 	return self;
 }
 -(void) dealloc {
 	[context clearDrawable];
+	[[NSNotificationCenter defaultCenter] removeObserver:self
+													name:NSViewGlobalFrameDidChangeNotification
+												  object:view];
 }
 -(void)setOpenGLThreadAffinity { [context makeCurrentContext]; }
 -(void)clearOpenGLThreadAffinity { [NSOpenGLContext clearCurrentContext]; }
@@ -170,7 +176,22 @@
 	[view __convertMouseCoords:&p];
 	return p;
 }
+-(void)frameChanged:(id)notification {
+	[self.context update];
 
+	W::size sz(view.bounds.size.width, view.bounds.size.height);
+	
+	// Resize the backing buffer
+	GLint size[] = { sz.width, sz.height };
+	CGLContextObj ctx = (CGLContextObj) [context CGLContextObj];
+	CGLSetParameter(ctx, kCGLCPSurfaceBackingSize, size);
+	CGLEnable(ctx, kCGLCESurfaceBackingSize);
+	
+	// Notify W::Window of the change
+	W::Window *win = (W::Window*) window;
+	if (win)
+		win->updateSize(sz);
+}
 @end
 
 
