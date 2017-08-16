@@ -21,14 +21,13 @@ namespace W {
 		void createWindow(const W::size &sz, const std::string &title);
 		void start();
 		
+		void update();
 		void updateAllViewPositions();
-		
 		Window *window;
 		
 	private:
 		UpdateTimer *updateTimer;
 		
-		void update();
 		bool firstUpdate;
 		
 		void quit();

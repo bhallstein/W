@@ -11,8 +11,9 @@
 namespace W {
 	
 	class UpdateTimer {
+		typedef void (*vdfncb)(void);
 	public:
-		UpdateTimer(Callback *);
+		UpdateTimer(vdfncb _fp);
 		~UpdateTimer();
 		
 		void start();
@@ -29,7 +30,7 @@ namespace W {
 		struct Init;
 		static Init *init;
 		
-		W::Callback *c;
+		void (*fp)(void);
 	};
 	
 }

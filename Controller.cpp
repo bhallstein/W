@@ -15,18 +15,31 @@
 	bool _quit = false;
 #endif
 
+/* Callback fn to wrap Controller::update() */
+
+W::Controller *_mrController = NULL;
+void _updateCallback() {
+	if (_mrController) _mrController->update();
+}
+
+
+/***********************/
+/*** Controller impl ***/
+/***********************/
+
 W::Controller::Controller() :
 	window(NULL),
-	updateTimer(new UpdateTimer(new Callback(&Controller::update, this))),
+	updateTimer(new UpdateTimer(_updateCallback)),
 	timer(new Timer),
 	firstUpdate(true)
 {
-	// hello controller
+	_mrController = this;
 }
 W::Controller::~Controller()
 {
 	updateTimer->stop();
 	delete updateTimer;
+	_mrController = NULL;
 	delete timer;
 	if (window) delete window;
 }

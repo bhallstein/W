@@ -21,8 +21,10 @@
 @end;
 
 
+typedef void (*vdfncb)(void);
+
 @interface W_UpdateTimer : NSObject
--(id)initWithCallback:(void*)cb;
+-(id)initWithCallback:(vdfncb)fp;
 -(void)start;
 -(void)stop;
 -(void)callback:(NSTimer*)_t;

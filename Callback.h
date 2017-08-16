@@ -17,9 +17,9 @@ namespace W {
 	public:
 		virtual ~CallbackBase() { }
 		virtual EventPropagation::T call(Event *) { return W::EventPropagation::ShouldContinue; }
-		virtual void call() { }
 		virtual CallbackBase* copy() = 0;
 	};
+	
 	
 	template <class T>
 	class MFCallback : public CallbackBase {
@@ -39,24 +39,6 @@ namespace W {
 	};
 	
 	
-	template <class T>
-	class VoidCallback : public CallbackBase {
-		typedef void (T::*vftype)(void);
-	public:
-		VoidCallback(vftype _f, T *_o) : f(_f), o(_o) { }
-		~VoidCallback() { }
-		void call() {
-			(o->*f)();
-		}
-		CallbackBase* copy() {
-			return new VoidCallback<T>(f, o);
-		}
-	protected:
-		vftype f;
-		T *o;
-	};
-	
-	
 	class Callback {
 	public:
 		template <class T>
@@ -65,18 +47,9 @@ namespace W {
 		{
 			// constr for event response callbacks
 		}
-		template <class T>
-		Callback(void (T::*_f)(void), T *_o) :
-			c(new VoidCallback<T>(_f, _o)), resp(_o)
-		{
-			// constr for void member function callbacks
-		}
 		~Callback()
 		{
 			delete c;
-		}
-		void call() {
-			return c->call();
 		}
 		EventPropagation::T call(Event *ev) {
 			return c->call(ev);

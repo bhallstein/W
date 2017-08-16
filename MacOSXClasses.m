@@ -170,15 +170,15 @@
 
 @interface W_UpdateTimer () {
 	NSTimer *t;
-	W::Callback *c;
+	vdfncb fp;
 }
 @end
 
 @implementation W_UpdateTimer
 
--(id)initWithCallback:(void*)cb {
+-(id)initWithCallback:(vdfncb)_fp {
 	if (self = [super init]) {
-		c = (W::Callback*)cb;
+		fp = _fp;
 	}
 	return self;
 }
@@ -194,7 +194,7 @@
 	[t invalidate];
 }
 -(void)callback:(NSTimer*)_t {
-	c->call();
+	(*fp)();
 }
 
 @end

@@ -6,14 +6,13 @@
 /*** UpdateTimer: common implementation ***/
 /******************************************/
 
-W::UpdateTimer::UpdateTimer(Callback *_c) : objs(NULL), running(false), c(_c)
+W::UpdateTimer::UpdateTimer(vdfncb _fp) : objs(NULL), running(false), fp(_fp)
 {
 	createTimer();
 }
 W::UpdateTimer::~UpdateTimer()
 {
 	destroyTimer();
-	delete c;
 }
 
 
@@ -35,7 +34,7 @@ void W::UpdateTimer::createTimer() {
 		return;
 	}
 	objs = new Objs();
-	objs->timer = [[W_UpdateTimer alloc] initWithCallback:c];
+	objs->timer = [[W_UpdateTimer alloc] initWithCallback:fp];
 }
 void W::UpdateTimer::destroyTimer() {
 	if (objs) {
@@ -72,10 +71,10 @@ struct W::UpdateTimer::Objs {
 	UINT timer;
 };
 
-W::Callback *_W_running_callback = NULL;
+vdfncb _controllerUpdateFn = NULL;
 void CALLBACK _mmtCallback(UINT timerid, UINT uMsg, DWORD userdata, DWORD d1, DWORD d2) {
-	if (_W_running_callback)
-		_W_running_callback->call();
+	if (_controllerUpdateFn)
+		(*_controllerUpdateFn)();
 }
 struct W::UpdateTimer::Init {
 	Init() {
@@ -92,13 +91,14 @@ void W::UpdateTimer::createTimer() {
 		return;
 	}
 	objs = new Objs();
-	_W_running_callback = c;
+	_controllerUpdateFn = fp;
 }
 void W::UpdateTimer::destroyTimer() {
 	if (objs) {
 		delete objs;
 		objs = NULL;
 	}
+	_controllerUpdateFn = NULL;
 }
 void W::UpdateTimer::start() {
 	// Create mmt
