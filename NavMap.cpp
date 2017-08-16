@@ -104,7 +104,8 @@ namespace W {
 					std::vector<NavNode*> *neighbours = &X->neighbours;
 					for (std::vector<NavNode*>::iterator ity = neighbours->begin(); ity < neighbours->end(); ) {
 						NavNode *Y = *ity;
-						bool Y_is_part_of_obj = obj->overlapsWith(Y->x, Y->y);
+						W::position _p(Y->x, Y->y);
+						bool Y_is_part_of_obj = obj->overlapsWith(_p);
 						// if Y is not part of obj, sever links with X & add both to edgey nodes
 						if (Y_is_part_of_obj) ity++;
 						else {

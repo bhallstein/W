@@ -26,15 +26,16 @@ int W::INFINITATION = 99999999;
 struct W::_init {
 	_init() {
 		// Set default log path
-		#ifdef __APPLE
+		std::string p;
+		#ifdef __APPLE__
 			char path[MAX_PATH] = "";
 			[NSHomeDirectory() getCString:path maxLength:MAX_PATH encoding:NSUTF8StringEncoding];
-			std::string p = path;
+			p = path;
 			p += "/Desktop/W_app_log.txt";
 		#elif defined WIN32 || WIN64
 			char path[MAX_PATH] = "";
 			SHGetFolderPath(NULL, CSIDL_DESKTOPDIRECTORY, NULL, 0, path);
-			std::string p = path;
+			p = path;
 			p += "/W_app_log.txt";
 		#endif
 		setLogPath(p.c_str());

@@ -66,9 +66,8 @@ namespace W {
 
 		static W::KeyCode::T charToKeycode(unsigned int c);
 		
-		void setCoords(int x, int y, int a = 0, int b = 0) {
-			pos.x = x, pos.y = y;
-			pos.a = a, pos.b = b;
+		void setPos(const W::position &p) {
+			pos = p;
 		}
 		void setType(EventType::T _type)  { type = _type; }
 		void setKey(KeyCode::T _key)      { key = _key; }

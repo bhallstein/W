@@ -27,13 +27,12 @@ namespace W {
 	/* Exceptions */
 	class Exception : public std::exception {
 	public:
-		Exception(const char *s) {
-			msg = s;
-		}
+		Exception(const char *s) : msg(s) { }
 		~Exception() throw() { }
 		virtual const char* what() {
-			return "W::Exception";
+			return msg.c_str();
 		}
+	private:
 		std::string msg;
 	};
 	
