@@ -27,15 +27,16 @@ bool W::Colour::operator==(const Colour &c) {
 }
 
 namespace W {
-	Colour Colour::Black(0, 0, 0);
-	Colour Colour::TransparentBlack(0, 0, 0, 0.5);
-	Colour Colour::White(1, 1, 1);
-	Colour Colour::Red(1, 0, 0);
-	Colour Colour::Green(0, 1, 0);
-	Colour Colour::Blue(0, 0, 1);
-	Colour Colour::Yellow(1, 1, 0);
-	Colour Colour::Purple(0.47, 0, 0.78);
-	Colour Colour::Orange(1, 0.6, 0.09);
-	Colour Colour::SkyBlue(0.58, 0.90, 1);
-	Colour Colour::Brown(0.62, 0.42, 0.25);
+	const Colour Colour::Black(0, 0, 0);
+	const Colour Colour::TransparentBlack(0, 0, 0, 0.5);
+	const Colour Colour::White(1, 1, 1);
+	const Colour Colour::Red(1, 0, 0);
+	const Colour Colour::Green(0, 1, 0);
+	const Colour Colour::Blue(0, 0, 1);
+	const Colour Colour::Yellow(1, 1, 0);
+	const Colour Colour::Purple(0.47, 0, 0.78);
+	const Colour Colour::Pink(0.988, 0.647, 0.827);
+	const Colour Colour::Orange(1, 0.6, 0.09);
+	const Colour Colour::SkyBlue(0.58, 0.90, 1);
+	const Colour Colour::Brown(0.62, 0.42, 0.25);
 }

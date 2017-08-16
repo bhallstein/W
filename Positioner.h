@@ -44,6 +44,14 @@ namespace W {
 		void nudge(const position &delta);
 		bool isDraggable() { return draggable; }
 		
+		static const Positioner *WholeAreaPositioner;
+		static const Positioner *LeftHalfPositioner;
+		static const Positioner *RightHalfPositioner;
+		static const Positioner *TopLeftQuarterPositioner;
+		static const Positioner *TopRightQuarterPositioner;
+		static const Positioner *BottomLeftQuarterPositioner;
+		static const Positioner *BottomRightQuarterPositioner;
+		
 	private:
 		Corner::T fixed_corner;
 		PosType::T pos_method_x, pos_method_y;

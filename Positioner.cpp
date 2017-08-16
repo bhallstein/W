@@ -192,3 +192,52 @@ void W::Positioner::nudge(const position &delta) {
 	corner_x += (fixed_corner == Corner::TopLeft || fixed_corner == Corner::BottomLeft ? delta.x : -delta.x);
 	corner_y += (fixed_corner == Corner::TopLeft || fixed_corner == Corner::TopRight   ? delta.y : -delta.y);
 }
+
+
+/* Initialize helper positioners */
+
+namespace W {
+	const Positioner *Positioner::WholeAreaPositioner = new Positioner(
+		Corner::TopLeft,
+		PosType::Fixed, PosType::Fixed,
+		PosType::Proportional, PosType::Proportional,
+		0, 0, 1, 1
+	);
+	const Positioner *Positioner::LeftHalfPositioner = new Positioner(
+		Corner::TopLeft,
+		PosType::Fixed, PosType::Fixed,
+		PosType::Proportional, PosType::Proportional,
+		0, 0, 0.5, 1
+	);
+	const Positioner *Positioner::RightHalfPositioner = new Positioner(
+		Corner::TopRight,
+		PosType::Fixed, PosType::Fixed,
+		PosType::Proportional, PosType::Proportional,
+		0, 0, 0.5, 1
+	);
+	const Positioner *Positioner::TopLeftQuarterPositioner = new Positioner(
+		Corner::TopLeft,
+		PosType::Fixed, PosType::Fixed,
+		PosType::Proportional, PosType::Proportional,
+		0, 0, 0.5, 0.5
+	);
+	const Positioner *Positioner::TopRightQuarterPositioner = new Positioner(
+		Corner::TopRight,
+		PosType::Fixed, PosType::Fixed,
+		PosType::Proportional, PosType::Proportional,
+		0, 0, 0.5, 0.5
+	);
+	const Positioner *Positioner::BottomLeftQuarterPositioner = new Positioner(
+		Corner::BottomLeft,
+		PosType::Fixed, PosType::Fixed,
+		PosType::Proportional, PosType::Proportional,
+		0, 0, 0.5, 0.5
+	);
+	const Positioner *Positioner::BottomRightQuarterPositioner = new Positioner(
+		Corner::BottomRight,
+		PosType::Fixed, PosType::Fixed,
+		PosType::Proportional, PosType::Proportional,
+		0, 0, 0.5, 0.5
+	);
+	
+}

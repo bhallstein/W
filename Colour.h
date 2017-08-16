@@ -28,17 +28,18 @@ namespace W {
 		float b;
 		float a;
 		
-		static Colour Black;
-		static Colour TransparentBlack;
-		static Colour White;
-		static Colour Red;
-		static Colour Green;
-		static Colour Blue;
-		static Colour Yellow;
-		static Colour Purple;
-		static Colour Orange;
-		static Colour SkyBlue;
-		static Colour Brown;
+		static const Colour Black;
+		static const Colour TransparentBlack;
+		static const Colour White;
+		static const Colour Red;
+		static const Colour Green;
+		static const Colour Blue;
+		static const Colour Yellow;
+		static const Colour Purple;
+		static const Colour Pink;
+		static const Colour Orange;
+		static const Colour SkyBlue;
+		static const Colour Brown;
 		
 		std::string str() {
 			std::stringstream ss;

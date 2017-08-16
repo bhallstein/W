@@ -18,15 +18,15 @@
 
 #define GL_ARRAY_INITIAL_SIZE 256
 #define SECONDS_PER_COMPACT 5
-#define COMPACTION_THRESHOLD 0.3	// Compact if (used_size <= CT * size)
+#define COMPACTION_THRESHOLD 0.3	// View will compact if (used_size <= CT * size)
 
 
 /***************************/
 /*** View implementation ***/
 /***************************/
 
-W::View::View(Positioner *_pos) :
-	_positioner(_pos),
+W::View::View(const Positioner *_pos) :
+	_positioner(NULL),
 	firstDObj(NULL), lastDObj(NULL),
 	vertArray(NULL),
 	colArray(NULL),
@@ -35,7 +35,10 @@ W::View::View(Positioner *_pos) :
 	array_used_size(0),
 	frameCount(0)
 {
-	if (_positioner) _updatePosition();
+	if (_pos) {
+		_positioner = new Positioner(*_pos),
+		_updatePosition();
+	}
 	
 	array_size = GL_ARRAY_INITIAL_SIZE * 0.5;
 	increaseArraySize();

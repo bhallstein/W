@@ -30,7 +30,7 @@ namespace W {
 	
 	class View {
 	public:
-		View(Positioner *);
+		View(const Positioner *);
 		~View();
 			// If NULL is supplied for positioner, subclass must
 			// set one up and call _updatePosition.
