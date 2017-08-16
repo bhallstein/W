@@ -1,5 +1,5 @@
 /*
- * W - a tiny 2D game develpoment library
+ * W - a tiny 2D game development library
  *
  * =================
  *  Messenger.cpp
