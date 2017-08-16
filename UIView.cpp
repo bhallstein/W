@@ -66,7 +66,7 @@ void W::UIView::processMouseEvent(Event *ev) {
 	bool wasDispatchedToElement = W::Messenger::dispatchPositionalEvent(&ev2);
 	
 	// If no element was found & allowDrag is true, perform dragloopery
-	if (!wasDispatchedToElement && allowDrag && ev->type == EventType::LMouseDown && Messenger::requestPrivilegedEventResponderStatus(Callback(&View::receiveEvent, (View*)this)))
+	if (!wasDispatchedToElement && allowDrag && ev->type == EventType::LMouseDown && Messenger::requestPrivilegedEventResponderStatus(Callback(&View::mouseEvent, (View*)this)))
 		drag_initial = ev->pos, dragloop = true;
 }
 

@@ -38,7 +38,7 @@ namespace W {
 		void _updatePosition();	// Gets the window size automatically
 		void _updatePosition(const size &winsize);
 		
-		W::EventPropagation::T receiveEvent(Event *);					// Converts event to view’s coordinates, and calls processMouseEvent()
+		W::EventPropagation::T mouseEvent(Event *);	// Converts event to view’s coordinates, and calls processMouseEvent()
 		virtual void processMouseEvent(Event *) { }	// Override to do something with mouse events
 		
 		void _subscribeToMouseEvents();		// Called by GS in addView()
@@ -46,35 +46,37 @@ namespace W {
 		
 		void _draw(const W::size &winSz);
 		
-		DObj *firstDObj, *lastDObj;
-			// DObjs form a doubly-linked list.
-			// View needs refs to the first & the last.
+		void _addDObj(DObj *);	// Allocate storage, add to list, set ptrs
+		void _remDObj(DObj *);	// Remove from list, make triangles degen, set preceding_empty on following DObj
 		
-		int _getStorageForDObjOfLength(int);
-			// Called by DObj when created, returns the start index of the chunk assigned to the object
-		void _removeStorageForDObjOfLength(int);
-		
-		void _updateDObjs(); // Call recopy() on _DObjs_needing_recopy, clear
-		void _setNeedsRecopy(DObj *_d) { _DObjs_needing_recopy.push_back(_d); }
-		void _unsetNeedsRecopy(DObj *_d) {
-			for (std::vector<DObj*>::iterator it = _DObjs_needing_recopy.begin(); it < _DObjs_needing_recopy.end(); )
-				if (*it == _d) it = _DObjs_needing_recopy.erase(it);
-				else ++it;
-		}
+		void dumpDObjs();
 		
 	protected:
 		Positioner *_positioner;
 		rect rct;
-		
-		struct glDataArrays;
-		glDataArrays *glData;		// Vertex, colour & texcoord info
 		
 		position _offset;	// Def 0. Used by scrolling subviews. Undocumented!
 		
 		virtual void updatePosition(const W::size &winsize) { }	// Let subsclasses perform own position update behaviours
 		virtual void customOpenGLDrawing() { }
 		
-		std::vector<DObj*> _DObjs_needing_recopy;
+	private:
+		v3f *vertArray;
+		c4f *colArray;
+		t2f *texcoordArray;
+		int array_size;
+		int array_used_size;
+		
+		void increaseArraySize();	// Double size of arrays
+		void compact();				// Remove padding & halve size of arrays if below threshold usage
+		void updateDObjPtrs();		// Update all DObj ptrs (when reallocating the arrays)
+		
+		int frameCount;
+		
+		DObj *firstDObj, *lastDObj;
+			// DObjs form a doubly-linked list. View needs refs to the first &
+			// last, as do DObjs (for inserting into the list).
+		
 	};
 	
 }

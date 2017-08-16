@@ -14,6 +14,7 @@
 #define __W__Colour
 
 #include <iostream>
+#include <sstream>
 
 namespace W {
 	
@@ -38,6 +39,12 @@ namespace W {
 		static Colour Orange;
 		static Colour SkyBlue;
 		static Colour Brown;
+		
+		std::string str() {
+			std::stringstream ss;
+			ss << "r" << r << ",g" << g << ",b" << b << ",a" << a;
+			return ss.str();
+		}
 	};
 	
 }

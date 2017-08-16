@@ -17,80 +17,7 @@
 #include "oglInclude.h"
 
 #define GL_ARRAY_INITIAL_SIZE 256
-
-/*
- NB: there’s one major drawback to this otherwise high-performance drawing
- system: removing a single DObj invokes an O(N) copy, where N is the
- number of DObjs currently in play, since all subsequent DObjs must be
- recopied backwards in the arrays.
- 
- This could be improved by having View pad empty array sections with degenerate
- triangles and perform lazy compacting, but perf is high enough for the moment
- not to bother.
-*/
-
-/**************************************/
-/*** glDataArrays struct definition ***/
-/**************************************/
-
-struct W::View::glDataArrays {
-	unsigned int array_size, array_used_size;
-	v3f *vert_array;
-	c4f *col_array;
-	t2f *texcoord_array;
-	glDataArrays() : array_size(0), array_used_size(0), vert_array(NULL), texcoord_array(NULL), col_array(NULL) {
-		array_size = GL_ARRAY_INITIAL_SIZE / 2;
-		increaseSize();
-	}
-	~glDataArrays() {
-		if (vert_array) {
-			delete vert_array;
-			delete col_array;
-			delete texcoord_array;
-		}
-	}
-	void increaseSize() {
-		v3f *new_vert_array     = (v3f*) malloc(sizeof(v3f) * array_size * 2);
-		c4f *new_col_array      = (c4f*) malloc(sizeof(c4f) * array_size * 2);
-		t2f *new_texcoord_array = (t2f*) malloc(sizeof(t2f) * array_size * 2);
-		if (vert_array) {
-			for (int i=0; i < array_size; ++i) {
-				new_vert_array[i] = vert_array[i];
-				new_col_array[i] = col_array[i];
-				new_texcoord_array[i] = texcoord_array[i];
-			}
-			free(vert_array);
-			free(col_array);
-			free(texcoord_array);
-		}
-		vert_array     = new_vert_array;
-		col_array      = new_col_array;
-		texcoord_array = new_texcoord_array;
-		array_size *= 2;
-	}
-	void compact() {
-		return;
-		if (array_used_size > array_size / 3) return;
-		
-		v3f *new_vert_array     = (v3f*) malloc(sizeof(v3f) * array_size / 2);
-		c4f *new_col_array      = (c4f*) malloc(sizeof(c4f) * array_size / 2);
-		t2f *new_texcoord_array = (t2f*) malloc(sizeof(t2f) * array_size / 2);
-		if (vert_array) {
-			for (int i=0; i < array_size; ++i) {
-				new_vert_array[i] = vert_array[i];
-				new_col_array[i] = col_array[i];
-				new_texcoord_array[i] = texcoord_array[i];
-			}
-			free(vert_array);
-			free(col_array);
-			free(texcoord_array);
-		}
-		vert_array     = new_vert_array;
-		col_array      = new_col_array;
-		texcoord_array = new_texcoord_array;
-		array_size /= 2; 
-	}
-};
+#define SECONDS_PER_COMPACT 5
 
 
 /***************************/
@@ -99,16 +26,27 @@ struct W::View::glDataArrays {
 
 W::View::View(Positioner *_pos) :
 	_positioner(_pos),
-	glData(new glDataArrays),
-	firstDObj(NULL),
-	lastDObj(NULL)
+	firstDObj(NULL), lastDObj(NULL),
+	vertArray(NULL),
+	colArray(NULL),
+	texcoordArray(NULL),
+	array_size(0),
+	array_used_size(0),
+	frameCount(0)
 {
 	if (_positioner) _updatePosition();
+	
+	array_size = GL_ARRAY_INITIAL_SIZE * 0.5;
+	increaseArraySize();
 }
 W::View::~View()
 {
 	if (_positioner) delete _positioner;
-	delete glData;
+	if (vertArray) {
+		delete vertArray;
+		delete colArray;
+		delete texcoordArray;
+	}
 }
 
 void W::View::_updatePosition() {
@@ -120,36 +58,56 @@ void W::View::_updatePosition(const size &winsize) {
 	updatePosition(winsize);
 }
 
-W::EventPropagation::T W::View::receiveEvent(Event *ev) {
-	ev->pos.x -= rct.pos.x;
-	ev->pos.y -= rct.pos.y;
+W::EventPropagation::T W::View::mouseEvent(Event *ev) {
+	ev->pos -= rct.pos;
 	processMouseEvent(ev);
 	return EventPropagation::ShouldStop;
 }
 
 void W::View::_subscribeToMouseEvents() {
-	Messenger::subscribeToMouseEvents(Callback(&View::receiveEvent, this), &rct);
+	Messenger::subscribeToMouseEvents(Callback(&View::mouseEvent, this), &rct);
 }
 void W::View::_unsubscribeFromMouseEvents() {
 	Messenger::unsubscribeFromMouseEvents(this);
 }
 
-int W::View::_getStorageForDObjOfLength(int length) {
-	while (glData->array_used_size + length > glData->array_size)
-		glData->increaseSize();
-	int i = glData->array_used_size;
-	glData->array_used_size += length;
-	return i;
+void W::View::_addDObj(W::DObj *d) {
+	int l = d->arrayLength();
+	
+	// Expand glData to accomm D if necessary
+	while(array_used_size + l > array_size) increaseArraySize();
+	int i = array_used_size;
+	array_used_size += l;
+	
+	// Give D glData array pointers & index
+	d->_setArrayPtrs(vertArray, colArray, texcoordArray, i);
+	
+	// Add DObj to chain
+	if (!firstDObj)
+		firstDObj = lastDObj = d;
+	else {
+		lastDObj->nextDObj = d;
+		d->prevDObj = lastDObj;
+		lastDObj = d;
+	}
 }
-void W::View::_removeStorageForDObjOfLength(int length) {
-	glData->array_used_size -= length;
-}
+void W::View::_remDObj(W::DObj *d) {
+	int l = d->arrayLength();
+	
+	// If D is last obj, just decrease array_used_size by D.length + D.preceding_removed
+	if (!d->nextDObj)
+		array_used_size -= l + d->_preceding_removed;
 
-void W::View::_updateDObjs() {
-	for (std::vector<DObj*>::iterator it = _DObjs_needing_recopy.begin(); it < _DObjs_needing_recopy.end(); ++it)
-		(*it)->recopy(glData->vert_array, glData->col_array, glData->texcoord_array);
-	_DObjs_needing_recopy.clear();
-	glData->compact();
+	// Otherwise, increment D.next's preceding_removed
+	else
+		if (d->nextDObj) d->nextDObj->_preceding_removed += l + d->_preceding_removed;
+	
+	// Unlink D from chain
+	if (!d->prevDObj) firstDObj = d->nextDObj;	// If DObj was first in chain, set view.first to D.next
+	else d->prevDObj->nextDObj = d->nextDObj;	// Otherwise set D.prev's next to D.next
+	
+	if (!d->nextDObj) lastDObj = d->prevDObj;	// If DObj was last in chain, set view.last to this.prev
+	else d->nextDObj->prevDObj = d->prevDObj;	// Otherwise, set D.next's prev to D.prev
 }
 
 void W::View::_draw(const size &winSz) {
@@ -165,9 +123,77 @@ void W::View::_draw(const size &winSz) {
 	customOpenGLDrawing();
 	
 	// Submit data arrays to opengl
-	glVertexPointer(3, GL_FLOAT, 0, glData->vert_array);
-	glColorPointer(4, GL_FLOAT, 0, glData->col_array);
-	glTexCoordPointer(2, GL_FLOAT, 0, glData->texcoord_array);
-	glDrawArrays(GL_TRIANGLES, 0, glData->array_used_size);
+	glVertexPointer(3, GL_FLOAT, 0, vertArray);
+	glColorPointer(4, GL_FLOAT, 0, colArray);
+	glTexCoordPointer(2, GL_FLOAT, 0, texcoordArray);
+	glDrawArrays(GL_TRIANGLES, 0, array_used_size);
 	
+	// Call compact() every so often
+	if (frameCount++ == 60*SECONDS_PER_COMPACT)
+		frameCount = 0, compact();
+}
+
+void W::View::increaseArraySize() {
+	v3f *new_vertArray     = (v3f*) malloc(sizeof(v3f) * array_size * 2);
+	c4f *new_colArray      = (c4f*) malloc(sizeof(c4f) * array_size * 2);
+	t2f *new_texcoordArray = (t2f*) malloc(sizeof(t2f) * array_size * 2);
+	if (vertArray) {
+		for (int i=0; i < array_used_size; ++i) {
+			new_vertArray[i]     = vertArray[i];
+			new_colArray[i]      = colArray[i];
+			new_texcoordArray[i] = texcoordArray[i];
+		}
+		free(vertArray);
+		free(colArray);
+		free(texcoordArray);
+	}
+	vertArray     = new_vertArray;
+	colArray      = new_colArray;
+	texcoordArray = new_texcoordArray;
+	array_size *= 2;
+	
+	updateDObjPtrs();
+}
+
+void W::View::compact() {
+	// Remove padded areas
+	int runningMoveBackAmount = 0;
+	for (DObj *d = firstDObj; d; d = d->nextDObj) {
+		runningMoveBackAmount += d->_preceding_removed;
+		d->_preceding_removed = 0;
+		d->_moveBackBy(runningMoveBackAmount);
+	}
+	array_used_size -= runningMoveBackAmount;
+
+	// Compact the data arrays if their used_size has smallened sufficiently
+	if (array_used_size <= array_size / 3) {
+		v3f *new_vertArray     = (v3f*) malloc(sizeof(v3f) * array_size / 2);
+		c4f *new_colArray      = (c4f*) malloc(sizeof(c4f) * array_size / 2);
+		t2f *new_texcoordArray = (t2f*) malloc(sizeof(t2f) * array_size / 2);
+		if (vertArray) {
+			for (int i=0; i < array_used_size; ++i) {
+				new_vertArray[i]     = vertArray[i];
+				new_colArray[i]      = colArray[i];
+				new_texcoordArray[i] = texcoordArray[i];
+			}
+			free(vertArray);
+			free(colArray);
+			free(texcoordArray);
+		}
+		vertArray     = new_vertArray;
+		colArray      = new_colArray;
+		texcoordArray = new_texcoordArray;
+		array_size *= 0.5;
+		
+		updateDObjPtrs();
+	}
+}
+void W::View::updateDObjPtrs() {
+	for (DObj *d = firstDObj; d; d = d->nextDObj)
+		d->_setArrayPtrs(vertArray, colArray, texcoordArray);
+}
+void W::View::dumpDObjs() {
+	std::cout << "  array_size:" << array_size << " used_size:" << array_used_size << "\n";
+	for (DObj *d = firstDObj; d; d = d->nextDObj)
+		std::cout << "  " << d->str() << "\n";
 }

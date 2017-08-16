@@ -176,21 +176,12 @@ void W::Controller::update() {
 	}
 	
 	
-	/* 3. Apply changes to drawn objects */
-
-	if (GameState::_gsStack.size()) {
-		GameState::Viewlist &views = GameState::_gsStack.back()->_vlist;
-		for (GameState::Viewlist::iterator it = views.begin(); it != views.end(); ++it)
-			(*it)->_updateDObjs();
-	}
-	
-	
-	/* 4. Texture uploading */
+	/* 3. Texture uploading */
 
 	if (MegaTexture::modified()) MegaTexture::upload();
 	
 	
-	/* 5. Drawing */
+	/* 4. Drawing */
 	
 	const size &window_size = window->getSize();
 	window->beginDrawing(window_size);

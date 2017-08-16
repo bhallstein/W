@@ -22,79 +22,113 @@ namespace W {
 	
 	class DObj {
 	public:
-		DObj(View *_v, int _length);
+		DObj(View *_v, const Colour &, int _length);
 		virtual ~DObj();
-
-		void setNeedsRecopy() {
-			if (!has_set_recopy) {
-				view->_setNeedsRecopy(this);
-				has_set_recopy = true;
+		
+		void _setArrayPtrs(v3f *_base_vptr, c4f *_base_cptr, t2f *_base_tptr, int _array_index = -1);
+		void _moveBackBy(int);
+		
+		DObj *prevDObj, *nextDObj;
+		int _preceding_removed;
+			// Number of DObjs immediately preceding this one which have been removed
+			// since the last compact
+		
+		Colour col;
+		void setCol(const Colour &_c) { col = _c; updateColour(); }
+		
+		int arrayLength() { return array_length; }
+		
+		std::string str() {
+			std::stringstream ss;
+			ss << this << " i:" << array_index << "n:" << array_length << " pr:" << _preceding_removed;
+			ss << " prev:" << prevDObj;
+			ss << " next:" << nextDObj;
+			return ss.str();
+		}
+		
+	protected:
+		View *view;
+		void updateColour() {
+			for (int i=0; i < array_length; ++i) {
+				col_ptr[i] = col;
 			}
 		}
-		virtual void recopy(v3f *v, c4f *c, t2f *t) {
-			_recopy(v+array_start_index, c+array_start_index, t+array_start_index);
-			has_set_recopy = false;
+		void makeTrianglesDegenerate() {
+			for (int i=0; i < array_length; ++i) {
+				v3f &v = vert_ptr[i];
+				v.x = 0;
+				v.y = 0;
+			}
 		}
-	
-	protected:
-		virtual void _recopy(v3f*, c4f*, t2f*) = 0;
-			// Override to copy data into arrays
-		
-	private:
-		DObj *prevDObj, *nextDObj;
-		View *view;
-		
-		int array_start_index;
+		v3f *vert_ptr;
+		c4f *col_ptr;
+		t2f *texcoord_ptr;
+		int array_index;
 		int array_length;
 		
-		void moveBackBy(int n) {
-			array_start_index -= n;
-			setNeedsRecopy();
-			if (nextDObj) nextDObj->moveBackBy(n);
-		}
-		
-		bool has_set_recopy;
+	private:
+		v3f *base_vptr;
+		c4f *base_cptr;
+		t2f *base_tptr;
 	};
 	
 	
 	/***
-		_UniRectDObj class does the work for most DO subclasses, which on
+		DUniRect class does the work for most DO subclasses, which on
 		the back end manage a single textured, coloured rect.
 	***/
 	
-	class _UniRectDObj : public DObj {
+	class DUniRect : public DObj {
 	public:
-		_UniRectDObj(View *, const W::position &, const W::size &, const W::Colour &, W::Texture *, float rotation);
-		~_UniRectDObj();
+		DUniRect(View *, const W::position &, const W::size &, const W::Colour &, W::Texture *, float rotation);
+		~DUniRect();
 		
-		void setPos(const W::position &_p) { pos = _p; setNeedsRecopy(); }
-		void setSz(const W::size &_sz) { sz = _sz; setNeedsRecopy(); }
+		void setPos(const W::position &_p) { pos = _p; updateVertices(); }
+		void setSz(const W::size &_sz) { sz = _sz; updateVertices(); }
+		void setRot(float _r) { rotation = _r; updateVertices(); }
 		
 		position pos;
 		size sz;
-		Colour col;
 		Texture *tex;
 		float rotation;
 		int texA, texB, texC, texD;
 			// These are the integer coords of the drawn "chunk" of the texture
-			// in relation to it itself. Initially {0,0,tw,th}.
-			// The conversion to float coords of the MegaTexture is done by the
-			// GeometryChunk when generating GL array data.
+			// in relation to it itself - initially: {0,0,tw,th}
+			// The conversion to float coords of the MegaTexture must be done:
+			//  - when editing the values of the texcoord array
+			//  - when the MT changes in size
 		
 	protected:
-		void _recopy(v3f*, c4f*, t2f*);	// Recopy geom data into supplied arrays
+		void updateVertices();
+		void updateTexcoords();
+			// Utility methods for subclasses to call in their setters
+			// to apply user changes
+		
 	};
 	
 	
 	/***
-		DRect draws a single, coloured rect
+		DRect draws a coloured rect
 	 ***/
 	
-	class DRect : public _UniRectDObj {
+	class DRect : public DUniRect {
 	public:
 		DRect(View *, const W::position &, const W::size &, const W::Colour &, float rotation = 0);
-		void setCol(const Colour &_c) { col = _c; setNeedsRecopy(); }
-		void setRot(float _r) { rotation = _r; setNeedsRecopy(); }
+	};
+	
+	
+	/***
+		DImage draws an image
+	 ***/
+	
+	class DImg : public DUniRect {
+	public:
+		DImg(View *, const W::position &, const W::size &, Texture *, float opacity = 1, float rotation = 0);
+		void setOpacity(float _o) { col.a = _o; updateColour(); }
+		void setChunk(int a, int b, int c, int d) {
+			texA = a, texB = b, texC = c, texD = d;
+			updateTexcoords();
+		}
 	};
 	
 	
@@ -102,23 +136,21 @@ namespace W {
 		DLine draws a line
 	 ***/
 	
-	class DLine : public _UniRectDObj {
+	class DLine : public DUniRect {
 	public:
 		DLine(View *, const W::position &_p1, const W::position &_p2, const W::Colour &, int _width = 1);
-		void setPos1(const W::position &);
-		void setPos2(const W::position &);
-		void setWidth(int _w);
-		void setCol(const Colour &_c) { col = _c, setNeedsRecopy(); }
+		void setP1(const W::position &);
+		void setP2(const W::position &);
+		void setWidth(int);
 		void nudge(const W::position &);
 		
 		position p1, p2;
-		Colour col;
 		int lineWidth;
 		
 	private:
-		void recalculateRectProperties();
+		void regenRectProperties();
 	};
-	
+
 	
 	/***
 		DEquiTri draws an equilateral triangle
@@ -128,10 +160,9 @@ namespace W {
 	public:
 		DEquiTri(View *, const position &, float _radius, const W::Colour &, float rotation = 0);
 		~DEquiTri();
-		void setPos(const position &_p) { pos = _p; setNeedsRecopy(); }
-		void setRadius(float _r) { radius = _r; setNeedsRecopy(); }
-		void setCol(const Colour &_c) { col = _c; setNeedsRecopy(); }
-		void setRot(float _r) { rotation = _r; setNeedsRecopy(); }
+		void setPos(const position &_p) { pos = _p; updateVertices(); }
+		void setRadius(float _r) { radius = _r; updateVertices(); }
+		void setRot(float _r) { rotation = _r; updateVertices(); }
 		
 		position pos;
 		float radius;
@@ -140,51 +171,36 @@ namespace W {
 		Texture *tex;
 		
 	protected:
-		void _recopy(v3f*, c4f*, t2f*);
+		void updateVertices();
+		void updateTexcoords();
 	};
-	
-	
-	/***
-		DCircle
-	 ***/
-	
-	class DCircle : public DObj {
-	public:
-		DCircle(View *, const W::position &_centrePos, int _radius, const W::Colour &);
-		void setCentrePos(const W::position &_p) { centrePos = _p; setNeedsRecopy(); }
-		void setRadius(int _r) { radius = _r; setNeedsRecopy(); }
-		void setCol(const W::Colour &_c) { col = _c; setNeedsRecopy(); }
-		
-		position centrePos;
-		int radius;
-		Colour col;
-		
-	protected:
-		void _recopy(v3f*, c4f*, t2f*);	// Recopy geom data into supplied arrays
+//
+//	
+//	/***
+//		DCircle
+//	 ***/
+//	
+//	class DCircle : public DObj {
+//	public:
+//		DCircle(View *, const W::position &_centrePos, int _radius, const W::Colour &);
+//		void setCentrePos(const W::position &_p) { centrePos = _p; setNeedsRecopy(); }
+//		void setRadius(int _r) { radius = _r; setNeedsRecopy(); }
+//		void setCol(const W::Colour &_c) { col = _c; setNeedsRecopy(); }
+//		
+//		position centrePos;
+//		int radius;
+//		Colour col;
+//		
+//	protected:
+//		void _recopy(v3f*, c4f*, t2f*);	// Recopy geom data into supplied arrays
+//
+//	private:
+//		static v3f *circleGeom;
+//		struct Init;
+//		static Init *initializer;
+//	};
 
-	private:
-		static v3f *circleGeom;
-		struct Init;
-		static Init *initializer;
-	};
-	
-	
-	/***
-		DImage draws an image
-	 ***/
-	
-	class DImg : public _UniRectDObj {
-	public:
-		DImg(View *, const W::position &, const W::size &, Texture *, float opacity = 1, float rotation = 0);
-		void setRot(float _r) { rotation = _r; setNeedsRecopy(); }
-		void setOpacity(float _o) { col.a = _o; setNeedsRecopy(); }
-		void setChunk(int a, int b, int c, int d) {
-			texA = a, texB = b, texC = c, texD = d;
-			setNeedsRecopy();
-		}
-	};
-	
-	
+
 	/***
 		DText draws... text
 	 ***/
@@ -194,10 +210,9 @@ namespace W {
 		DText(View *, const W::position &, const std::string &_txt, const W::Colour &, bool r_align = false);
 		~DText();
 		
-		void setPos(const W::position &_pos);
-		void setCol(Colour _c) { col = _c; setNeedsRecopy(); }
-		void setRAlign(bool _a) { r_align = _a; setNeedsRecopy(); }
-//		void setTxt(const char *_txt) { txt = _txt; _setDirty(); }
+		void setPos(const W::position &);
+		void setRAlign(bool);
+		void setTxt(const char *);
 		
 		std::string txt;
 		
@@ -206,13 +221,16 @@ namespace W {
 		bool r_align;
 		
 	protected:
-		void _recopy(v3f*, c4f*, t2f*);
+		void updateVertices();
+		void updateTexcoords();
 		
 	private:
-		static int _geomLengthForText(const std::string &);
 		Texture *tex;
 		int texA, texB, texC, texD;
+
+		static int _geomLengthForText(const std::string &);
 		static int widthForChar(char c);
+		
 	};
 	
 }

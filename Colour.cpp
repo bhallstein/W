@@ -26,7 +26,6 @@ bool W::Colour::operator==(const Colour &c) {
 	return r == c.r && g == c.g && b == c.b && a == c.a;
 }
 
-
 namespace W {
 	Colour Colour::Black(0, 0, 0);
 	Colour Colour::TransparentBlack(0, 0, 0, 0.5);
