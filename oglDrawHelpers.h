@@ -16,8 +16,15 @@
 
 namespace W {
 	
+	namespace GLState {
+		bool texturing_enabled = false;
+	}
+	
 	inline void drawRect(float x, float y, float w, float h, const W::Colour &col, float rot = 0) {
-		glDisable(GL_TEXTURE_2D);
+		if (GLState::texturing_enabled) {
+			glDisable(GL_TEXTURE_2D);
+			GLState::texturing_enabled = false;
+		}
 		glColor4f(col.r, col.g, col.b, col.a);
 		
 		glLoadIdentity();
@@ -34,7 +41,10 @@ namespace W {
 	}
 	
 	inline void drawImage(float x, float y, float w, float h, Texture *tex, float opac = 1, float rot = 0) {
-		glEnable(GL_TEXTURE_2D);
+		if (!GLState::texturing_enabled) {
+			glEnable(GL_TEXTURE_2D);
+			GLState::texturing_enabled = true;
+		}
 		glColor4f(1, 1, 1, opac);
 		float texFloatW = tex->getFloatW();
 		float texFloatH = tex->getFloatH();

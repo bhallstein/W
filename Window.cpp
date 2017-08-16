@@ -310,7 +310,7 @@ void W::Window::setOpenGLThreadAffinity() {
 	#elif defined _WIN32 || _WIN64
 		if (!wglMakeCurrent(_objs->deviceContext, _objs->renderingContext)) {
 			closeWindow();
-			throw Exception("Error activating the rendering context");
+			throw Exception("Error setting the OpenGL context thread affinity");
 		}
 	#endif
 }
@@ -319,9 +319,8 @@ void W::Window::clearOpenGLThreadAffinity() {
 	#ifdef __APPLE__
 		[NSOpenGLContext clearCurrentContext];
 	#elif defined _WIN32 || _WIN64
-		if (!wglMakeCurrent(_objs->deviceContext, NULL)) throw Exception(
-			"Error deactivating the rendering context"
-		);
+		if (!wglMakeCurrent(_objs->deviceContext, NULL))
+			throw Exception("Error clearing the OpenGL context thread affinity");
 	#endif
 }
 
