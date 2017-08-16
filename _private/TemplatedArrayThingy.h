@@ -17,7 +17,7 @@
 #include <iostream>
 #include "DebugMacro.h"
 
-#define COMPACTION_THRESHOLD 0.3	// Compaction occurs if used_size < capacity * threshold
+#define COMPACTION_THRESHOLD 0.3		// Compaction occurs if used_size < capacity * threshold
 #define COMPACTION_AMOUNT 0.5		// For obvious reasons, compaction_amount must be >= threshold
 
 

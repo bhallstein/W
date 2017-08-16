@@ -22,12 +22,12 @@ namespace  W {
 
 	class TANode;
 	class DTexturedShape;
-
+	
 	class TextureAtlas {
 	public:
 		TextureAtlas();
 		bool addTex(const std::string &filename, W::Texture *);
-			// Adds the texture and calls setModified(), returning false if impossible,
+			// Adds the texture and calls setModified(), returning false if impossible
 		bool addTex(unsigned char *, const v2i &, W::Texture *);
 		void removeTex(TANode *);
 			// Sets the given area node as empty
