@@ -31,13 +31,13 @@ struct W::_init {
 			[NSHomeDirectory() getCString:path maxLength:MAX_PATH encoding:NSUTF8StringEncoding];
 			std::string p = path;
 			p += "/Desktop/W_app_log.txt";
-			setLogPath(p.c_str());
 		#elif defined WIN32 || WIN64
 			char path[MAX_PATH] = "";
 			SHGetFolderPath(NULL, CSIDL_DESKTOPDIRECTORY, NULL, 0, path);
 			std::string p = path;
-			p += "/DBTlog.txt";
+			p += "/W_app_log.txt";
 		#endif
+		setLogPath(p.c_str());
 		
 		// Init MTRand
 		time_t timey;
@@ -50,6 +50,8 @@ struct W::_init {
 		#elif defined WIN32 || WIN64
 			// ...
 		#endif
+
+		W::log << "W app inited" << std::endl;
 	}
 };
 struct W::_init *W::_initializer = new W::_init();

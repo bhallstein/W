@@ -96,9 +96,8 @@ void W::EventHandler::unsubscribeFromEventType(EventType::T t, EventResponder *r
 }
 
 void W::EventHandler::dispatchEvent(Event *ev) {
-//	std::cout << "eh: " << ev->type << " ";
 	// Mouses
-	if (ev->treat_as_mouse_event)
+	if (ev->treat_as_mouse_event) 
 		_dispatchMouseEvent(ev);
 	// Subscriptions to event types
 	else if (type_subscriptions.count(ev->type))
@@ -109,8 +108,8 @@ void W::EventHandler::dispatchEvent(Event *ev) {
 }
 #include <iostream>
 void W::EventHandler::_dispatchMouseEvent(Event *ev) {
-//	printf("Dispatching mouse event type %d at %d,%d %.1f,%.1f\n", ev->type, ev->pos.x, ev->pos.y, ev->pos.a, ev->pos.b);
-	
+//	printf("Dispatching mouse event (type %d) at %d,%d %.1f,%.1f\n", ev->type, ev->pos.x, ev->pos.y, ev->pos.a, ev->pos.b);
+
 	// If general P.E.R. exists, send event to it
 	if (privileged_event_responder != NULL) {
 		privileged_event_responder->call(ev);

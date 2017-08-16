@@ -162,7 +162,6 @@ void W::Window::_createWindow() {
 	
 	[_objs->window makeKeyAndOrderFront:NSApp];
 	[_objs->window makeFirstResponder:_objs->view];
-	_setUpOpenGL();
 
 #elif defined WIN32 || WIN64
 	// Set window style & size
@@ -245,6 +244,8 @@ void W::Window::_createWindow() {
 	SetForegroundWindow(_objs->windowHandle);
 	SetFocus(_objs->windowHandle);
 #endif
+
+	_setUpOpenGL();
 }
 void W::Window::_closeWindow() {
 #ifdef __APPLE__
@@ -290,7 +291,7 @@ void W::Window::_startDrawing() {
 #ifdef __APPLE__
 	[_objs->context makeCurrentContext];
 #endif
-	
+
 	size s = _getDimensions();
 	int w = s.width, h = s.height;
 	
@@ -356,16 +357,19 @@ W::size W::Window::_getDimensions() {
 #if defined WIN32 || WIN64
 void W::Window::_convertToWEvent(W::Event &ev, UINT msg, WPARAM wParam, LPARAM lParam) {
 	if (msg == WM_LBUTTONUP) {
+		ev.treat_as_mouse_event = true;
 		ev.type = W::EventType::LEFTMOUSEUP;
 		ev.pos.x = LOWORD(lParam);
 		ev.pos.y = HIWORD(lParam);
 	}
 	else if (msg == WM_LBUTTONDOWN) {
+		ev.treat_as_mouse_event = true;
 		ev.type = W::EventType::LEFTMOUSEDOWN;
 		ev.pos.x = LOWORD(lParam);
 		ev.pos.y = HIWORD(lParam);
 	}
 	else if (msg == WM_RBUTTONUP) {
+		ev.treat_as_mouse_event = true;
 		ev.type = W::EventType::RIGHTMOUSEUP;
 		ev.pos.x = LOWORD(lParam);
 		ev.pos.y = HIWORD(lParam);

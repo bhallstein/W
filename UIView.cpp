@@ -1,3 +1,5 @@
+#include "W.h"
+
 #include "UIView.h"
 #include "Callback.h"
 #include "EventHandler.h"
@@ -82,8 +84,11 @@ void W::UIView::processMouseEvent(Event *ev) {
 	}
 	else if (ev->type == EventType::LEFTMOUSEDOWN) {
 		// Call callbacks
-		for (std::vector<Callback*>::iterator it = subscribers.begin(); it < subscribers.end(); it++)
+		for (int i=0; i < subscribers.size(); i++)
+			subscribers[i]->call(b->getEvent());
+		/*for (std::vector<Callback*>::iterator it = subscribers.begin(); it < subscribers.end(); it++)
 			(*it)->call(b->getEvent());
+		*/
 	}
 }
 
