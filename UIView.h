@@ -11,12 +11,9 @@ namespace W {
 	class EventHandler;
 	class Callback;
 	
-
-	enum Draggability { DISALLOW_DRAG = 0, ALLOW_DRAG };
-	
 	class UIView : public View {
 	public:
-		UIView(const std::string &viewname, Window *, Draggability _allowDrag = DISALLOW_DRAG);
+		UIView(const std::string &viewname, Window *);
 		~UIView();
 		
 		void processMouseEvent(Event *);
@@ -27,7 +24,7 @@ namespace W {
 		void updatePosition(const size &winsize);
 			// Override; called after View::_updatePosition
 		
-		bool allowDrag;
+		bool allowDrag;		// Set from positioner when refreshed
 		bool dragloop;
 		position drag_initial;
 		

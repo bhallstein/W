@@ -39,7 +39,8 @@ W::Positioner::Positioner(
 	fixed_corner(_fixed_corner),
 	pos_method_x(_pos_method_x), pos_method_y(_pos_method_y),
 	sizing_method_x(_sizing_method_x), sizing_method_y(_sizing_method_y),
-	corner_x(_corner_x), corner_y(_corner_y), w(_w), h(_h)
+	corner_x(_corner_x), corner_y(_corner_y), w(_w), h(_h),
+	draggable(false)
 {
 	//
 }
@@ -92,15 +93,7 @@ W::Positioner::Positioner(LHObj &l)
 	else {
 		string &s = l_pos.str_value;
 		strSplit(s, sComponents, ',');
-		if (sComponents.size() != 2 || !checkDistStr(sComponents[0]) || !checkDistStr(sComponents[1])) {
-			error = true;
-			errmsgs.push_back(
-				"'position' property incorrectly formed: must be "
-				"'dist,dist', where dist has the form '15' (for absolute pixel values) "
-				"or '50%' (for proportional values)"
-			);
-		}
-		else {
+		if (sComponents.size() == 2 && checkDistStr(sComponents[0]) && checkDistStr(sComponents[1])) {
 			string &c1 = sComponents[0], &c2 = sComponents[1];
 			pos_method_x = (c1[c1.size()-1] == '%' ? PPROPORTIONAL : PFIXED);
 			pos_method_y = (c2[c2.size()-1] == '%' ? PPROPORTIONAL : PFIXED);
@@ -109,6 +102,14 @@ W::Positioner::Positioner(LHObj &l)
 //			std::cout
 //				<< "pos_method_x: " << corner_x << ", " << (pos_method_x == PPROPORTIONAL ? "proportional" : "fixed") << "\n"
 //				<< "pos_method_y: " << corner_y << ", " << (pos_method_y == PPROPORTIONAL ? "proportional" : "fixed") << "\n";
+		}
+		else {
+			error = true;
+			errmsgs.push_back(
+				"'position' property incorrectly formed: must be "
+				"'dist,dist', where dist has the form '15' (for absolute pixel values) "
+				"or '50%' (for proportional values)"
+			);
 		}
 	}
 	
@@ -123,6 +124,19 @@ W::Positioner::Positioner(LHObj &l)
 			"'positioning_corner', if present, must be formatted as per: "
 			"'[top/bottom] [left/right]' (if not present, will be set to "
 			"'top left')"
+		);
+	}
+	
+	// Get draggability
+	LHObj &l_drag = l["draggable"];
+	if (l_drag.type == LHValueType::NIL)
+		draggable = false;
+	else if (l_drag.type == LHValueType::BOOL)
+		draggable = l_drag.bool_value;
+	else {
+		error = true;
+		errmsgs.push_back(
+			"'draggable', if present, must be either true or false"
 		);
 	}
 	
@@ -164,4 +178,8 @@ W::rect& W::Positioner::refresh(const size &container_size) {
 
 void W::Positioner::setCorner(int _x, int _y) {
 	corner_x = _x, corner_y = _y;
+}
+
+bool W::Positioner::isDraggable() {
+	return draggable;
 }

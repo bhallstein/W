@@ -12,9 +12,9 @@
 
 #include <iostream>
 
-W::UIView::UIView(const std::string &viewname, Window *_win, Draggability _allowDrag) :
+W::UIView::UIView(const std::string &viewname, Window *_win) :
 	View(NULL, _win),
-	allowDrag(_allowDrag), dragloop(false)
+	dragloop(false)
 {
 	createEvTypeMap();	// Make event type translation map for this uiview
 	
@@ -106,6 +106,8 @@ void W::UIView::updatePosition(const size &winsize) {
 	rect &r = p->refresh(winsize);
 	pos = r.pos;
 	plan[0].sz = r.sz;
+	
+	allowDrag = p->isDraggable();
 	
 	// Update element positions
 	element_list *ellist = &ellist_vec->at(cur_positioning_index);

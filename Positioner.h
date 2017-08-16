@@ -24,14 +24,17 @@ namespace W {
 		Positioner(LHObj &);
 		W::rect& refresh(const size &container_size);
 		void setCorner(int _x, int _y);
-
+		bool isDraggable();
+		
 	private:
 		corner fixed_corner;
 		pos_type pos_method_x, pos_method_y;
 		pos_type sizing_method_x, sizing_method_y;
 		float corner_x, corner_y, w, h;
-
+		bool draggable;
+		
 		rect _p;
+		
 	};
 	
 }

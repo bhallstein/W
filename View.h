@@ -17,6 +17,8 @@ namespace W {
 	public:
 		View(Positioner *, Window *);
 		~View();
+			// If NULL is supplied for positioner, subclass must
+			// set one up and call _updatePosition.
 		
 		void setWindow(Window *w);
 		void _updatePosition(const size &winsize);
