@@ -5,6 +5,7 @@
 #ifdef __APPLE__
 	#include <Cocoa/Cocoa.h>
 	#include "ObjC-Classes.h"
+	#include <OpenGL/gl.h>
 #elif defined WIN32 || WIN64
 	/*#include "shlobj.h"*/
 	#include <gl\gl.h>
