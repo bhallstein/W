@@ -20,6 +20,21 @@ W::EventHandler::~EventHandler()
 	// destroyed. However...
 }
 
+void W::EventHandler::subscribeToEventType(EventType::T t, const Callback &c) {
+	unsubscribeFromEventType(t, c.resp);
+	type_subscriptions[t].push_back(c.copy());
+}
+void W::EventHandler::unsubscribeFromEventType(EventType::T t, EventResponder *r) {
+	callback_list *l = &type_subscriptions[t];
+	for (callback_list::iterator it = l->begin(); it < l->end(); it++)
+		if ((*it)->resp == r) {
+			//			std::cout << "unsub from event type " << t  << ": deleting subscription..." << std::endl;
+			delete *it;
+			l->erase(it);
+			return;
+		}
+}
+
 void W::EventHandler::subscribeToMouseEvents(const Callback &c) {
 	subscribeToEventType(EventType::MOUSEMOVE, c);
 	subscribeToEventType(EventType::LEFTMOUSEDOWN, c);
@@ -62,88 +77,42 @@ void W::EventHandler::relinquishPrivilegedResponderStatusForEventType(EventType:
 	}
 }
 
-void W::EventHandler::subscribeToKey(KeyCode::T k, const Callback &c) {
-	unsubscribeFromKey(k, c.resp);
-	keycode_subscriptions[k].push_back(c.copy());
-}
-void W::EventHandler::unsubscribeFromKey(KeyCode::T k, EventResponder *r) {
-	callback_list *l = &keycode_subscriptions[k];
-	for (callback_list::iterator it = l->begin(); it < l->end(); it++)
-		if ((*it)->resp == r) {
-			delete *it;
-			l->erase(it);
-			return;
-		}
-}
-void W::EventHandler::unsubscribeFromAllKeys(EventResponder *r) {
-	for (std::map<KeyCode::T, callback_list>::iterator it = keycode_subscriptions.begin(); it != keycode_subscriptions.end(); it++)
-		unsubscribeFromKey(it->first, r);
-}
-
-void W::EventHandler::subscribeToEventType(EventType::T t, const Callback &c) {
-	unsubscribeFromEventType(t, c.resp);
-	type_subscriptions[t].push_back(c.copy());
-}
-void W::EventHandler::unsubscribeFromEventType(EventType::T t, EventResponder *r) {
-	callback_list *l = &type_subscriptions[t];
-	for (callback_list::iterator it = l->begin(); it < l->end(); it++)
-		if ((*it)->resp == r) {
-//			std::cout << "unsub from event type " << t  << ": deleting subscription..." << std::endl;
-			delete *it;
-			l->erase(it);
-			return;
-		}
-}
-
 void W::EventHandler::dispatchEvent(Event *ev) {
-	// Mouses
-	if (ev->treat_as_mouse_event) 
-		_dispatchMouseEvent(ev);
-	// Subscriptions to event types
-	else if (type_subscriptions.count(ev->type))
-		type_subscriptions[ev->type].back()->call(ev);
-	// Keys
-	else if (ev->type == EventType::KEYPRESS && keycode_subscriptions.count(ev->key))
-		keycode_subscriptions[ev->key].back()->call(ev);
+	std::map<EventType::T, callback_list>::iterator it1;
+	std::map<EventType::T, Callback *>::iterator it2;
+	
+	// If a general P.E.R. exists, send event to it
+	if (privileged_event_responder != NULL)
+		privileged_event_responder->call(ev);
+	
+	// If a P.E.R. exists specifically for this event type, send event to it
+	else if ((it2 = type_pers.find(ev->type)) != type_pers.end())
+		it2->second->call(ev);
+	
+	// Mouse dispatch
+	else if (ev->treat_as_mouse_event) _dispatchMouseEvent(ev);
+	
+	// Event type subscriptions
+	else if ((it1 = type_subscriptions.find(ev->type)) != type_subscriptions.end())
+		it1->second.back()->call(ev);
 }
 #include <iostream>
 void W::EventHandler::_dispatchMouseEvent(Event *ev) {
 //	printf("Dispatching mouse event (type %d) at %d,%d %.1f,%.1f\n", ev->type, ev->pos.x, ev->pos.y, ev->pos.a, ev->pos.b);
-
-	// If general P.E.R. exists, send event to it
-	if (privileged_event_responder != NULL) {
-		privileged_event_responder->call(ev);
-		return;
-	}
-	
-	// If P.E.R. exists specifically for this event type, send event to it
-	std::map<EventType::T, Callback*>::iterator it = type_pers.find(ev->type);
-	if (it != type_pers.end()) {
-		it->second->call(ev);
-		return;
-	}
 	
 	// Find last MappedObj that overlaps the event’s location
 	Callback *last_sub = NULL;
 	callback_list *sublst = &type_subscriptions[ev->type];
 	for (callback_list::iterator it = sublst->begin(); it != sublst->end(); it++) {
-		MappedObj *o = dynamic_cast<MappedObj*>((*it)->resp);
-		if (o == NULL)
-			continue;
-		for (std::vector<rect>::iterator itpl = o->plan.begin(); itpl < o->plan.end(); itpl++) {
-			float xObj = o->pos.x + o->pos.a + itpl->pos.x + itpl->pos.a;
-			float yObj = o->pos.y + o->pos.b + itpl->pos.y + itpl->pos.b;
-			float xEv = ev->pos.x + ev->pos.a;
-			float yEv = ev->pos.y + ev->pos.b;
-			if (xEv >= xObj && yEv >= yObj && xEv <= xObj + itpl->sz.width && yEv <= yObj + itpl->sz.height)
-				last_sub = *it;
-		}
+		MappedObj *o = (MappedObj*) (*it)->resp;
+		if (o->overlapsWith(ev->pos))
+			last_sub = *it;
 	}
 	if (last_sub != NULL) {
 		last_sub->call(ev);
 		return;
 	}
-	else {
+//	else {
 //		std::cout << "  no sub" << std::endl;
-	}
+//	}
 }

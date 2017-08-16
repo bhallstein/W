@@ -43,7 +43,8 @@ namespace W {
 		
 	protected:
 		EventHandler *eh;
-		bool allowDrag, dragloop;
+		bool allowDrag;
+		bool dragloop;
 		position drag_initial;
 		
 		std::vector<Button*> buttons;

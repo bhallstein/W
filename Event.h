@@ -21,23 +21,23 @@ namespace W {
 	namespace KeyCode {
 		typedef int T;
 		enum {
-			K_A,	K_B,	K_C,	K_D,
-			K_E,	K_F,	K_G,	K_H,
-			K_I,	K_J,	K_K,	K_L,
-			K_M,	K_N,	K_O,	K_P,
-			K_Q,	K_R,	K_S,	K_T,
-			K_U,	K_V,	K_W,	K_X,
-			K_Y,	K_Z,
+			_A,	_B,	_C,	_D,
+			_E,	_F,	_G,	_H,
+			_I,	_J,	_K,	_L,
+			_M,	_N,	_O,	_P,
+			_Q,	_R,	_S,	_T,
+			_U,	_V,	_W,	_X,
+			_Y,	_Z,
 			
-			K_0,	K_1,	K_2,
-			K_3,	K_4,	K_5,
-			K_6,	K_7,	K_8,	K_9,
+			_0,	_1,	_2,
+			_3,	_4,	_5,
+			_6,	_7,	_8,	_9,
 			
-			K_LEFT_ARROW,	K_RIGHT_ARROW,
-			K_UP_ARROW,		K_DOWN_ARROW,
+			LEFT_ARROW,	RIGHT_ARROW,
+			UP_ARROW,	DOWN_ARROW,
 			
-			K_ESC,	K_RETURN, K_BACKSPACE, K_DELETE, K_TAB,
-			K_HOME, K_END,
+			ESC,   RETURN,  BACKSPACE,  DELETE,  TAB,
+			HOME,  END,
 			
 			K_OTHER
 		};
@@ -45,44 +45,27 @@ namespace W {
 	
 	class Event {
 	public:
-		Event() : treat_as_mouse_event(false)
-		{
-			
-		}
-		Event(EventType::T t, bool _treat_as_mouse_event = false) :
-			type(t), treat_as_mouse_event(_treat_as_mouse_event)
-		{
-			
-		}
-		Event(EventType::T t, int x, int y, bool _treat_as_mouse_event = true) :
-			type(t), treat_as_mouse_event(_treat_as_mouse_event)
-		{
-			pos.x = x, pos.y = y;
-		}
-		Event(EventType::T t, KeyCode::T k) : type(t), key(k), treat_as_mouse_event(false)
-		{
-			
-		}
-
-		static W::KeyCode::T charToKeycode(unsigned int c);
+		Event(bool _treat_as_mouse_event = false);
+		Event(W::EventType::T, bool _treat_as_mouse_event = false);
+		Event(W::EventType::T, int _x, int _y, bool _treat_as_mouse_event = true);
+		Event(W::EventType::T, W::KeyCode::T);
 		
-		void setPos(const W::position &p) {
-			pos = p;
-		}
-		void setType(EventType::T _type)  { type = _type; }
-		void setKey(KeyCode::T _key)      { key = _key; }
-		void setPayload(void *_p) { _payload = _p; }
-		
-		static W::EventType::T registerType() { return _typeid++; }
+		void setPos(W::position &_pos)      { pos = _pos; }
+		void setType(W::EventType::T _type) { type = _type; }
+		void setKey(W::KeyCode::T _key)     { key = _key; }
+		void setPayload(void *_p)           { _payload = _p; }
 		
 		bool treat_as_mouse_event;
 		position pos;
 		EventType::T type;
 		KeyCode::T key;
 		void *_payload;
-
+		
+		static W::EventType::T registerType();
+		static W::KeyCode::T charToKeycode(unsigned int c);
+		
 	private:
-		static int _typeid;
+		static int _typecounter;
 	};
 	
 }

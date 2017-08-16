@@ -28,4 +28,7 @@ namespace W {
 	Colour Colour::Blue(0, 0, 1);
 	Colour Colour::Yellow(1, 1, 0);
 	Colour Colour::Purple(0.47, 0, 0.78);
+	Colour Colour::Orange(1, 0.6, 0.09);
+	Colour Colour::SkyBlue(0.58, 0.90, 1);
+	Colour Colour::Brown(0.62, 0.42, 0.25);
 }

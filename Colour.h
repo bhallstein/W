@@ -29,7 +29,11 @@ namespace W {
 		static Colour Blue;
 		static Colour Yellow;
 		static Colour Purple;
+		static Colour Orange;
+		static Colour SkyBlue;
+		static Colour Brown;
 	};
+	
 	
 }
 
