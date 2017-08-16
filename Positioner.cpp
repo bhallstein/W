@@ -1,39 +1,41 @@
 #include "Positioner.h"
 #include <vector>
 
-bool checkDistStr(const std::string &s) {
-	int n = (int) s.length();
-	if (n == 0) return false;
-	
-	const char *c = s.c_str();
-	
-	if (c[n-1] == '%') {
-		if (n < 2) return false;
-		for (int i=0; i < n-1; i++)
+namespace W {
+	bool checkDistStr(const std::string &s) {
+		int n = (int) s.length();
+		if (n == 0) return false;
+		
+		const char *c = s.c_str();
+		
+		if (c[n-1] == '%') {
+			if (n < 2) return false;
+			for (int i=0; i < n-1; i++)
+				if (!W::isNum(c[i]))
+					return false;
+			return true;
+		}
+		
+		for (int i=0; i < n; i++)
 			if (!W::isNum(c[i]))
 				return false;
 		return true;
 	}
-	
-	for (int i=0; i < n; i++)
-		if (!W::isNum(c[i]))
-			return false;
-	return true;
-}
-bool strToCorner(const std::string &s, W::corner &c) {
-	if (s == "top left")          c = W::TOP_LEFT;
-	else if (s == "top right")    c = W::TOP_RIGHT;
-	else if (s == "bottom left")  c = W::BOTTOM_LEFT;
-	else if (s == "bottom right") c = W::BOTTOM_RIGHT;
-	else return false;
-	return true;
+	bool strToCorner(const std::string &s, Corner::T &c) {
+		if (s == "top left")          c = Corner::TOP_LEFT;
+		else if (s == "top right")    c = Corner::TOP_RIGHT;
+		else if (s == "bottom left")  c = Corner::BOTTOM_LEFT;
+		else if (s == "bottom right") c = Corner::BOTTOM_RIGHT;
+		else return false;
+		return true;
+	}
 }
 
 			  
 W::Positioner::Positioner(
-	corner _fixed_corner,
-	pos_type _pos_method_x, pos_type _pos_method_y,
-	pos_type _sizing_method_x, pos_type _sizing_method_y,
+	Corner::T _fixed_corner,
+	PosType::T _pos_method_x, PosType::T _pos_method_y,
+	PosType::T _sizing_method_x, PosType::T _sizing_method_y,
 	float _corner_x, float _corner_y, float _w, float _h
 ) :
 	fixed_corner(_fixed_corner),
@@ -74,13 +76,10 @@ W::Positioner::Positioner(LHObj &l)
 		}
 		else {
 			string &c1 = sComponents[0], &c2 = sComponents[1];
-			sizing_method_x = (c1[c1.size()-1] == '%' ? PPROPORTIONAL : PFIXED);
-			sizing_method_y = (c2[c2.size()-1] == '%' ? PPROPORTIONAL : PFIXED);
-			strToT<float>(w, c1); if (sizing_method_x == PPROPORTIONAL) w /= 100.0;
-			strToT<float>(h, c2); if (sizing_method_y == PPROPORTIONAL) h /= 100.0;
-//			std::cout
-//				<< "sizing_method_x: " << w << ", " << (sizing_method_x == PPROPORTIONAL ? "proportional" : "fixed") << "\n"
-//				<< "sizing_method_y: " << h << ", " << (sizing_method_y == PPROPORTIONAL ? "proportional" : "fixed") << "\n";
+			sizing_method_x = (c1[c1.size()-1] == '%' ? PosType::PROPORTIONAL : PosType::FIXED);
+			sizing_method_y = (c2[c2.size()-1] == '%' ? PosType::PROPORTIONAL : PosType::FIXED);
+			strToT<float>(w, c1); if (sizing_method_x == PosType::PROPORTIONAL) w /= 100.0;
+			strToT<float>(h, c2); if (sizing_method_y == PosType::PROPORTIONAL) h /= 100.0;
 		}
 	}
 	
@@ -95,13 +94,10 @@ W::Positioner::Positioner(LHObj &l)
 		strSplit(s, sComponents, ',');
 		if (sComponents.size() == 2 && checkDistStr(sComponents[0]) && checkDistStr(sComponents[1])) {
 			string &c1 = sComponents[0], &c2 = sComponents[1];
-			pos_method_x = (c1[c1.size()-1] == '%' ? PPROPORTIONAL : PFIXED);
-			pos_method_y = (c2[c2.size()-1] == '%' ? PPROPORTIONAL : PFIXED);
-			strToT<float>(corner_x, c1); if (pos_method_x == PPROPORTIONAL) corner_x /= 100.0;
-			strToT<float>(corner_y, c2); if (pos_method_y == PPROPORTIONAL) corner_y /= 100.0;
-//			std::cout
-//				<< "pos_method_x: " << corner_x << ", " << (pos_method_x == PPROPORTIONAL ? "proportional" : "fixed") << "\n"
-//				<< "pos_method_y: " << corner_y << ", " << (pos_method_y == PPROPORTIONAL ? "proportional" : "fixed") << "\n";
+			pos_method_x = (c1[c1.size()-1] == '%' ? PosType::PROPORTIONAL : PosType::FIXED);
+			pos_method_y = (c2[c2.size()-1] == '%' ? PosType::PROPORTIONAL : PosType::FIXED);
+			strToT<float>(corner_x, c1); if (pos_method_x == PosType::PROPORTIONAL) corner_x /= 100.0;
+			strToT<float>(corner_y, c2); if (pos_method_y == PosType::PROPORTIONAL) corner_y /= 100.0;
 		}
 		else {
 			error = true;
@@ -117,7 +113,7 @@ W::Positioner::Positioner(LHObj &l)
 	LHObj &l_corner = l["positioning_corner"];
 	downCase(l_corner.str_value);
 	if (l_corner.type == LHValueType::NIL)
-		fixed_corner = TOP_LEFT;
+		fixed_corner = Corner::TOP_LEFT;
 	else if (!strToCorner(l_corner.str_value, fixed_corner)) {
 		error = true;
 		errmsgs.push_back(
@@ -152,24 +148,24 @@ W::rect& W::Positioner::refresh(const size &container_size) {
 	const int &Ww = container_size.width;
 	const int &Wh = container_size.height;
 	
-	if (sizing_method_x == PFIXED) _p.sz.width = w;
+	if (sizing_method_x == PosType::FIXED) _p.sz.width = w;
 	else _p.sz.width = w * Ww;
 	
-	if (sizing_method_y == PFIXED) _p.sz.height = h;
+	if (sizing_method_y == PosType::FIXED) _p.sz.height = h;
 	else _p.sz.height = h * Wh;
 	
 	// Set x
-	if (fixed_corner == TOP_LEFT || fixed_corner == BOTTOM_LEFT)
-		_p.pos.x = (pos_method_x == PFIXED ? corner_x : corner_x * Ww);
+	if (fixed_corner == Corner::TOP_LEFT || fixed_corner == Corner::BOTTOM_LEFT)
+		_p.pos.x = (pos_method_x == PosType::FIXED ? corner_x : corner_x * Ww);
 	else {
-		int rval = Ww - (pos_method_x == PFIXED ? corner_x : corner_x * Ww);
+		int rval = Ww - (pos_method_x == PosType::FIXED ? corner_x : corner_x * Ww);
 		_p.pos.x = rval - _p.sz.width;
 	}
 	// Set y
-	if (fixed_corner == TOP_LEFT || fixed_corner == TOP_RIGHT)
-		_p.pos.y = (pos_method_y == PFIXED ? corner_y : corner_y * Wh);
+	if (fixed_corner == Corner::TOP_LEFT || fixed_corner == Corner::TOP_RIGHT)
+		_p.pos.y = (pos_method_y == PosType::FIXED ? corner_y : corner_y * Wh);
 	else {
-		int bval = Wh - (pos_method_y == PFIXED ? corner_y : corner_y * Wh);
+		int bval = Wh - (pos_method_y == PosType::FIXED ? corner_y : corner_y * Wh);
 		_p.pos.y = bval - _p.sz.height;
 	}
 	
@@ -177,8 +173,8 @@ W::rect& W::Positioner::refresh(const size &container_size) {
 }
 
 void W::Positioner::nudge(const position &delta) {
-	corner_x += (fixed_corner == TOP_LEFT || fixed_corner == BOTTOM_LEFT ? delta.x : -delta.x);
-	corner_y += (fixed_corner == TOP_LEFT || fixed_corner == TOP_RIGHT ? delta.y : -delta.y);
+	corner_x += (fixed_corner == Corner::TOP_LEFT || fixed_corner == Corner::BOTTOM_LEFT ? delta.x : -delta.x);
+	corner_y += (fixed_corner == Corner::TOP_LEFT || fixed_corner == Corner::TOP_RIGHT   ? delta.y : -delta.y);
 }
 
 bool W::Positioner::isDraggable() {
