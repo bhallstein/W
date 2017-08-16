@@ -32,10 +32,14 @@ void W::Messenger::_useTemporaryState() {
 	_s = new _messenger_state;
 }
 void W::Messenger::_setActiveGamestate(W::GameState *_gs) {
-	// If temporary state, save it as that for this GS
+	std::map<GameState*, _messenger_state*>::iterator it;
+	// If temporary state, save it as this GS’s state
 	if (_s)
 		_stateMap[_gs] = _s;
-	// Otherwise, create a new state
+	// If GS has saved state, set as current
+	else if ((it = _stateMap.find(_gs)) != _stateMap.end())
+		_s = it->second;
+	// Otherwise, create a new state for this GS
 	else
 		_s = _stateMap[_gs] = new _messenger_state;
 }

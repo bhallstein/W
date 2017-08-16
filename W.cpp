@@ -88,7 +88,11 @@ void W::_performPop() {
 		delete _gs.back();
 		Messenger::_gamestateDestroyed(last_gs);
 		_gs.pop_back();
-		if (_gs.size()) _gs.back()->resume(&_returny);
+		if (_gs.size()) {
+			GameState *new_gs = _gs.back();
+			Messenger::_setActiveGamestate(new_gs);
+			new_gs->resume(&_returny);
+		}
 	} while (_gsShouldPop && _gs.size());
 }
 
