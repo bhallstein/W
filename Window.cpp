@@ -116,18 +116,18 @@ void W::Window::setTitle(const char *t) {
 void W::Window::_generateMouseMoveEvent() {
 	int scrollmargin = 20;
 	// TODO: check if mouse is within window bounds (plus some margin, for ease of scroll?)
-#ifdef __APPLE__
-	NSPoint p = [_objs->window mouseLocationOutsideOfEventStream];
-	[_objs->view __convertMouseCoords:&p];
-	W::Event ev(EventType::MOUSEMOVE, p.x, p.y);
-	W::_addEvent(ev);
-#elif defined WIN32 || WIN64
-	POINT p;
-	GetCursorPos(&p);
-	ScreenToClient(_objs->windowHandle, &p);
-	W::Event ev(EventType::MOUSEMOVE, p.x, p.y);
-	W::_addEvent(ev);
-#endif
+	#ifdef __APPLE__
+		NSPoint p = [_objs->window mouseLocationOutsideOfEventStream];
+		[_objs->view __convertMouseCoords:&p];
+		W::Event ev(EventType::MOUSEMOVE, p.x, p.y);
+		W::_addEvent(ev);
+	#elif defined WIN32 || WIN64
+		POINT p;
+		GetCursorPos(&p);
+		ScreenToClient(_objs->windowHandle, &p);
+		W::Event ev(EventType::MOUSEMOVE, p.x, p.y);
+		W::_addEvent(ev);
+	#endif
 	// Generate screenedge events, useful for scrolling the map
 	size s = _getDimensions();
 	int w = s.width, h = s.height;
@@ -178,7 +178,7 @@ void W::Window::_createWindow() {
 	// Create window
 	_objs->windowHandle = CreateWindowEx(
 		extendedWindowStyle,				//
-		"DBTWindow",
+		"My Sexy W Application",
 		"Oh hai",		// title
 		windowStyle,
 		0, 0,			// position
@@ -273,25 +273,25 @@ void W::Window::_closeWindow() {
 }
 
 void W::Window::_setUpOpenGL() {
-#ifdef __APPLE__
-	[_objs->context makeCurrentContext];
-#endif
-	{
-		glDisable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_SCISSOR_TEST);
-	}
-#ifdef __APPLE__
-	[NSOpenGLContext clearCurrentContext];
-#endif
+	#ifdef __APPLE__
+		[_objs->context makeCurrentContext];
+	#endif
+		{
+			glDisable(GL_DEPTH_TEST);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glEnable(GL_SCISSOR_TEST);
+		}
+	#ifdef __APPLE__
+		[NSOpenGLContext clearCurrentContext];
+	#endif
 }
 
 void W::Window::_startDrawing() {
-#ifdef __APPLE__
-	[_objs->context makeCurrentContext];
-#endif
-
+	#ifdef __APPLE__
+		[_objs->context makeCurrentContext];
+	#endif
+	
 	size s = _getDimensions();
 	int w = s.width, h = s.height;
 	
@@ -308,12 +308,12 @@ void W::Window::_startDrawing() {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 void W::Window::_finishDrawing() {
-#ifdef __APPLE__
-	[NSOpenGLContext clearCurrentContext];
-	[_objs->context flushBuffer];
-#elif defined WIN32 || WIN64
-	SwapBuffers(_objs->deviceContext);
-#endif
+	#ifdef __APPLE__
+		[NSOpenGLContext clearCurrentContext];
+		[_objs->context flushBuffer];
+	#elif defined WIN32 || WIN64
+		SwapBuffers(_objs->deviceContext);
+	#endif
 }
 void W::Window::_setUpDrawingForView(View *v) {
 	_current_drawn_view = v;
@@ -343,15 +343,15 @@ void W::Window::_drawRect(float x, float y, float w, float h, const W::Colour &c
 }
 
 W::size W::Window::_getDimensions() {
-#ifdef __APPLE__
-	NSSize bounds = [_objs->view bounds].size;
-//	CGSize bounds = [_objs->view bounds].size;
-	return size((int)bounds.width, (int)bounds.height);
-#elif defined WIN32 || WIN64
-	RECT rect;
-	GetClientRect(_objs->windowHandle, &rect);
-	return size(rect.right - rect.left, rect.bottom - rect.top);
-#endif
+	#ifdef __APPLE__
+		NSSize bounds = [_objs->view bounds].size;
+	//	CGSize bounds = [_objs->view bounds].size;
+		return size((int)bounds.width, (int)bounds.height);
+	#elif defined WIN32 || WIN64
+		RECT rect;
+		GetClientRect(_objs->windowHandle, &rect);
+		return size(rect.right - rect.left, rect.bottom - rect.top);
+	#endif
 }
 
 #if defined WIN32 || WIN64

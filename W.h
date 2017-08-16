@@ -60,6 +60,7 @@ namespace W {
 	
 	struct _init;
 	extern _init *_initializer;
+
 }
 
 #include "types.h"
