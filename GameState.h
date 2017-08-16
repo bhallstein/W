@@ -49,13 +49,24 @@ namespace W {
 		
 		bool isTranslucent() { return translucent; }
 		
+		// GameState pushing/popping
+		static void pushState(W::GameState *);
+		static void popState(W::Returny &);
+		static std::vector<GameState*> _gsStack;
+		static bool _pop;
+		static Returny _returny;
+		static void _popState();
+		
 	protected:
-		// Properties
 		bool translucent;	// If true, the previous state will be drawn too.
+
 	};
 	
 	extern Returny KillerReturny;
 	extern Returny EmptyReturny;
+	
+	void pushState(W::GameState *);
+	void popState(W::Returny &);
 
 }
 

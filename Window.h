@@ -1,3 +1,14 @@
+/*
+ * Window.h
+ *
+ * Window encapsulates both a Window on the device, and the View and OpenGL
+ * state associated with it.
+ *
+ * The base class defines an abstract interface; different platform-specific
+ * implementations are encapsulated as subclasses.
+ *
+ */
+
 #ifndef __W_Window
 #define __W_Window
 
@@ -5,53 +16,48 @@
 #include "Colour.h"
 #include "Event.h"
 
-#if defined _WIN32 || _WIN64
-	#include "Windows.h"
-	#include <map>
-#endif
-
 namespace W {
 
 	class View;
 	
 	class Window {
 	public:
-		Window(const W::size &, const char *_title);
-		~Window();
+		Window(const W::size &, const std::string &title);
+		virtual ~Window();
 		
-		W::size getDimensions();
-		
+		W::size getSize() { return sz; }
 		void setTitle(const std::string &);
-		void setTitle(const char *);
-		void generateMouseMoveEvent();
 		
 		void setOpenGLThreadAffinity();
 		void clearOpenGLThreadAffinity();
+			// Call from the desired thread to obtain access to the GL context
 		
-#if defined _WIN32 || _WIN64
-		LRESULT CALLBACK _WndProc(HWND, UINT, WPARAM, LPARAM);
-#endif
-		struct NativeObjs;
-		void swapBuffers();
+		void setUpViewport();
 		
-	protected:
-		void createWindow(const W::size &, const char *_title);
+		void flushBuffer(); // Draw to the screen
+		
+		enum Mode { Windowed, FullScreen } mode;
+		
+		void generateMouseMoveEvent();
+		
+		#if defined _WIN32 || _WIN64
+			LRESULT CALLBACK _WndProc(HWND, UINT, WPARAM, LPARAM);
+		#endif
+		
+	private:
+		void createWindow();
 		void closeWindow();
 		void setUpOpenGL();
+		position getMousePosition();
 		
-		struct NativeObjs *_objs;
+		size sz;
 		
-#if defined _WIN32 || _WIN64
-		struct _initializer;
-		static _initializer *_init;
-		static HINSTANCE _appInstance;
-		static std::map<UINT, W::EventType::T> _win_event_type_map;
-#endif
+		struct Objs;
+		Objs *objs;
+		
+		struct Initializer;
+		static Initializer *init;
 	};
-
-#if defined _WIN32 || _WIN64
-	LRESULT CALLBACK Window_WndProc(HWND, UINT, WPARAM, LPARAM);
-#endif
 	
 }
 

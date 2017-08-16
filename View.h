@@ -23,6 +23,7 @@ namespace W {
 			// If NULL is supplied for positioner, subclass must
 			// set one up and call _updatePosition.
 		
+		void _updatePosition();	// Gets the window size automatically
 		void _updatePosition(const size &winsize);
 		
 		W::EventPropagation::T receiveEvent(Event *);					// Converts event to view’s coordinates, and calls processMouseEvent()

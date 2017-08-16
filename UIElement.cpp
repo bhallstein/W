@@ -75,7 +75,7 @@ W::EventPropagation::T W::Button::recEv(W::Event *ev) {
 		}
 	}
 	
-	return EventPropagation::SHOULD_STOP;
+	return EventPropagation::ShouldStop;
 }
 void W::Button::updatePosition() {
 	btnrect->setPos(rct.pos);		// Update D.O.

@@ -1,4 +1,5 @@
 #include "MegaTexture.h"
+#include "Log.h"
 
 #ifdef __APPLE__
 	#include <OpenGL/gl.h>
@@ -38,7 +39,6 @@ struct W::MegaTexture::initializer {
 	initializer() {
 		// Allocate main memory megatexture repr
 		createMegaTex(MT_INITIAL_POWER);
-		// Can skip locking tex mutex: this happens before the draw thread is created
 		
 		// Create initial node
 		topNode = new MTNode;

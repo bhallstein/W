@@ -16,13 +16,6 @@ namespace  W {
 
 	class MegaTexture {
 	public:
-	
-		// Thread safety:
-		// Before modifying the mt in memory, need to lock the texture mutex.
-		// This should be done by the calling object when calling the functions:
-		//  - addTex()
-		//  - upload()
-
 		static bool addTex(const std::string &filename, W::Texture *);
 			// Adds the texture and calls setModified(), returning false if impossible,
 		static bool addTex(unsigned char *, const size &, W::Texture *);

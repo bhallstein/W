@@ -22,31 +22,31 @@
 -(void)mouseDown:(NSEvent *)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::_addEvent(W::Event(W::EventType::LEFTMOUSEDOWN, W::position((int)p.x, (int)p.y)));
+	W::Event::_addEvent(new W::Event(W::EventType::LEFTMOUSEDOWN, W::position((int)p.x, (int)p.y)));
 }
 -(void)mouseUp:(NSEvent*)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::_addEvent(W::Event(W::EventType::LEFTMOUSEUP, W::position((int)p.x, (int)p.y)));
+	W::Event::_addEvent(new W::Event(W::EventType::LEFTMOUSEUP, W::position((int)p.x, (int)p.y)));
 }
 -(void)rightMouseDown:(NSEvent *)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::_addEvent(W::Event(W::EventType::RIGHTMOUSEDOWN, W::position((int)p.x, (int)p.y)));
+	W::Event::_addEvent(new W::Event(W::EventType::RIGHTMOUSEDOWN, W::position((int)p.x, (int)p.y)));
 }
 -(void)rightMouseUp:(NSEvent *)nsev {
 	NSPoint p = [nsev locationInWindow];
 	[self __convertMouseCoords:&p];
-	W::_addEvent(W::Event(W::EventType::RIGHTMOUSEUP, W::position((int)p.x, (int)p.y)));
+	W::Event::_addEvent(new W::Event(W::EventType::RIGHTMOUSEUP, W::position((int)p.x, (int)p.y)));
 }
 -(void)keyDown:(NSEvent *)nsev {
-	W::_addEvent(W::Event(
+	W::Event::_addEvent(new W::Event(
 		W::EventType::KEYDOWN,
 		W::Event::charToKeycode([[nsev characters] characterAtIndex:0])
 	));
 }
 -(void)keyUp:(NSEvent *)nsev {
-	W::_addEvent(W::Event(
+	W::Event::_addEvent(new W::Event(
 		W::EventType::KEYUP,
 		W::Event::charToKeycode([[nsev characters] characterAtIndex:0])
 	));
@@ -61,15 +61,102 @@
 @end
 
 
-/****************************************/
-/*** W_Window Delegate implementation ***/
-/****************************************/
+/***************************************/
+/*** W_WindowDelegate implementation ***/
+/***************************************/
 
 @implementation W_WindowDelegate
 
 -(bool)windowShouldClose:(id)sender {
-	W::_addEvent(W::Event(W::EventType::CLOSED));
+	W::Event::_addEvent(new W::Event(W::EventType::CLOSED));
 	return NO;
+}
+
+@end
+
+
+/*******************************/
+/*** W_Window implementation ***/
+/*******************************/
+
+@interface W_Window () {
+//	W_WindowDelegate *windowDelegate;
+//	W_View *view;
+//	NSOpenGLContext *context;
+}
+@property W_WindowDelegate *windowDelegate;
+@property W_View *view;
+@property NSOpenGLContext *context;
+@end
+
+@implementation W_Window
+
+@synthesize windowDelegate, view, context;
+
+-(id)initWithWidth:(int)w height:(int)h {
+	NSRect frame = NSMakeRect(0,0,w,h);
+	if (self = [super initWithContentRect:frame
+								styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask /*| NSResizableWindowMask*/
+								  backing:NSBackingStoreBuffered
+									defer:NO]) {
+		[self center];
+		
+		// Create OpenGL context
+		NSOpenGLPixelFormat *pf;
+		NSOpenGLPixelFormatAttribute attrs[] = {
+			NSOpenGLPFAMultisample,
+			NSOpenGLPFASampleBuffers, (NSOpenGLPixelFormatAttribute)1,
+			NSOpenGLPFASamples, (NSOpenGLPixelFormatAttribute)4,
+			NSOpenGLPFADoubleBuffer,
+			0
+		};
+		if ((pf = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs]) == nil) {
+			W::log << "Window: Error creating NSOpenGLPixelFormat\n";
+			return nil;
+		}
+		if ((context = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil]) == nil) {
+			W::log << "Window: Error creating NSOpenGLContext\n";
+			return nil;
+		}
+		// Turn on VSync
+		int vsync = 1;
+		[context setValues:&vsync forParameter:NSOpenGLCPSwapInterval];
+		
+		// Enable lion fullscreenery
+		//	NSWindowCollectionBehavior coll = [_objs->window collectionBehavior];
+		//	coll |= NSWindowCollectionBehaviorFullScreenPrimary;
+		//	[_objs->window setCollectionBehavior:coll];
+		
+		// Add view to window
+		if ((view = [[W_View alloc] initWithFrame:frame]) == nil) {
+			W::log << "Window: Error creating W_View\n";
+			return nil;
+		}
+		[self setContentView:view];
+		[context setView:view];		// Set view as context’s drawable object
+		
+		// Set delegate
+		if ((windowDelegate = [[W_WindowDelegate alloc] init]) == nil) {
+			W::log << "Window: Error creating delegate\n";
+			return nil;
+		}
+		[self setDelegate:windowDelegate];
+		
+		[self makeKeyAndOrderFront:NSApp];
+		[self makeFirstResponder:view];
+	}
+	return self;
+}
+-(void) dealloc {
+	[context clearDrawable];
+}
+-(void)setOpenGLThreadAffinity { [context makeCurrentContext]; }
+-(void)clearOpenGLThreadAffinity { [NSOpenGLContext clearCurrentContext]; }
+-(void)flushBuffer { [context flushBuffer]; }
+-(NSPoint)getMousePosition {
+	NSPoint p = [self mouseLocationOutsideOfEventStream];
+	[view __convertMouseCoords:&p];
+	return p;
 }
 
 @end
@@ -79,7 +166,22 @@
 /*** UpdateTimer implementation ***/
 /**********************************/
 
-@implementation UpdateTimer
+#include "Callback.h"
+
+@interface W_UpdateTimer () {
+	NSTimer *t;
+	W::Callback *c;
+}
+@end
+
+@implementation W_UpdateTimer
+
+-(id)initWithCallback:(void*)cb {
+	if (self = [super init]) {
+		c = (W::Callback*)cb;
+	}
+	return self;
+}
 
 -(void)start {
 	t = [NSTimer scheduledTimerWithTimeInterval:1./40.
@@ -92,7 +194,7 @@
 	[t invalidate];
 }
 -(void)callback:(NSTimer*)_t {
-	W::_update();
+	c->call();
 }
 
 @end

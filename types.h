@@ -5,6 +5,23 @@
 #include <sstream>
 #include <vector>
 
+
+/* Target identification */
+
+#ifdef __APPLE__
+	#include "TargetConditionals.h"
+	#if TARGET_OS_IPHONE
+		#define WTARGET_IOS
+	#elif TARGET_OS_MAC
+		#define WTARGET_MAC
+	#endif
+
+#elif defined _WIN32 || _WIN64
+	#define WTARGET_WIN
+
+#endif
+
+
 namespace W {
 
 	/* Coordinates & such */
@@ -115,6 +132,12 @@ namespace W {
 		std::istringstream ss(s);
 		return !(ss >> t).fail();
 	}
+
+	/* File/Directory helper functions */
+	bool isValidDir(const std::string &path);
+	bool isValidDir(const char *path);
+	bool createDir(const std::string &path);
+	bool createDir(const char *path);
 	
 	// Vertexy stuff
 	struct v3f {

@@ -9,12 +9,8 @@ W::Texture::Texture(const std::string &_filename) :
 	usageCount(0),
 	filename(_filename)
 {
-	_lock_mutex(&texture_mutex);
-	
 	if (!MegaTexture::addTex(_filename, this))
 		throw Exception("Error creating texture, see log for details");
-	
-	_unlock_mutex(&texture_mutex);
 }
 
 W::Texture::~Texture()

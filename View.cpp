@@ -1,5 +1,6 @@
 #include "W.h"
 #include "DrawnObj.h"
+#include "Controller.h"
 
 #ifdef __APPLE__
 	#include <OpenGL/gl.h>
@@ -84,7 +85,7 @@ W::View::View(Positioner *_pos) :
 	firstDObj(NULL),
 	lastDObj(NULL)
 {
-	if (_positioner) _updatePosition(_window->getDimensions());
+	if (_positioner) _updatePosition();
 }
 W::View::~View()
 {
@@ -92,6 +93,9 @@ W::View::~View()
 	delete glData;
 }
 
+void W::View::_updatePosition() {
+	_updatePosition(_controller.window->getSize());
+}
 void W::View::_updatePosition(const size &winsize) {
 	if (_positioner)
 		rct = _positioner->refresh(winsize);
@@ -102,7 +106,7 @@ W::EventPropagation::T W::View::receiveEvent(Event *ev) {
 	ev->pos.x -= rct.pos.x;
 	ev->pos.y -= rct.pos.y;
 	processMouseEvent(ev);
-	return EventPropagation::SHOULD_STOP;
+	return EventPropagation::ShouldStop;
 }
 
 void W::View::_subscribeToMouseEvents() {

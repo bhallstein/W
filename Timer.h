@@ -35,17 +35,15 @@ THE SOFTWARE.
 #define Timer_H
 
 #ifdef __APPLE__
-
-#include <sys/time.h>
-
+	#include <sys/time.h>
 #elif defined _WIN32 || _WIN64
-#include <time.h>
-
+	#include <time.h>
 #ifndef WIN32_LEAN_AND_MEAN
-#	define WIN32_LEAN_AND_MEAN
+	#define WIN32_LEAN_AND_MEAN
 #endif
+
 #if !defined(NOMINMAX) && defined(_MSC_VER)
-#	define NOMINMAX // required to stop windows.h messing up std::min
+	#define NOMINMAX // required to stop windows.h messing up std::min
 #endif
 #include "windows.h"
 
@@ -103,6 +101,3 @@ namespace W
 }
 
 #endif
-
-// #ifndef __OSXTimer_H__
-// #define __OSXTimer_H__

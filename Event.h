@@ -2,6 +2,7 @@
 #define __W__MisterEvent
 
 #include "types.h"
+#include "Mutex.h"
 
 namespace W {
 	
@@ -50,14 +51,24 @@ namespace W {
 		Event(W::EventType::T);
 		Event(W::EventType::T, const W::position &);
 		Event(W::EventType::T, W::KeyCode::T);
+		Event(W::EventType::T, float);
 		
 		W::position pos;
 		W::EventType::T type;
 		W::KeyCode::T key;
+		float x;
 		void *_payload;
 		
 		static W::EventType::T registerType();
 		static W::KeyCode::T charToKeycode(unsigned int c);
+		
+		static std::vector<W::Event*> _events;
+		static void _addEvent(W::Event *);
+			// W's event queue
+		
+		static Mutex _mutex;
+			// On windows due to MMT usage the event harvesting
+			// code is on a sep. thread to the update cycle.
 		
 	private:
 		static int _typecounter;
