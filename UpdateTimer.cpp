@@ -71,6 +71,7 @@ struct W::UpdateTimer::Objs {
 	UINT timer;
 };
 
+typedef void (*vdfncb)(void);
 vdfncb _controllerUpdateFn = NULL;
 void CALLBACK _mmtCallback(UINT timerid, UINT uMsg, DWORD userdata, DWORD d1, DWORD d2) {
 	if (_controllerUpdateFn)
