@@ -19,7 +19,7 @@
 #ifdef WTARGET_MAC
 	#import <Cocoa/Cocoa.h>
 #elif defined WTARGET_WIN
-	bool _quit = false;
+	bool _w_quit = false;
 #endif
 
 //#define __W_DEBUG
@@ -144,7 +144,7 @@ void W::_start() {
 	// Win: enter message pump
 	#if defined WTARGET_WIN
 		MSG msg;
-		while (!_quit) {
+		while (!_w_quit) {
 			if (GetMessage(&msg, NULL, 0, 0)) {
 				if (msg.message == WM_QUIT) {
 					//W::_quit = true;
@@ -221,7 +221,7 @@ void _update() {
 	#endif
 		
 	#ifdef WTARGET_WIN
-		Event::_mutex.lock();
+		W::Event::_mutex.lock();
 	#endif
 	
 	W::GameState *g = objs.gsStack.back();
@@ -246,7 +246,7 @@ void _update() {
 	evs.clear();
 	
 	#ifdef WTARGET_WIN
-		Event::_mutex.unlock();
+		W::Event::_mutex.unlock();
 	#endif
 	
 	// Check for poppage due to event input
@@ -315,8 +315,8 @@ void _quit() {
 	#ifdef WTARGET_MAC
 		[NSApp performSelector:@selector(terminate:) withObject:nil afterDelay:0];
 	#elif defined WTARGET_WIN
-		window->clearOpenGLThreadAffinity();
-		_quit = true;
+		W::wObjs.window->clearOpenGLThreadAffinity();
+		_w_quit = true;
 	#endif
 }
 
