@@ -67,6 +67,7 @@ namespace W {
 		extern DWORD _drawingThreadId;
 		extern HANDLE _drawingThreadHandle;
 	#endif
+	void _setUpViewport();
 	
 	/* Update */
 	#ifdef __APPLE__

@@ -365,6 +365,8 @@ DWORD WINAPI W::drawingThreadFn(LPVOID lpParam)
 //	lastNFrameDurations.resize(nFramesToMeasure);
 //	int f = 0;
 	
+	_setUpViewport();
+	
 	// Draw loop
 	while (!_quit) {
 //		gettimeofday(&t1, NULL);
@@ -373,12 +375,6 @@ DWORD WINAPI W::drawingThreadFn(LPVOID lpParam)
 		int &winW = window_size.width, &winH= window_size.height;
 		
 		glScissor(0, 0, winW, winH);
-		
-		glViewport(0, 0, winW, winH);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, winW, winH, 0, -1, 1);
-		glMatrixMode(GL_MODELVIEW);
 		
 		glClearColor(0.525, 0.187, 0.886, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -437,6 +433,17 @@ DWORD WINAPI W::drawingThreadFn(LPVOID lpParam)
 	_window->clearOpenGLThreadAffinity();
 	
 	return 0;
+}
+void W::_setUpViewport() {
+	size winSz = _window->getDimensions();
+	
+	glViewport(0, 0, winSz.width, winSz.height);
+	
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, winSz.width, winSz.height, 0, -1, 1);
+	
+	glMatrixMode(GL_MODELVIEW);
 }
 
 

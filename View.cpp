@@ -86,11 +86,12 @@ void W::View::_removeDO(DrawnObj *_obj) {
 }
 
 void W::View::_draw(const size &winSz) {
-	size &sz = rct.sz;
-	position &pos = rct.pos;
+	size sz = rct.sz;			// Note: these properties are copied, to avoid artifacts in the event
+	position pos = rct.pos;		// that the view's position is updated while its objects are being drawn
+
 	glScissor(pos.x, winSz.height - pos.y - sz.height, sz.width, sz.height);
 	
-	// Allow users to perform custom OpenGL drawing in the background
+	// Users can write custom OpenGL code to draw in the background
 	performOpenGLBackgroundDrawing();
 	
 	// Draw all DOs
