@@ -8,7 +8,7 @@ namespace W {
 	namespace EventType {
 		typedef int T;
 		enum {
-			KEYPRESS,
+			KEYDOWN, KEYUP,
 			MOUSEMOVE,
 			LEFTMOUSEUP, LEFTMOUSEDOWN, RIGHTMOUSEUP, RIGHTMOUSEDOWN,
 			SCREENEDGE_TOP, SCREENEDGE_BOTTOM, SCREENEDGE_LEFT, SCREENEDGE_RIGHT,
@@ -32,6 +32,8 @@ namespace W {
 			_0,	_1,	_2,
 			_3,	_4,	_5,
 			_6,	_7,	_8,	_9,
+			
+			SPACE,
 			
 			LEFT_ARROW,	RIGHT_ARROW,
 			UP_ARROW,	DOWN_ARROW,

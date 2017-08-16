@@ -11,14 +11,14 @@ W::View::View(Positioner *_pos) :
 W::View::~View()
 {
 	if (_positioner) delete _positioner;
-
-	// GameState::removeView() must must first be called, to safely remove the view (& so all its DrawnObjs)
+	
+	// GameState::removeView() must first be called, to safely remove the view (& so all its DrawnObjs)
 	// from the in-flight graphics data.
 	// Therefore we can simply deallocate all DrawnObjs the view holds references to.
 	for (std::map<int, DO_list>::iterator it = scene.begin(); it != scene.end(); it++) {
 		DO_list &l = it->second;
-		for (DO_list::iterator it = l.begin(); it < l.end(); it++)
-			delete *it;
+		for (DO_list::iterator itl = l.begin(); itl < l.end(); ++itl)
+			delete *itl;
 	}
 	for (std::vector<DOAndLayer>::iterator it = newDOs.begin(); it < newDOs.end(); it++)
 		delete it->DO;
@@ -71,14 +71,14 @@ void W::View::_updateDOs() {
 
 void W::View::_removeDO(DrawnObj *_obj) {
 	for (std::map<int, DO_list>::iterator it = scene.begin(); it != scene.end(); ) {
-		DO_list *vec = &it->second;
-		for (DO_list::iterator itv = vec->begin(); itv < vec->end(); )
+		DO_list &vec = it->second;
+		for (DO_list::iterator itv = vec.begin(); itv < vec.end(); )
 			if (*itv == _obj) {
 				delete *itv;
-				itv = vec->erase(itv);
+				itv = vec.erase(itv);
 			}
-			else it++;
-		if (!vec->size())
+			else ++itv;
+		if (!vec.size())
 			scene.erase(it++);
 		else
 			++it;
