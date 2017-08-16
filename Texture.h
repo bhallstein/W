@@ -7,7 +7,6 @@
 #define __W__Texture
 
 #include <string>
-#include "SOIL.h"
 
 namespace W {
 	

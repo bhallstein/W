@@ -1,6 +1,8 @@
 #include "types.h"
 #include "W.h"
 
+#include "SOIL.h"
+
 #ifdef __APPLE__
 	#include <OpenGL/gl.h>
 #elif defined WIN32 || WIN64

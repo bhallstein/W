@@ -7,9 +7,8 @@
 #define W_Positioner
 
 #include "types.h"
-#include "lua.hpp"
-#include "LuaHelper/LuaState.hpp"
-#include "LuaHelper/LHObj.h"
+
+class LuaObj;
 
 namespace W {
 	
@@ -32,7 +31,7 @@ namespace W {
 			PosType::T _sizing_method_x, PosType::T _sizing_method_y,
 			float _x, float _y, float _w, float _h
 		);
-		Positioner(LHObj &);
+		Positioner(LuaObj *);
 		W::rect& refresh(const size &container_size);
 
 		void nudge(const position &delta);

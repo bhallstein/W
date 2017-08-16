@@ -50,9 +50,9 @@ namespace W {
 		// Initialization from Lua
 		bool initialize(const std::string &viewname);
 		
-		void addPositioner(const std::string &limit, LHObj &, orientation_enum);
-		void addElements(const std::string &limit, LHObj &, orientation_enum);
-		UIElement* createElement(const std::string &limit, const std::string &name, LHObj &, orientation_enum);
+		void addPositioner(const std::string &limit, LuaObj *, orientation_enum);
+		void addElements(const std::string &limit, LuaObj *, orientation_enum);
+		UIElement* createElement(const std::string &limit, const std::string &name, LuaObj *, orientation_enum);
 			// These will throw, w/ useful error msg, if problem
 		
 		void createEvTypeMap();			// Translation table for event types subscribed

@@ -1,6 +1,8 @@
 #include "Positioner.h"
 #include <vector>
 
+#include "LuaObj.h"
+
 namespace W {
 	bool checkDistStr(const std::string &s) {
 		int n = (int) s.length();
@@ -47,10 +49,12 @@ W::Positioner::Positioner(
 	//
 }
 
-W::Positioner::Positioner(LHObj &l)
+W::Positioner::Positioner(LuaObj *_l)
 {
 	// Construct from recursive lua object
 	using std::string;
+	
+	LuaObj &l = *_l;
 
 	bool error = false;
 	std::vector<string> errmsgs;
@@ -58,8 +62,8 @@ W::Positioner::Positioner(LHObj &l)
 	std::vector<string> sComponents;
 
 	// Get size params
-	LHObj &l_size = l["size"];
-	if (l_size.type != LHValueType::STRING) {
+	LuaObj &l_size = l["size"];
+	if (l_size.type != LuaObj::ValueType::STRING) {
 		error = true;
 		errmsgs.push_back("'size' property not found");
 	}
@@ -84,8 +88,8 @@ W::Positioner::Positioner(LHObj &l)
 	}
 	
 	// Get position params
-	LHObj &l_pos = l["position"];
-	if (l_pos.type != LHValueType::STRING) {
+	LuaObj &l_pos = l["position"];
+	if (l_pos.type != LuaObj::ValueType::STRING) {
 		error = true;
 		errmsgs.push_back("'position' property not found");
 	}
@@ -110,9 +114,9 @@ W::Positioner::Positioner(LHObj &l)
 	}
 	
 	// Get positioning corner
-	LHObj &l_corner = l["positioning_corner"];
+	LuaObj &l_corner = l["positioning_corner"];
 	downCase(l_corner.str_value);
-	if (l_corner.type == LHValueType::NIL)
+	if (l_corner.type == LuaObj::ValueType::NIL)
 		fixed_corner = Corner::TOP_LEFT;
 	else if (!strToCorner(l_corner.str_value, fixed_corner)) {
 		error = true;
@@ -124,10 +128,10 @@ W::Positioner::Positioner(LHObj &l)
 	}
 	
 	// Get draggability
-	LHObj &l_drag = l["draggable"];
-	if (l_drag.type == LHValueType::NIL)
+	LuaObj &l_drag = l["draggable"];
+	if (l_drag.type == LuaObj::ValueType::NIL)
 		draggable = false;
-	else if (l_drag.type == LHValueType::BOOL)
+	else if (l_drag.type == LuaObj::ValueType::BOOL)
 		draggable = l_drag.bool_value;
 	else {
 		error = true;

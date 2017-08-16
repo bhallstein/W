@@ -8,8 +8,8 @@ namespace W {
 	class MappedObj {
 	public:
 		rect rct;
-		void setPos(W::position _pos) { rct.pos = _pos; }
-		void setSz(W::size _sz) { rct.sz = _sz; }
+		void setPos(const W::position &_pos) { rct.pos = _pos; }
+		void setSz(const W::size &_sz) { rct.sz = _sz; }
 		bool overlapsWith(const W::position &p) {
 			float x = rct.pos.x + rct.pos.a;
 			float y = rct.pos.y + rct.pos.b;
