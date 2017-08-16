@@ -5,7 +5,7 @@
 #include "Colour.h"
 #include "Event.h"
 
-#if defined WIN32 || WIN64
+#if defined _WIN32 || _WIN64
 	#include "Windows.h"
 	#include <map>
 #endif
@@ -28,7 +28,7 @@ namespace W {
 		void setOpenGLThreadAffinity();
 		void clearOpenGLThreadAffinity();
 		
-#if defined WIN32 || WIN64
+#if defined _WIN32 || _WIN64
 		LRESULT CALLBACK _WndProc(HWND, UINT, WPARAM, LPARAM);
 #endif
 		struct NativeObjs;
@@ -41,7 +41,7 @@ namespace W {
 		
 		struct NativeObjs *_objs;
 		
-#if defined WIN32 || WIN64
+#if defined _WIN32 || _WIN64
 		struct _initializer;
 		static _initializer *_init;
 		static HINSTANCE _appInstance;
@@ -49,7 +49,7 @@ namespace W {
 #endif
 	};
 
-#if defined WIN32 || WIN64
+#if defined _WIN32 || _WIN64
 	LRESULT CALLBACK Window_WndProc(HWND, UINT, WPARAM, LPARAM);
 #endif
 	

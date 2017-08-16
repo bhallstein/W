@@ -4,7 +4,7 @@
 #ifdef __APPLE__
 	#include "ObjC-Classes.h"
 	#include <OpenGL/gl.h>
-#elif defined WIN32 || WIN64
+#elif defined _WIN32 || _WIN64
 	#include <gl\gl.h>
 	#include <gl\glu.h>
 	//#include "shlobj.h"
@@ -21,7 +21,7 @@ struct W::Window::NativeObjs {
 		W_View *view;
 		NSOpenGLPixelFormat *pf;
 		NSOpenGLContext *context;
-	#elif defined WIN32 || WIN64
+	#elif defined _WIN32 || _WIN64
 		HWND windowHandle;
 		HDC deviceContext;
 		HGLRC renderingContext;
@@ -29,7 +29,7 @@ struct W::Window::NativeObjs {
 };
 
 
-#if defined WIN32 || WIN64
+#if defined _WIN32 || _WIN64
 	HINSTANCE W::Window::_appInstance;
 	LRESULT CALLBACK W::Window_WndProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM lParam) {
 		// If message if WM_NCCREATE, set pointer to MyWindow
@@ -108,7 +108,7 @@ void W::Window::setTitle(const std::string &t) {
 void W::Window::setTitle(const char *t) {
 	#ifdef __APPLE__
 		[_objs->window setTitle:[NSString stringWithUTF8String:t]];
-	#elif defined WIN32 || WIN64
+	#elif defined _WIN32 || _WIN64
 		SetWindowText(_objs->windowHandle, t);
 	#endif
 }
@@ -121,7 +121,7 @@ void W::Window::generateMouseMoveEvent() {
 		[_objs->view __convertMouseCoords:&p];
 		W::Event ev(EventType::MOUSEMOVE, W::position((int)p.x, (int)p.y));
 		W::_addEvent(ev);
-	#elif defined WIN32 || WIN64
+	#elif defined _WIN32 || _WIN64
 		POINT p;
 		GetCursorPos(&p);
 		ScreenToClient(_objs->windowHandle, &p);
@@ -185,7 +185,7 @@ void W::Window::createWindow(const size &_size, const char *_title) {
 		[_objs->window makeKeyAndOrderFront:NSApp];
 		[_objs->window makeFirstResponder:_objs->view];
 
-	#elif defined WIN32 || WIN64
+	#elif defined _WIN32 || _WIN64
 		// Set window style & size
 		DWORD windowStyle = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 		DWORD extendedWindowStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
@@ -270,7 +270,7 @@ void W::Window::closeWindow() {
 		[_objs->context clearDrawable];
 		[_objs->window release];
 		[_objs->windowDelegate release];
-	#elif defined WIN32 || WIN64
+	#elif defined _WIN32 || _WIN64
 		if (_objs->renderingContext) {
 			if (!wglMakeCurrent(NULL, NULL))
 				MessageBox(NULL, "Error releasing device and rendering contexts", "Error", MB_OK | MB_ICONEXCLAMATION);
@@ -284,7 +284,7 @@ void W::Window::closeWindow() {
 		if (_objs->windowHandle && !DestroyWindow(_objs->windowHandle))
 			MessageBox(NULL, "Error destroying the window", "Error", MB_OK | MB_ICONEXCLAMATION);
 		_objs->windowHandle = NULL;
-		if (!UnregisterClass("OpenGL", _appInstance))
+		if (!UnregisterClass("W_Window", _appInstance))
 			MessageBox(NULL, "Error unregistering the window class", "Error", MB_OK | MB_ICONEXCLAMATION);
 		_appInstance = NULL;
 	#endif
@@ -329,7 +329,7 @@ W::size W::Window::getDimensions() {
 		NSSize bounds = [_objs->view bounds].size;
 	//	CGSize bounds = [ob->view bounds].size;
 		return size((int)bounds.width, (int)bounds.height);
-	#elif defined WIN32 || WIN64
+	#elif defined _WIN32 || _WIN64
 		RECT rect;
 		GetClientRect(_objs->windowHandle, &rect);
 		return size(rect.right - rect.left, rect.bottom - rect.top);
@@ -344,7 +344,7 @@ void W::Window::swapBuffers() {
 	#endif
 }
 
-#if defined WIN32 || WIN64
+#if defined _WIN32 || _WIN64
 LRESULT CALLBACK W::Window::_WndProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM lParam) {
 	if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP || msg == WM_RBUTTONDOWN || msg == WM_RBUTTONUP) {
 		W::_addEvent(W::Event(

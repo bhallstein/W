@@ -6,7 +6,7 @@
 	#include <Cocoa/Cocoa.h>
 	#include "ObjC-Classes.h"
 	#include <OpenGL/gl.h>
-#elif defined WIN32 || WIN64
+#elif defined _WIN32 || _WIN64
 	/*#include "shlobj.h"*/
 	#include <gl\gl.h>
 	#include <gl\glu.h>
@@ -69,7 +69,7 @@ struct W::_init {
 		std::string p;
 		#ifdef __APPLE__
 			p = "/dev/null";
-		#elif defined WIN32 || WIN64
+		#elif defined _WIN32 || _WIN64
 			p = "\\Device\\Null";
 		#endif
 		setLogFile(p.c_str());
@@ -195,7 +195,7 @@ void W::start() {
 		
 		err = pthread_attr_destroy(&attr);
 		if (err) log << "Error: couldn’t destroy drawing thread attributes obj" << " (error: " << err << ")" << std::endl;
-	#elif defined WIN32 || WIN64
+	#elif defined _WIN32 || _WIN64
 		_drawingThreadHandle = CreateThread(
 			0,					// ptr to SECURITY_ATTRIBUTES struct (0 for def.)
 			0,					// stack size (0 for def.)
@@ -230,9 +230,9 @@ void W::start() {
 void W::_updateTimerStart() {
 	#ifdef __APPLE__
 		[(UpdateTimer*)_updateTimer start];
-	#elif defined WIN32 || WIN64
+	#elif defined _WIN32 || _WIN64
 		// Create mmt
-		MMRESULT mmr = timeSetEvent(2, 2, &_mmtCallback, NULL, TIME_PERIODIC);
+		MMRESULT mmr = timeSetEvent(20, 40, &_mmtCallback, NULL, TIME_PERIODIC);
 		if (mmr == NULL)
 			throw Exception("Error starting multimedia timer");
 		_updateTimer = mmr;
@@ -241,10 +241,15 @@ void W::_updateTimerStart() {
 void W::_updateTimerStop() {
 	#ifdef __APPLE__
 		[(UpdateTimer*)_updateTimer stop];
-	#elif defined WIN32 || WIN64
+	#elif defined _WIN32 || _WIN64
 		timeKillEvent(_updateTimer);
 	#endif
 }
+#if defined _WIN32 || _WIN64
+void CALLBACK W::_mmtCallback(UINT timerid, UINT uMsg, DWORD userdata, DWORD d1, DWORD d2) {
+	_update();
+}
+#endif
 
 
 /* The update cycle */

@@ -10,7 +10,7 @@
 
 #ifdef __APPLE__
 	#include <pthread.h>
-#elif defined WIN32 || WIN64
+#elif defined _WIN32 || _WIN64
 	#include "Windows.h"
 #endif
 
