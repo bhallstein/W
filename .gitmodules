@@ -1,0 +1,3 @@
+[submodule "luaobj"]
+	path = luaobj
+	url = git@bitbucket.org:hallstein/luaobj.git
