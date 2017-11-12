@@ -21,6 +21,9 @@
 #include "W_internal.h"
 
 #include "LuaObj.h"
+extern "C" {
+	#include "lauxlib.h"
+}
 
 #include <iostream>
 
@@ -163,7 +166,7 @@ bool W::UIView::initialize(const std::string &viewname) {
 	try {
 		if (orientation_check) {
 			// Add all landscape descendants as positioners
-			LuaObj::_descendantmap &d1 = landscapeObj.descendants;
+			LuaObj::_descendantmap d1 = landscapeObj.descendants();
 			if (d1.size() == 0) {
 				W::log <<
 					"UIView: '" << viewname << "': Landscape: error: no layouts found" << std::endl;
@@ -174,7 +177,7 @@ bool W::UIView::initialize(const std::string &viewname) {
 				addElements(it->first, &it->second["elements"], O_LANDSCAPE);
 			}
 			// Add all portrait descendants as positioners
-			LuaObj::_descendantmap &d2 = portraitObj.descendants;
+			LuaObj::_descendantmap d2 = portraitObj.descendants();
 			if (d2.size() == 0) {
 				W:log <<
 					"UIView: '" << viewname << "': Portrait: error: no layouts found" << std::endl;
@@ -198,7 +201,7 @@ bool W::UIView::initialize(const std::string &viewname) {
 				orientation = O_PORTRAIT;
 				ob = &portraitObj;
 			}
-			LuaObj::_descendantmap &d = ob->descendants;
+			LuaObj::_descendantmap d = ob->descendants();
 			if (d.size() == 0) {
 				W::log
 					<< "UIView: '" << viewname << "': "
@@ -260,7 +263,7 @@ void W::UIView::addElements(const std::string &limit, LuaObj *luaObj, W::UIView:
 	l.push_back(element_list());
 	element_list &elvec = l.back();
 	// For each descendant, create an element
-	LuaObj::_descendantmap &d = luaObj->descendants;
+	LuaObj::_descendantmap d = luaObj->descendants();
 	for (LuaObj::_descendantmap::iterator it = d.begin(); it != d.end(); it++) {
 		const std::string &elName = it->first;
 		LuaObj &elObj = it->second;
@@ -283,7 +286,7 @@ W::UIElement* W::UIView::createElement(const std::string &limit, const std::stri
 		LuaObj &typeObj = luaObj["type"];
 		if (!typeObj.isString())
 			throw Exception("No type specified for element");
-		string eltype = typeObj.str_value;
+		string eltype = typeObj.str_value();
 		
 		// Create element
 		if (eltype == "button")

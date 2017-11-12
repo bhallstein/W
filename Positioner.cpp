@@ -75,12 +75,12 @@ W::Positioner::Positioner(LuaObj *_l)
 
 	// Get size params
 	LuaObj &l_size = l["size"];
-	if (l_size.type != LuaObj::ValueType::STRING) {
+	if (l_size.type() != LuaObj::Type::String) {
 		error = true;
 		errmsgs.push_back("'size' property not found");
 	}
 	else {
-		string &s = l_size.str_value;
+		string s = l_size.str_value();
 		strSplit(s, sComponents, ',');
 		if (sComponents.size() != 2 || !checkDistStr(sComponents[0]) || !checkDistStr(sComponents[1])) {
 			error = true;
@@ -101,12 +101,12 @@ W::Positioner::Positioner(LuaObj *_l)
 	
 	// Get position params
 	LuaObj &l_pos = l["position"];
-	if (l_pos.type != LuaObj::ValueType::STRING) {
+	if (l_pos.type() != LuaObj::Type::String) {
 		error = true;
 		errmsgs.push_back("'position' property not found");
 	}
 	else {
-		string &s = l_pos.str_value;
+		string s = l_pos.str_value();
 		strSplit(s, sComponents, ',');
 		if (sComponents.size() == 2 && checkDistStr(sComponents[0]) && checkDistStr(sComponents[1])) {
 			string &c1 = sComponents[0], &c2 = sComponents[1];
@@ -127,10 +127,10 @@ W::Positioner::Positioner(LuaObj *_l)
 	
 	// Get positioning corner
 	LuaObj &l_corner = l["positioning_corner"];
-	downCase(l_corner.str_value);
-	if (l_corner.type == LuaObj::ValueType::NIL)
+	downCase(l_corner.str_value());
+	if (l_corner.type() == LuaObj::Type::_Nil)
 		fixed_corner = Corner::TopLeft;
-	else if (!strToCorner(l_corner.str_value, fixed_corner)) {
+	else if (!strToCorner(l_corner.str_value(), fixed_corner)) {
 		error = true;
 		errmsgs.push_back(
 			"'positioning_corner', if present, must be formatted as per: "
@@ -141,10 +141,10 @@ W::Positioner::Positioner(LuaObj *_l)
 	
 	// Get draggability
 	LuaObj &l_drag = l["draggable"];
-	if (l_drag.type == LuaObj::ValueType::NIL)
+	if (l_drag.type() == LuaObj::Type::_Nil)
 		draggable = false;
-	else if (l_drag.type == LuaObj::ValueType::BOOL)
-		draggable = l_drag.bool_value;
+	else if (l_drag.type() == LuaObj::Type::Bool)
+		draggable = l_drag.bool_value();
 	else {
 		error = true;
 		errmsgs.push_back(
