@@ -88,6 +88,10 @@ namespace W {
 		
 		v2f& operator= (const v2f &);
 		
+		float dot(const v2f &v2) {
+			return a*v2.a + b*v2.b;
+		}
+		
 		std::string str() const;
 	};
 	
