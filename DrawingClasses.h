@@ -22,17 +22,17 @@ namespace W {
 	
 	class Triangle {
 	public:
-		Triangle(View *, const v2f &p1, const v2f &p2, const v2f &p3, const Colour &, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		Triangle(View *, v2f p1, v2f p2, v2f p3, Colour, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
 		~Triangle();
 		
-		void setP1(const v2f &);
-		void setP2(const v2f &);
-		void setP3(const v2f &);
-		void setP123(const v2f &, const v2f &, const v2f &);
+		void setP1(v2f);
+		void setP2(v2f);
+		void setP3(v2f);
+		void setP123(v2f, v2f, v2f);
 		
-		void nudge(const v2f &);
+		void nudge(v2f);
 		
-		void setCol(const Colour &);
+		void setCol(Colour);
 		
 		void setLayer(int);
 		void setBlendMode(BlendMode::T);
@@ -48,15 +48,15 @@ namespace W {
 	
 	class EqTriangle {
 	public:
-		EqTriangle(View *, const v2f &, float radius, const Colour &, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		EqTriangle(View *, v2f, float radius, Colour, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
 		~EqTriangle();
 		
-		void setPosition(const v2f &);
+		void setPosition(v2f);
 		void setRadius(float);
 		
-		void nudge(const v2f &);
+		void nudge(v2f);
 		
-		void setCol(const Colour &);
+		void setCol(Colour);
 
 		void setLayer(int);
 		void setBlendMode(BlendMode::T);
@@ -77,16 +77,16 @@ namespace W {
 	
 	class IsoTriangle {
 	public:
-		IsoTriangle(View *, const v2f &pos, const v2f &size, const Colour &, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		IsoTriangle(View *, v2f pos, v2f size, Colour, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
 		~IsoTriangle();
 		
-		void setPosition(const v2f &);
-		void setSize(const v2f &);
+		void setPosition(v2f);
+		void setSize(v2f);
 		void setRotation(float);
 		
-		void nudge(const v2f &);
+		void nudge(v2f);
 		
-		void setCol(const Colour &);
+		void setCol(Colour);
 		
 		void setLayer(int);
 		void setBlendMode(BlendMode::T);
@@ -106,16 +106,16 @@ namespace W {
 	
 	class Rectangle {
 	public:
-		Rectangle(View *, const v2f &position, const v2f &size, const Colour &, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		Rectangle(View *, v2f position, v2f size, Colour, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T blendMode = BlendMode::Normal);
 		~Rectangle();
 		
-		void setPos(const v2f &);
-		void setSz(const v2f &);
+		void setPos(v2f);
+		void setSz(v2f);
 		void setRot(float);
-		void setAll(const v2f &, const v2f &, float);
-		void nudge(const v2f &);
+		void setAll(v2f pos, v2f sz, float);
+		void nudge(v2f);
 		
-		void setCol(const Colour &);
+		void setCol(Colour);
 		
 		void setLayer(int);
 		void setBlendMode(BlendMode::T);
@@ -132,15 +132,15 @@ namespace W {
 	
 	class Line {
 	public:
-		Line(View *, const v2f &p1, const v2f &p2, const W::Colour, float width, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		Line(View *, v2f p1, v2f p2, W::Colour, float width, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
 		~Line();
 		
-		void setP1(const v2f &);
-		void setP2(const v2f &);
-		void setP1And2(const v2f &p1, const v2f &p2);
-		void nudge(const v2f &);
+		void setP1(v2f);
+		void setP2(v2f);
+		void setP1And2(v2f, v2f);
+		void nudge(v2f);
 		
-		void setCol(const Colour &);
+		void setCol(Colour);
 		
 		void setLayer(int);
 		void setBlendMode(BlendMode::T);
@@ -158,16 +158,34 @@ namespace W {
 	};
 	
 	
+	class Circle {
+	public:
+		Circle(View *, v2f _center, float _radius, W::Colour, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		~Circle();
+		
+		void setCenter(v2f);
+		void setRadius(float);
+		void setCol(W::Colour);
+		
+		v2f center;
+		float radius;
+		Colour col;
+		
+	protected:
+		void *dCircle;
+	};
+	
+	
 	class Sprite {
 	public:
-		Sprite(View *, Texture *, const v2f &pos, const v2f &scale = v2f(1.0,1.0), float opacity = 1, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
+		Sprite(View *, Texture *, v2f pos, v2f scale = v2f(1.0,1.0), float opacity = 1, float rotInDegrees = 0, int layer = DEFAULT_LAYER, BlendMode::T = BlendMode::Normal);
 		~Sprite();
 		
-		void setPos(const v2f &);
-		void setScale(const v2f &);
+		void setPos(v2f);
+		void setScale(v2f);
 		void setRot(float);
-		void setAll(const v2f &pos, const v2f &sz, float);
-		void nudge(const v2f &);
+		void setAll(v2f pos, v2f sz, float);
+		void nudge(v2f);
 		
 		void setOpacity(float);
 		
@@ -182,31 +200,6 @@ namespace W {
 	private:
 		void *dSprite;
 	};
-
-	
-//	/***
-//		DCircle
-//	 ***/
-//	
-//	class DCircle : public DObj {
-//	public:
-//		DCircle(View *, const W::position &_centrePos, int _radius, const W::Colour &);
-//		void setCentrePos(const W::position &_p) { centrePos = _p; setNeedsRecopy(); }
-//		void setRadius(int _r) { radius = _r; setNeedsRecopy(); }
-//		void setCol(const W::Colour &_c) { col = _c; setNeedsRecopy(); }
-//		
-//		position centrePos;
-//		int radius;
-//		Colour col;
-//		
-//	protected:
-//		void _recopy(v3f*, c4f*, t2f*);	// Recopy geom data into supplied arrays
-//
-//	private:
-//		static v3f *circleGeom;
-//		struct Init;
-//		static Init *initializer;
-//	};
 
 
 	/***

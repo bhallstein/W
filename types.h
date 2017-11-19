@@ -139,7 +139,7 @@ namespace W {
 		void operator/= (float x);
 		
 		v4f& operator= (const v4f &);
-		v4f& operator= (const Colour *);
+		v4f& operator= (const Colour);
 		
 		std::string str() const;
 	};

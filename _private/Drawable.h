@@ -95,6 +95,15 @@ namespace W {
 	};
 	
 	
+	class DCircle : public DColouredShape {
+	public:
+		DCircle(View *, v2f _center, float _radius, W::Colour, int layer = DEFAULT_LAYER, BlendMode::T blendMode = BlendMode::Normal);
+		
+		void setPosRadius(v2f pos, float radius);
+		void setCol(Colour);
+	};
+	
+	
 	class DTexturedShape : public Drawable {
 	public:
 		DTexturedShape(View *, Texture *, int _len, int _lay, BlendMode::T _bMode);

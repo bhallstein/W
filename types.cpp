@@ -156,11 +156,11 @@ W::v4f& W::v4f::operator= (const v4f &v) {
 	a = v.a, b = v.b, c = v.c, d = v.d;
 	return *this;
 }
-W::v4f& W::v4f::operator= (const Colour *col) {
-	a = col->r;
-	b = col->g;
-	c = col->b;
-	d = col->a;
+W::v4f& W::v4f::operator= (Colour col) {
+	a = col.r;
+	b = col.g;
+	c = col.b;
+	d = col.a;
 	return *this;
 }
 

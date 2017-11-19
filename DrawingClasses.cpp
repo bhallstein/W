@@ -22,13 +22,10 @@
 #define DEG2RAD (M_PI/180.0)
 #define ROOT3 1.732050808
 
-#define CIRCLE_NPOINTS 15
-#define GEOM_LENGTH_FOR_CIRCLE 3*CIRCLE_NPOINTS
-
 
 #pragma mark - Triangle
 
-W::Triangle::Triangle(View *_v, const v2f &_p1, const v2f &_p2, const v2f &_p3, const Colour &_col, int _lay, BlendMode::T _blend) :
+W::Triangle::Triangle(View *_v, v2f _p1, v2f _p2, v2f _p3, Colour _col, int _lay, BlendMode::T _blend) :
 	p1(_p1),
 	p2(_p2),
 	p3(_p3),
@@ -40,17 +37,17 @@ W::Triangle::~Triangle()
 {
 	delete ((DTri*) dTri);
 }
-void W::Triangle::setP1(const v2f &x){ ((DTri*) dTri)->setP123(p1 = x, p2, p3); }
-void W::Triangle::setP2(const v2f &x){ ((DTri*) dTri)->setP123(p1, p2 = x, p3); }
-void W::Triangle::setP3(const v2f &x){ ((DTri*) dTri)->setP123(p1, p2, p3 = x); }
-void W::Triangle::setP123(const v2f &_p1, const v2f &_p2, const v2f &_p3) {
+void W::Triangle::setP1(v2f x){ ((DTri*) dTri)->setP123(p1 = x, p2, p3); }
+void W::Triangle::setP2(v2f x){ ((DTri*) dTri)->setP123(p1, p2 = x, p3); }
+void W::Triangle::setP3(v2f x){ ((DTri*) dTri)->setP123(p1, p2, p3 = x); }
+void W::Triangle::setP123(v2f _p1, v2f _p2, v2f _p3) {
 	((DTri*) dTri)->setP123(p1 = _p1, p2 = _p2, p3 = _p3);
 }
-void W::Triangle::nudge(const v2f &delta) {
+void W::Triangle::nudge(v2f delta) {
 	p1 += delta, p2 += delta, p3 += delta;
 	((DTri*) dTri)->setP123(p1, p2, p3);
 }
-void W::Triangle::setCol(const Colour &c) {
+void W::Triangle::setCol(Colour c) {
 	((DTri*) dTri)->setCol(col = c);
 }
 void W::Triangle::setLayer(int l) {
@@ -63,7 +60,7 @@ void W::Triangle::setBlendMode(BlendMode::T m) {
 
 #pragma mark - EquiTriangle
 
-W::EqTriangle::EqTriangle(View *_v, const v2f &_p, float _rad, const Colour &_col, float _rot, int _lay, BlendMode::T _blend) :
+W::EqTriangle::EqTriangle(View *_v, v2f _p, float _rad, Colour _col, float _rot, int _lay, BlendMode::T _blend) :
 	pos(_p),
 	radius(_rad),
 	rotation(_rot),
@@ -76,7 +73,7 @@ W::EqTriangle::~EqTriangle()
 {
 	delete ((DTri*) dTri);
 }
-void W::EqTriangle::setPosition(const v2f &_p) {
+void W::EqTriangle::setPosition(v2f _p) {
 	pos = _p;
 	genTriProperties();
 	((DTri*) dTri)->setP123(p1, p2, p3);
@@ -86,12 +83,12 @@ void W::EqTriangle::setRadius(float _rad) {
 	genTriProperties();
 	((DTri*) dTri)->setP123(p1, p2, p3);
 }
-void W::EqTriangle::nudge(const v2f &delta) {
+void W::EqTriangle::nudge(v2f delta) {
 	pos += delta;
 	p1 += delta, p2 += delta, p3 += delta;
 	((DTri*) dTri)->setP123(p1, p2, p3);
 }
-void W::EqTriangle::setCol(const Colour &_col) {
+void W::EqTriangle::setCol(Colour _col) {
 	((DTri*) dTri)->setCol(col = _col);
 }
 void W::EqTriangle::setLayer(int l) {
@@ -134,7 +131,7 @@ void W::EqTriangle::genTriProperties() {
 
 #pragma mark - IsoTriangle
 
-W::IsoTriangle::IsoTriangle(View *_v, const v2f &_p, const v2f &_sz, const Colour &_col, float _rot, int _lay, BlendMode::T _blend) :
+W::IsoTriangle::IsoTriangle(View *_v, v2f _p, v2f _sz, Colour _col, float _rot, int _lay, BlendMode::T _blend) :
 	pos(_p),
 	sz(_sz),
 	rotation(_rot),
@@ -147,22 +144,22 @@ W::IsoTriangle::~IsoTriangle()
 {
 	delete ((DTri*) dTri);
 }
-void W::IsoTriangle::setPosition(const v2f &_p) {
+void W::IsoTriangle::setPosition(v2f _p) {
 	pos = _p;
 	genTriProperties();
 	((DTri*) dTri)->setP123(p1, p2, p3);
 }
-void W::IsoTriangle::setSize(const v2f &_sz) {
+void W::IsoTriangle::setSize(v2f _sz) {
 	sz = _sz;
 	genTriProperties();
 	((DTri*) dTri)->setP123(p1, p2, p3);
 }
-void W::IsoTriangle::nudge(const v2f &delta) {
+void W::IsoTriangle::nudge(v2f delta) {
 	pos += delta;
 	p1 += delta, p2 += delta, p3 += delta;
 	((DTri*) dTri)->setP123(p1, p2, p3);
 }
-void W::IsoTriangle::setCol(const Colour &_col) {
+void W::IsoTriangle::setCol(Colour _col) {
 	((DTri*) dTri)->setCol(col = _col);
 }
 void W::IsoTriangle::setLayer(int l) {
@@ -208,9 +205,9 @@ void W::IsoTriangle::genTriProperties() {
 
 W::Rectangle::Rectangle(
 	View *_v,
-	const v2f &_p,
-	const v2f &_sz,
-	const Colour &_col,
+	v2f _p,
+	v2f _sz,
+	Colour _col,
 	float _rot,
 	int _lay,
 	BlendMode::T _blend
@@ -226,23 +223,23 @@ W::Rectangle::~Rectangle()
 {
 	delete ((DRect*) dRect);
 }
-void W::Rectangle::setPos(const v2f &_p) {
+void W::Rectangle::setPos(v2f _p) {
 	((DRect*) dRect)->setPosSzRot(pos = _p, size, rot);
 }
-void W::Rectangle::setSz(const v2f &_s) {
+void W::Rectangle::setSz(v2f _s) {
 	((DRect*) dRect)->setPosSzRot(pos, size = _s, rot);
 }
 void W::Rectangle::setRot(float _r) {
 	((DRect*) dRect)->setPosSzRot(pos, size, rot = _r);
 }
-void W::Rectangle::setAll(const v2f &_p, const v2f &_s, float _r) {
+void W::Rectangle::setAll(v2f _p, v2f _s, float _r) {
 	((DRect*) dRect)->setPosSzRot(pos = _p, size = _s, rot = _r);
 }
-void W::Rectangle::nudge(const v2f &delta) {
+void W::Rectangle::nudge(v2f delta) {
 	pos += delta;
 	((DRect*) dRect)->setPosSzRot(pos, size, rot);
 }
-void W::Rectangle::setCol(const Colour &_c) {
+void W::Rectangle::setCol(Colour _c) {
 	((DRect*) dRect)->setCol(col = _c);
 }
 void W::Rectangle::setLayer(int l) {
@@ -255,7 +252,7 @@ void W::Rectangle::setBlendMode(BlendMode::T m) {
 
 #pragma mark - Line
 
-W::Line::Line(View *_v, const v2f &_p1, const v2f &_p2, const W::Colour _col, float _width, int _lay, BlendMode::T _blend) :
+W::Line::Line(View *_v, v2f _p1, v2f _p2, const Colour _col, float _width, int _lay, BlendMode::T _blend) :
 	p1(_p1),
 	p2(_p2),
 	lineWidth(_width),
@@ -268,23 +265,23 @@ W::Line::~Line()
 {
 	delete ((DLine*) dLine);
 }
-void W::Line::setP1(const v2f &_p) {
+void W::Line::setP1(v2f _p) {
 	p1 = _p;
 	genDelta();
 	((DLine*)dLine)->setP1P2Delta(p1, p2, delta);
 }
-void W::Line::setP2(const v2f &_p) {
+void W::Line::setP2(v2f _p) {
 	p2 = _p;
 	genDelta();
 	((DLine*)dLine)->setP1P2Delta(p1, p2, delta);
 }
-void W::Line::setP1And2(const v2f &_p1, const v2f &_p2) {
+void W::Line::setP1And2(v2f _p1, v2f _p2) {
 	p1 = _p1;
 	p2 = _p2;
 	genDelta();
 	((DLine*)dLine)->setP1P2Delta(p1, p2, delta);
 }
-void W::Line::nudge(const v2f &dist) {
+void W::Line::nudge(v2f dist) {
 	p1 += dist;
 	p2 += dist;
 	((DLine*)dLine)->setP1P2Delta(p1, p2, delta);
@@ -304,7 +301,7 @@ void W::Line::genDelta() {
 	float lineLength = sqrt(da*da + db*db);
 	delta *= (lineWidth*0.5) / lineLength;	
 }
-void W::Line::setCol(const Colour &_c) {
+void W::Line::setCol(Colour _c) {
 	((DLine*)dLine)->setCol(col = _c);
 }
 void W::Line::setLayer(int l) {
@@ -315,17 +312,70 @@ void W::Line::setBlendMode(BlendMode::T m) {
 }
 
 
-/*****************************/
-/*** Sprite implementation ***/
-/*****************************/
+#pragma mark Circle
+
+W::Circle::Circle(View *_v, v2f _center, float _radius, W::Colour _col, int _layer, BlendMode::T _blendMode) :
+	center(_center),
+	radius(_radius),
+	col(_col)
+{
+	dCircle = new DCircle(_v, _center, _radius, _col, _layer, _blendMode);
+}
+W::Circle::~Circle()
+{
+	delete ((DCircle*) dCircle);
+}
+void W::Circle::setCenter(W::v2f _center) {
+	((DCircle*) dCircle)->setPosRadius(center = _center, radius);
+}
+void W::Circle::setRadius(float _r) {
+	((DCircle*) dCircle)->setPosRadius(center, radius = _r);
+}
+void W::Circle::setCol(W::Colour _col) {
+	((DCircle*) dCircle)->setCol(col = _col);
+}
+
+
+//
+//W::DCircle::DCircle(View *_v, const W::position &_centrePos, int _radius, Colour _col) :
+//	DObj(_v, GEOM_LENGTH_FOR_CIRCLE),
+//	centrePos(_centrePos),
+//	radius(_radius),
+//	col(_col)
+//{
+//	// Hai circle
+//}
+//void W::DCircle::_recopy(v3f *vert_array, c4f *col_array, t2f *texcoord_array) {
+//	Texture &tex = *Texture::_whiteTexture;
+//	float texA = tex.floatCoordA(0),
+//		texB = tex.floatCoordB(0),
+//		texC = tex.floatCoordC(tex.sz.width),
+//		texD = tex.floatCoordD(tex.sz.height);
+//
+//	for (int i=0; i < GEOM_LENGTH_FOR_CIRCLE; ++i) {
+//		v3f &vA = circleGeom[i],
+//			&vB = vert_array[i];
+//		vB.x = vA.x * radius + centrePos.x;
+//		vB.y = vA.y * radius + centrePos.y;
+//		vB.z = 0;
+//
+//		col_array[i] = col;
+//
+//		t2f &tc = texcoord_array[i];
+//		if (i%3 == 0)      tc.x = texA, tc.y = texB;
+//		else if (i%3 == 1) tc.x = texA, tc.y = texD;
+//		else               tc.x = texC, tc.y = texD;
+//	}
+//}
+
 
 #pragma mark - Sprite
 
 W::Sprite::Sprite(
 	View *_v,
 	Texture *_t,
-	const v2f &_p,
-	const v2f &_sc,
+	v2f _p,
+	v2f _sc,
 	float _opac,
 	float _rot,
 	int _lay,
@@ -342,19 +392,19 @@ W::Sprite::~Sprite()
 {
 	delete ((DSprite*) dSprite);
 }
-void W::Sprite::setPos(const v2f &_p) {
+void W::Sprite::setPos(v2f _p) {
 	((DSprite*) dSprite)->setPosScaleRot(pos = _p, scale, rot);
 }
-void W::Sprite::setScale(const v2f &_sc) {
+void W::Sprite::setScale(v2f _sc) {
 	((DSprite*) dSprite)->setPosScaleRot(pos, scale = _sc, rot);
 }
 void W::Sprite::setRot(float _r) {
 	((DSprite*) dSprite)->setPosScaleRot(pos, scale, rot = _r);
 }
-void W::Sprite::setAll(const v2f &_p, const v2f &_sc, float _r) {
+void W::Sprite::setAll(v2f _p, v2f _sc, float _r) {
 	((DSprite*) dSprite)->setPosScaleRot(pos = _p, scale = _sc, rot = _r);
 }
-void W::Sprite::nudge(const v2f &delta) {
+void W::Sprite::nudge(v2f delta) {
 	pos += delta;
 	((DSprite*) dSprite)->setPosScaleRot(pos, scale, rot);
 }
@@ -368,69 +418,6 @@ void W::Sprite::setBlendMode(BlendMode::T m) {
 	((DSprite*) dSprite)->setBlendMode(m);
 }
 
-///******************************/
-///*** DCircle implementation ***/
-///******************************/
-//
-//struct W::DCircle::Init {
-//	Init() {
-//		// Generate unit circle geometry
-//		circleGeom = (v3f*)malloc(sizeof(v3f) * CIRCLE_NPOINTS * 3);
-//		
-//		float alpha = 0, dAlpha = 2*M_PI/CIRCLE_NPOINTS;
-//		v3f origin = {0,0,0},
-//			initialExternalVertex = {0,1,0};
-//		
-//		for (int i=0; i < CIRCLE_NPOINTS; ++i) {
-//			v3f &v1 = circleGeom[i*3],
-//				&v2 = circleGeom[i*3+1],
-//				&v3 = circleGeom[i*3+2];
-//			
-//			alpha += dAlpha;
-//			
-//			v1 = origin;
-//			v2 = (i == 0 ? initialExternalVertex : circleGeom[(i-1)*3+2]);
-//			if (i == CIRCLE_NPOINTS-1)
-//				v3 = initialExternalVertex;
-//			else
-//				v3.x = sin(alpha), v3.y = cos(alpha), v3.z = 0;
-//		}
-//	}
-//};
-//
-//W::v3f *W::DCircle::circleGeom;
-//W::DCircle::Init *W::DCircle::initializer = new W::DCircle::Init();
-//
-//W::DCircle::DCircle(View *_v, const W::position &_centrePos, int _radius, const Colour &_col) :
-//	DObj(_v, GEOM_LENGTH_FOR_CIRCLE),
-//	centrePos(_centrePos),
-//	radius(_radius),
-//	col(_col)
-//{
-//	// Hai circle
-//}
-//void W::DCircle::_recopy(v3f *vert_array, c4f *col_array, t2f *texcoord_array) {
-//	Texture &tex = *Texture::_whiteTexture;
-//	float texA = tex.floatCoordA(0),
-//		texB = tex.floatCoordB(0),
-//		texC = tex.floatCoordC(tex.sz.width),
-//		texD = tex.floatCoordD(tex.sz.height);
-//	
-//	for (int i=0; i < GEOM_LENGTH_FOR_CIRCLE; ++i) {
-//		v3f &vA = circleGeom[i],
-//			&vB = vert_array[i];
-//		vB.x = vA.x * radius + centrePos.x;
-//		vB.y = vA.y * radius + centrePos.y;
-//		vB.z = 0;
-//		
-//		col_array[i] = col;
-//		
-//		t2f &tc = texcoord_array[i];
-//		if (i%3 == 0)      tc.x = texA, tc.y = texB;
-//		else if (i%3 == 1) tc.x = texA, tc.y = texD;
-//		else               tc.x = texC, tc.y = texD;	
-//	}
-//}
 
 
 /****************************/
@@ -439,7 +426,7 @@ void W::Sprite::setBlendMode(BlendMode::T m) {
 
 #pragma mark - DText
 
-//W::DText::DText(View *_v, const position &_p, const std::string &_txt, const Colour &_col, TextAlign::T _al) :
+//W::DText::DText(View *_v, const position &_p, const std::string &_txt, Colour _col, TextAlign::T _al) :
 //	DObj(_v, _col, _geomLengthForText(downCase(_txt))),
 //	pos(_p),
 //	txt(_txt),

@@ -22,7 +22,7 @@
 
 #pragma mark Rect coord fns
 
-void generateRectCoords(const W::v2f &pos, const W::v2f &size, float rotation, W::v3f *);
+void generateRectCoords(W::v2f pos, W::v2f size, float rotation, W::v3f *);
 
 
 /*** Drawable ***/
@@ -104,9 +104,9 @@ void W::DTri::setP123(const v2f &p1, const v2f &p2, const v2f &p3) {
 	recopyV();
 }
 void W::DTri::setCol(const Colour &c) {
-	c_array[0] = &c;
-	c_array[1] = &c;
-	c_array[2] = &c;
+	c_array[0] = c;
+	c_array[1] = c;
+	c_array[2] = c;
 	recopyC();
 }
 
@@ -124,12 +124,12 @@ void W::DRect::setPosSzRot(const v2f &_pos, const v2f &_sz, float r) {
 	recopyV();
 }
 void W::DRect::setCol(const W::Colour &c) {
-	c_array[0] = &c;
-	c_array[1] = &c;
-	c_array[2] = &c;
-	c_array[3] = &c;
-	c_array[4] = &c;
-	c_array[5] = &c;
+	c_array[0] = c;
+	c_array[1] = c;
+	c_array[2] = c;
+	c_array[3] = c;
+	c_array[4] = c;
+	c_array[5] = c;
 	recopyC();
 }
 
@@ -152,12 +152,35 @@ void W::DLine::setP1P2Delta(const v2f &p1, const v2f &p2, const v2f &delta) {
 	recopyV();
 }
 void W::DLine::setCol(const Colour &c) {
-	c_array[0] = &c;
-	c_array[1] = &c;
-	c_array[2] = &c;
-	c_array[3] = &c;
-	c_array[4] = &c;
-	c_array[5] = &c;
+	c_array[0] = c;
+	c_array[1] = c;
+	c_array[2] = c;
+	c_array[3] = c;
+	c_array[4] = c;
+	c_array[5] = c;
+	recopyC();
+}
+
+
+#pragma mark - DCircle
+#define CIRCLE_NPOINTS 10
+
+void getCircleCoords(W::v2f pos, float r, W::v3f *v_array);
+
+W::DCircle::DCircle(View *_v, v2f _center, float _r, W::Colour _col, int layer, BlendMode::T blendMode) :
+	DColouredShape(_v, CIRCLE_NPOINTS*3, layer, blendMode)
+{
+	setPosRadius(_center, _r);
+	setCol(_col);
+}
+void W::DCircle::setPosRadius(W::v2f _pos, float _r) {
+	getCircleCoords(_pos, _r, v_array);
+	recopyV();
+}
+void W::DCircle::setCol(W::Colour _c) {
+	for (int i=0; i < CIRCLE_NPOINTS*3; ++i) {
+		c_array[i] = _c;
+	}
 	recopyC();
 }
 
@@ -270,8 +293,6 @@ void W::DSprite::regenAndCopyTexCoords() {
 
 #pragma mark - generateRectCoords
 
-/*** generateRectCoords definition ***/
-
 #include <cmath>
 #ifndef M_PI
 	#define M_PI 3.14159265358979
@@ -279,9 +300,7 @@ void W::DSprite::regenAndCopyTexCoords() {
 #define RAD2DEG (180.0/M_PI)
 #define DEG2RAD (M_PI/180.0)
 
-void generateRectCoords(
-	const W::v2f &pos, const W::v2f &sz, float rotation, W::v3f *v_array
-) {
+void generateRectCoords(W::v2f pos, W::v2f sz, float rotation, W::v3f *v_array) {
 	W::v3f
 		&v1 = v_array[0],
 		&v2 = v_array[1],
@@ -331,4 +350,47 @@ void generateRectCoords(
 	
 	v4.a = v1.a, v4.b = v1.b;
 	v6.a = v3.a, v6.b = v3.b;
+}
+
+
+
+#pragma mark - generateCircleCoords
+
+W::v3f *v_unit_circle = 0;
+
+void generateUnitCircleCoords() {
+	v_unit_circle = (W::v3f*) malloc(sizeof(W::v3f) * CIRCLE_NPOINTS * 3);
+	
+	// Generate unit circle geometry
+	float alpha = 0;
+	float dAlpha = 2*M_PI/CIRCLE_NPOINTS;
+	
+	W::v3f origin = {0,0,0};
+	W::v3f v0 = {0,1,0};
+	v_unit_circle[0] = v0;
+	
+	for (int i=0; i < CIRCLE_NPOINTS; ++i) {
+		W::v3f &v1 = v_unit_circle[i*3];
+		W::v3f &v2 = v_unit_circle[i*3+1];
+		W::v3f &v3 = v_unit_circle[i*3+2];
+		
+		alpha += dAlpha;
+		
+		v1 = origin;
+		v2 = (i == 0 ? v0 : v_unit_circle[(i-1)*3+2]);
+		v3 = (i == CIRCLE_NPOINTS-1 ? v0 : (W::v3f){sinf(alpha), cosf(alpha), 0});
+		v3 = v3;
+	}
+}
+
+void getCircleCoords(W::v2f pos, float r, W::v3f *v_array) {
+	if (v_unit_circle == 0) {
+		generateUnitCircleCoords();
+	}
+	
+	for (int i=0; i < CIRCLE_NPOINTS*3; ++i) {
+		v_array[i] = v_unit_circle[i] * r;
+		v_array[i].a += pos.a;
+		v_array[i].b += pos.b;
+	}
 }
