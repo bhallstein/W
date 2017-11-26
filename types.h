@@ -17,7 +17,6 @@
 #include <sstream>
 #include <vector>
 
-
 /* Target identification */
 
 #ifdef __APPLE__
@@ -91,6 +90,7 @@ namespace W {
 		float dot(const v2f &v2) {
 			return a*v2.a + b*v2.b;
 		}
+        float mod();
 		
 		std::string str() const;
 	};
@@ -196,14 +196,6 @@ namespace W {
 		std::istringstream ss(s);
 		return !(ss >> t).fail();
 	}
-
-	
-	/* File/Directory helper functions */
-	
-	bool isValidDir(const std::string &path);
-	bool isValidDir(const char *path);
-	bool createDir(const std::string &path);
-	bool createDir(const char *path);
 	
 }
 
