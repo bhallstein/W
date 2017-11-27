@@ -85,6 +85,11 @@ float W::v2f::mod() {
     return sqrtf(a*a + b*b);
 }
 
+W::v2f W::v2f::normalise() {
+	v2f v = *this;
+	return v / v.mod();
+}
+
 std::string W::v2f::str() const {
 	std::stringstream ss;
 	ss << a << "," << b;

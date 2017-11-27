@@ -90,7 +90,8 @@ namespace W {
 		float dot(const v2f &v2) {
 			return a*v2.a + b*v2.b;
 		}
-        float mod();
+		float mod();
+		v2f normalise();
 		
 		std::string str() const;
 	};
