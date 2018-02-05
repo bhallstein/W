@@ -11,8 +11,16 @@
  */
 
 #include "NavMap.h"
+#include <algorithm>
+#include <tuple>
 
 #define NAV_INFINITY 99999999
+
+template<class T>
+bool contains(const std::vector<T> &v, T p) {
+  return std::find(v.begin(), v.end(), p) != v.end();
+}
+
 
 W::NavNode::NavNode() : passable(true)
 {
@@ -29,12 +37,8 @@ void W::NavNode::removeNeighbour(NavNode *n) {
 		else it++;
 }
 bool W::NavNode::hasNeighbour(NavNode *n) {
-	for (int i=0; i < neighbours.size(); i++)
-		if (neighbours[i] == n)
-			return true;
-	return false;
+  return contains(neighbours, n);
 }
-// MisterHeapy object properties
 bool W::NavNode::operator< (NavNode *m) {
 	return min_dist > m->min_dist;		// Heap orders larger items first by default. We want the opposite.
 }
@@ -96,95 +100,66 @@ void W::NavMap::makePassable(const rect &r) {
 				_makePassable(i, j);
 }
 
-void W::NavMap::isolate(const rect &r) {
-	std::vector<NavNode *> edgey_nodes;
-	
-	for (int i = r.pos.x; i < r.pos.x + r.sz.width; i++) {
-		for (int j = r.pos.y; j < r.pos.y + r.sz.height; j++) {
-			if (i < 0 || j < 0 || i >= w || j >= h)
-				throw(Exception("NavMap::isolate encountered an out-of-bounds coordinate."));
-			NavNode *X = _nodeAt(i, j);
-			
-			// for each neighbour of X, Y
-			std::vector<NavNode*> &neighbours = X->neighbours;
-			for (std::vector<NavNode*>::iterator ity = neighbours.begin(); ity < neighbours.end(); ) {
-				NavNode *Y = *ity;
-				W::position _p(Y->x, Y->y);
-				bool Y_is_part_of_obj = r.overlapsWith(_p);
-				// if Y is not part of obj, sever links with X & add both to edgey nodes
-				if (Y_is_part_of_obj) ity++;
-				else {
-					Y->removeNeighbour(X);
-					ity = neighbours.erase(ity);
-					edgey_nodes.push_back(X);
-					edgey_nodes.push_back(Y);
-				}
-			}
-		}
-	}
-	
-	// for each edgey node
-	for (int i=0; i < edgey_nodes.size(); i++) {
-		NavNode *X = edgey_nodes[i];
-		// if any two nodes on adjacent sides are not neighbours of x, sever the connection between them
-		NavNode *n1, *n2;
-		if (X->y > 0 && X->x < w - 1) {			// check above and right nodes
-			n1 = _nodeAt(X->x, X->y - 1);
-			n2 = _nodeAt(X->x + 1, X->y);
-			if (!X->hasNeighbour(n1) && !X->hasNeighbour(n2))
-				n1->removeNeighbour(n2), n2->removeNeighbour(n1);
-		}
-		if (X->x < w - 1 && X->y < h - 1) {		// check right and below nodes
-			n1 = _nodeAt(X->x + 1, X->y);
-			n2 = _nodeAt(X->x, X->y + 1);
-			if (!X->hasNeighbour(n1) && !X->hasNeighbour(n2))
-				n1->removeNeighbour(n2), n2->removeNeighbour(n1);
-		}
-		if (X->y < h - 1 && X->x > 0) {			// check below and left nodes
-			n1 = _nodeAt(X->x, X->y + 1);
-			n2 = _nodeAt(X->x - 1, X->y);
-			if (!X->hasNeighbour(n1) && !X->hasNeighbour(n2))
-				n1->removeNeighbour(n2), n2->removeNeighbour(n1);
-		}
-		if (X->x > 0 && X->y > 0) {				// check left and above nodes
-			n1 = _nodeAt(X->x - 1, X->y);
-			n2 = _nodeAt(X->x, X->y - 1);
-			if (!X->hasNeighbour(n1) && !X->hasNeighbour(n2))
-				n1->removeNeighbour(n2), n2->removeNeighbour(n1);
-		}
-	}
-	
-//	// add door connections
-//	std::vector<door> *doors = &b->doors;
-//	door *d;
-//	for (int i=0; i < doors->size(); i++) {
-//		d = &(*doors)[i];
-//		intcoord cY, cX = { d->coord.x + bx, d->coord.y + by };
-//		switch (d->orientation) {
-//			case Direction::LEFTWARD:  cY.x = cX.x - 1; cY.y = cX.y;     break;
-//			case Direction::RIGHTWARD: cY.x = cX.x + 1; cY.y = cX.y;     break;
-//			case Direction::UPWARD:    cY.x = cX.x;     cY.y = cX.y - 1; break;
-//			case Direction::DOWNWARD:  cY.x = cX.x;     cY.y = cX.y + 1; break;
-//			default: return;
-//		}
-//		if (cX.x < 0 || cX.y < 0 || cX.x >= w || cX.y >= h) return;
-//		if (cY.x < 0 || cY.y < 0 || cY.x >= w || cY.y >= h) return;
-//		NavNode *X = nodeAt(cX.x, cX.y), *Y = nodeAt(cY.x, cY.y);
-//		X->addNeighbour(Y);
-//		Y->addNeighbour(X);
-//	}
-}
-void W::NavMap::unisolate(const rect &r) {
-	// TODO: unisolate
+bool is_in_map_bounds(W::position p, int w, int h) {
+  return p.x >= 0 && p.y >= 0 && p.x < w && p.y < h;
 }
 
-void W::NavMap::createConnection(const W::position &p1, const W::position &p2) {
+void W::NavMap::isolate(const std::vector<W::position> &plan) {
+  std::vector<NavNode*> edge_nodes;
+
+  // Sever neighbour links & collect edge_nodes
+  for (auto p : plan) {
+    if (!is_in_map_bounds(p, w, h)) {
+      throw(Exception("NavMap::isolate encountered an out-of-bounds coordinate."));
+    }
+
+    NavNode *X = _nodeAt(p.x, p.y);
+    std::vector<NavNode*> X_neighbours_to_remove;
+
+    for (auto Y : X->neighbours) {
+      if (!contains(plan, {Y->x, Y->y})) {
+        X_neighbours_to_remove.push_back(Y);
+      }
+    }
+
+    if (!X_neighbours_to_remove.empty()) {
+      edge_nodes.push_back(X);
+      for (auto Y : X_neighbours_to_remove) {
+        Y->removeNeighbour(X);
+        X->removeNeighbour(Y);
+      }
+    }
+  }
+
+  // Sever diagonal links between non-plan neighbours of edge nodes
+  const std::vector<std::tuple<W::position, W::position>> diagonals = {
+    { { 0,-1}, { 1, 0} },   // above & right
+    { { 1, 0}, { 0, 1} },   // right & below
+    { { 0, 1}, {-1, 0} },   // below & left
+    { {-1, 0}, { 0,-1} },   // left & above
+  };
+  for (auto n : edge_nodes) {
+    for (auto diag : diagonals) {
+      auto p_n1 = std::get<0>(diag);
+      auto p_n2 = std::get<1>(diag);
+      NavNode *n1 = _nodeAt(n->x + p_n1.x, n->y + p_n1.y);
+      NavNode *n2 = _nodeAt(n->x + p_n2.x, n->y + p_n2.y);
+
+      if (!contains(plan, p_n1) && !contains(plan, p_n2)) {
+        n1->removeNeighbour(n2);
+        n2->removeNeighbour(n1);
+      }
+    }
+  }
+}
+
+void W::NavMap::createConnection(W::position p1, W::position p2) {
 	NavNode *n1 = _nodeAt(p1);
 	NavNode *n2 = _nodeAt(p2);
 	n1->addNeighbour(n2);
 	n2->addNeighbour(n1);
 }
-void W::NavMap::removeConnection(const W::position &p1, const W::position &p2) {
+void W::NavMap::removeConnection(W::position p1, W::position p2) {
 	NavNode *n1 = _nodeAt(p1);
 	NavNode *n2 = _nodeAt(p2);
 	n1->removeNeighbour(n2);
@@ -204,6 +179,14 @@ bool W::NavMap::isPassableUnder(const rect &r) {
 		for (int j = oy; j < oy + oh; j++)
 			if (!isPassableAt(i, j)) return false;
 	return true;
+}
+bool W::NavMap::isPassableUnder(const std::vector<W::position> &v) {
+  for (auto p : v) {
+    if (!isPassableAt(p)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool W::NavMap::getRoute(int fromX, int fromY, int toX, int toY, std::vector<position> &route) {
