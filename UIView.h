@@ -36,7 +36,7 @@ namespace W {
 	protected:
 		virtual void drawCustomBackground() { }
 			// Override for custom drawing behind elements in UIView
-		void updatePosition(const size &winsize);
+		virtual void updatePosition(const size &winsize);
 			// Override; note we do not call _updatePosition because that method of
 			// View doesn't have access to all the positioner arrays of UIView
 		
