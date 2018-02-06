@@ -35,14 +35,21 @@ W::UIView::UIView(const std::string &viewname) :
 			string("Error creating UIView '") + string(viewname) +
 			string("' - see log file for further details")
 		);
-	updatePosition(_controller.window->getSize());
-	
+
 	bgDRect = new DRect(this, position(), rct.sz, W::Colour::TransparentBlack);
+	updatePosition(_controller.window->getSize());
+}
+
+W::UIView::UIView() :
+  View(NULL),
+  dragloop(false),
+  cur_positioning_index(-1)
+{
+
 }
 
 W::UIView::~UIView()
 {
-	Messenger::unsubscribeFromMouseEvents(this, this);
 	delete bgDRect;
 }
 
@@ -122,6 +129,10 @@ void W::UIView::updatePosition(const size &winsize) {
 	ellist = &ellist_vec->at(cur_positioning_index);
 	for (element_list::iterator it = ellist->begin(); it < ellist->end(); it++)
 		(*it)->_updatePosition(rct.sz);
+
+	// Update BG rect
+	bgDRect->setPos({0,0});
+	bgDRect->setSz(rct.sz);
 }
 
 bool W::UIView::initialize(const std::string &viewname) {

@@ -36,7 +36,8 @@ namespace W {
 			Corner::T,
 			PosType::T _pos_method_x, PosType::T _pos_method_y,
 			PosType::T _sizing_method_x, PosType::T _sizing_method_y,
-			float _x, float _y, float _w, float _h
+			float _x, float _y, float _w, float _h,
+			bool _draggable = false
 		);
 		Positioner(LuaObj *);
 		W::rect& refresh(const size &container_size);

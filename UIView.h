@@ -26,6 +26,7 @@ namespace W {
 	class UIView : public View {
 	public:
 		UIView(const std::string &viewname);
+		UIView();  // Subclass should set positioner & element state manually
 		~UIView();
 		
 		void mouseEvent(Event *);
