@@ -53,6 +53,7 @@ namespace W {
 		void makePassable(const rect &);
 
     void isolate(const std::vector<W::position> &); // Unlink across edge nodes, leaving interior navigable
+    void isolate(W::rect);
 //    void unisolate(const std::vector<W::position> &);
 
 		void createConnection(W::position p1, W::position p2);

@@ -200,6 +200,7 @@ bool W::Messenger::dispPositionalInView(Event *ev, View *v) {
 	bool dispatched = false;
 	std::vector<cbAndRect*> &callbacks = itT->second;
 	int i = 0;
+
 	for (std::vector<cbAndRect*>::reverse_iterator it = callbacks.rbegin(); it != callbacks.rend(); ++it) {
 		cbAndRect &cnr = **it;
 		if (cnr.rct->overlapsWith(ev->pos)) {
@@ -249,9 +250,9 @@ void W::Messenger::unsubscribe(EventType::T t, void *r) {
 
 void W::Messenger::subscribeInView(View *v, W::EventType::T t, const W::Callback &c, rect *rct) {
 	if (!s) return;
-	unsubscribeInView(v, t, c.resp);
 	s->positionalSubs[v][t].push_back(new cbAndRect(c.copy(), rct));
 }
+
 void W::Messenger::unsubscribeInView(View *v, W::EventType::T t, void *r) {
 	if (!s) return;
 	
