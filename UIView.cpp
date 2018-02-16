@@ -133,6 +133,9 @@ void W::UIView::updatePosition(const size &winsize) {
 	// Update BG rect
 	bgDRect->setPos({0,0});
 	bgDRect->setSz(rct.sz);
+
+	// Allow subclasses to position custom elements
+	updatePosition_uiview(winsize);
 }
 
 bool W::UIView::initialize(const std::string &viewname) {

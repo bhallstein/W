@@ -39,6 +39,7 @@ namespace W {
 		virtual void updatePosition(const size &winsize);
 			// Override; note we do not call _updatePosition because that method of
 			// View doesn't have access to all the positioner arrays of UIView
+		virtual void updatePosition_uiview(size winsize) { }
 		
 		bool allowDrag;		// Set from positioner when refreshed
 		bool dragloop;
