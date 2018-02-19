@@ -123,7 +123,10 @@ void W::StorageObjForColouredShapes::removeDrawable(DColouredShape *d) {
 	
 	if (!d->next) lastD = d->prev;		// If DObj was last in chain, set obj.lastD to D.prev
 	else d->next->prev = d->prev;		// Otherwise, set D.next's prev to D.prev
-	
+
+  d->next = NULL;
+  d->prev = NULL;
+  d->preceding_free_space = 0;
 }
 void W::StorageObjForColouredShapes::expandArrays() {
 	v_array.expand();
@@ -149,11 +152,11 @@ void W::StorageObjForColouredShapes::compact() {
 		w_dout << "  moving D " << d << " back by " << n << "\n";
 		
 		if (runningCopyBackTotal) {
-	        for (int i=0; i < d->length; ++i) {
+      for (int i=0; i < d->length; ++i) {
 				v_array.array[d->index + i - n] = v_array.array[d->index + i];
 				c_array.array[d->index + i - n] = c_array.array[d->index + i];
-	        }
-	        d->index -= n;
+      }
+      d->index -= n;
 			d->vptr -= n;
 			d->cptr -= n;
 			w_dout << "   array_index: " << d->index << ", vptr: " << d->vptr << "\n";

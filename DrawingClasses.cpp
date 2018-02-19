@@ -336,39 +336,6 @@ void W::Circle::setCol(W::Colour _col) {
 }
 
 
-//
-//W::DCircle::DCircle(View *_v, const W::position &_centrePos, int _radius, Colour _col) :
-//	DObj(_v, GEOM_LENGTH_FOR_CIRCLE),
-//	centrePos(_centrePos),
-//	radius(_radius),
-//	col(_col)
-//{
-//	// Hai circle
-//}
-//void W::DCircle::_recopy(v3f *vert_array, c4f *col_array, t2f *texcoord_array) {
-//	Texture &tex = *Texture::_whiteTexture;
-//	float texA = tex.floatCoordA(0),
-//		texB = tex.floatCoordB(0),
-//		texC = tex.floatCoordC(tex.sz.width),
-//		texD = tex.floatCoordD(tex.sz.height);
-//
-//	for (int i=0; i < GEOM_LENGTH_FOR_CIRCLE; ++i) {
-//		v3f &vA = circleGeom[i],
-//			&vB = vert_array[i];
-//		vB.x = vA.x * radius + centrePos.x;
-//		vB.y = vA.y * radius + centrePos.y;
-//		vB.z = 0;
-//
-//		col_array[i] = col;
-//
-//		t2f &tc = texcoord_array[i];
-//		if (i%3 == 0)      tc.x = texA, tc.y = texB;
-//		else if (i%3 == 1) tc.x = texA, tc.y = texD;
-//		else               tc.x = texC, tc.y = texD;
-//	}
-//}
-
-
 #pragma mark - Sprite
 
 W::Sprite::Sprite(
@@ -420,11 +387,55 @@ void W::Sprite::setBlendMode(BlendMode::T m) {
 
 
 
-/****************************/
-/*** DText implementation ***/
-/****************************/
-
 #pragma mark - DText
+
+W::RetroText::RetroText(View *_v,
+                        v2f _p,
+                        std::string _txt,
+                        Colour _col,
+                        TextAlign::T _align,
+                        int _lay,
+                        BlendMode::T _blend) :
+  pos(_p),
+  txt(_txt),
+  alignment(_align),
+  col(_col)
+{
+  dRetroText = new DRetroText(_v, _p, _txt, _col, _align, _lay, _blend);
+}
+W::RetroText::~RetroText()
+{
+  delete ((DRetroText*) dRetroText);
+}
+void W::RetroText::set() {
+  ((DRetroText*) dRetroText)->setPosTxtAlignmentCol(pos, txt, alignment, col);
+}
+void W::RetroText::setPos(v2f _p) {
+  pos = _p;
+  set();
+}
+void W::RetroText::setText(std::string s) {
+  txt = s;
+  set();
+}
+void W::RetroText::setAlignment(TextAlign::T _align) {
+  alignment = _align;
+  set();
+}
+void W::RetroText::nudge(v2f delta) {
+  pos += delta;
+  set();
+}
+void W::RetroText::setCol(Colour _c) {
+  col = _c;
+  set();
+}
+void W::RetroText::setLayer(int l) {
+  ((DRetroText*) dRetroText)->setLayer(l);
+}
+void W::RetroText::setBlendMode(BlendMode::T m) {
+  ((DRetroText*) dRetroText)->setBlendMode(m);
+}
 
 //W::DText::DText(View *_v, const position &_p, const std::string &_txt, Colour _col, TextAlign::T _al) :
 //	DObj(_v, _col, _geomLengthForText(downCase(_txt))),

@@ -202,15 +202,37 @@ namespace W {
 	};
 
 
-	/***
-		DText draws... text
-	 ***/
-	
-//	namespace TextAlign {
-//		enum T { Left, Right, Centre };
-//	}
-//	
-//	class DText : public DObj {
+  class RetroText {
+  public:
+    RetroText(View *, v2f position, std::string txt, Colour, TextAlign::T, int layer = DEFAULT_LAYER, BlendMode::T blendMode = BlendMode::Normal);
+    ~RetroText();
+
+    void setPos(v2f);
+    void setText(std::string);
+    void setAlignment(TextAlign::T);
+    void nudge(v2f);
+    void setCol(Colour);
+
+    void setLayer(int);
+    void setBlendMode(BlendMode::T);
+
+    v2f pos;
+    std::string txt;
+    TextAlign::T alignment;
+    Colour col;
+
+//    size;
+//    float rot;
+
+
+  protected:
+    void *dRetroText;
+
+    void set();
+
+  };
+
+//	class DText {
 //	public:
 //		DText(View *, const W::position &, const std::string &_txt, const W::Colour &, TextAlign::T _al = TextAlign::Left);
 //		~DText();

@@ -18,11 +18,7 @@
 
 namespace W {
 	
-	extern std::map<char,std::vector<iRect>> GenericRetro;
-	void initGenericRetro();
-	
-	struct _grInit;
-	extern _grInit *_grInitializer;
+	extern std::map<char,std::vector<fRect>> GenericRetro;
 
 }
 

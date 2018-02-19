@@ -186,18 +186,21 @@ namespace W {
 	
 	/* String-related helper functions */
 	
-	bool isNum(const char c);
-	std::string upCase(const std::string &);
-	std::string downCase(const std::string &);
-	void strSplit(const std::string &s, std::vector<std::string> &v, char delim);
-	void implode(const std::vector<std::string> &v, std::string &s, const char *glue = "");
+	bool isNum(char c);
+	std::string upCase(std::string);
+	std::string downCase(std::string);
+	void strSplit(std::string s, std::vector<std::string> &v, char delim);
+	void implode(std::vector<std::string> v, std::string &s, const char *glue = "");
 	
 	template <typename T>
-	bool strToT(T &t, const std::string &s) {	// Convert (first part of) string to numeric type
+	bool strToT(T &t, std::string s) {	// Convert (first part of) string to numeric type
 		std::istringstream ss(s);
 		return !(ss >> t).fail();
 	}
-	
+
+  namespace TextAlign {
+    enum T { Left, Right, Centre };
+  }
 }
 
 #endif

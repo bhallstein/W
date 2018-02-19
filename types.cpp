@@ -222,40 +222,41 @@ W::Exception::Exception(const std::string &_msg, int _err)
 /*** Stringy functions ***/
 /*************************/
 
-bool W::isNum(const char c) {
+bool W::isNum(char c) {
 	return (c >= '0' && c <= '9');
 }
 
-std::string W::upCase(const std::string &s) {
+std::string W::upCase(std::string s) {
 	std::stringstream ss;
-	for (std::string::const_iterator it = s.begin(); it < s.end(); it++) {
-		char c = *it;
-		if (c >= 'a' && c <= 'z')
+  for (auto c : s) {
+    if (c >= 'a' && c <= 'z') {
 			c += 'A' - 'a';
+    }
 		ss << c;
 	}
 	return ss.str();
 }
-std::string W::downCase(const std::string &s) {
+std::string W::downCase(std::string s) {
 	std::stringstream ss;
-	for (std::string::const_iterator it = s.begin(); it < s.end(); it++) {
-		char c = *it;
-		if (c >= 'A' && c <= 'Z')
+  for (auto c : s) {
+    if (c >= 'A' && c <= 'Z') {
 			c += 'a' - 'A';
+    }
 		ss << c;
 	}
 	return ss.str();
 }
 
-void W::strSplit(const std::string &s, std::vector<std::string> &v, char delim) {
+void W::strSplit(std::string s, std::vector<std::string> &v, char delim) {
 	v.clear();
 	std::stringstream ss(s);
 	std::string chunk;
-	while(std::getline(ss, chunk, delim))
+  while(std::getline(ss, chunk, delim)) {
 		v.push_back(chunk);
+  }
 }
 
-void W::implode(const std::vector<std::string> &v, std::string &s, const char *glue) {
+void W::implode(std::vector<std::string> v, std::string &s, const char *glue) {
 	int i=0;
 	std::stringstream ss;
 	for (std::vector<std::string>::const_iterator it = v.begin(); it < v.end(); it++, i++) {

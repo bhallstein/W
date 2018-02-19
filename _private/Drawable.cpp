@@ -14,6 +14,7 @@
 #include "View.h"
 #include "StorageObj.h"
 #include "TextureAtlas.h"
+#include "GenericRetro.h"
 
 //#define __W_DEBUG
 #include "DebugMacro.h"
@@ -31,21 +32,29 @@ void generateRectCoords(W::v2f pos, W::v2f size, float rotation, W::v3f *);
 
 W::Drawable::Drawable(View *_v, int _len, int _lay, BlendMode::T _blend) :
 	view(_v),
-	length(_len),
+  length(_len),
 	layer(_lay),
 	blendMode(_blend),
 	preceding_free_space(0)
 {
-	v_array = (v3f*) malloc(sizeof(v3f) * length);
-	c_array = (v4f*) malloc(sizeof(v4f) * length);
+  v_array = (v3f*) malloc(sizeof(v3f) * _len);
+  c_array = (v4f*) malloc(sizeof(v4f) * _len);
 }
 W::Drawable::~Drawable()
 {
 	free(v_array);
 	free(c_array);
 }
-void W::Drawable::recopyV() { for (int i=0; i < length; ++i) vptr[i] = v_array[i]; }
-void W::Drawable::recopyC() { for (int i=0; i < length; ++i) cptr[i] = c_array[i]; }
+void W::Drawable::recopyV() {
+  for (int i=0; i < length; ++i) {
+    vptr[i] = v_array[i];
+  }
+}
+void W::Drawable::recopyC() {
+  for (int i=0; i < length; ++i) {
+    cptr[i] = c_array[i];
+  }
+}
 
 
 /*************************************/
@@ -65,6 +74,20 @@ W::DColouredShape::~DColouredShape()
 {
 	view->removeDrawable(this);
 }
+void W::DColouredShape::updateLength(int _len) {
+  view->removeDrawable(this);
+
+  length = _len;
+
+  free(v_array);
+  free(c_array);
+  v_array = (v3f*) malloc(sizeof(v3f) * _len);
+  c_array = (v4f*) malloc(sizeof(v4f) * _len);
+
+  view->addDrawable(this);
+  recopyBoth();
+}
+
 void W::DColouredShape::setLayer(int _layer) {
 	if (layer == _layer) return;
 	
@@ -288,6 +311,70 @@ void W::DSprite::regenAndCopyTexCoords() {
 	tc6.a = tC, tc6.b = tD;
 	
 	recopyT();
+}
+
+
+#pragma mark - DRetroText
+
+int widthForChar(char c) {
+  static int defaultCharWidth = 14;
+  if (c == 'i' || c == '1' || c == ':' || c == '!' || c == '.' || c == '\'') {
+    return defaultCharWidth - 4;
+  }
+  else if (c == 'l') {
+    return defaultCharWidth - 2;
+  }
+  return defaultCharWidth;
+}
+int widthForStr(std::string s) {
+  int tw = 0, c;
+  for (int i=0; (c=s[i]); ++i) {
+    tw += widthForChar(c);
+  }
+  return tw;
+}
+int geomLengthForString(std::string s) {
+  int x = 0;
+  for (auto c : s) {
+    x += W::GenericRetro[c].size();
+  }
+  return x * 6;
+}
+
+W::DRetroText::DRetroText(View *_v, v2f _pos, std::string _msg, Colour _col, TextAlign::T _align, int _lay, BlendMode::T _blend) :
+  DColouredShape(_v, 6, _lay, _blend)
+{
+  _msg = downCase(_msg);
+  setPosTxtAlignmentCol(_pos, _msg, _align, _col);
+}
+void W::DRetroText::setPosTxtAlignmentCol(v2f pos, std::string txt, TextAlign::T alignment, W::Colour col) {
+  // Calculate position given total pixel width, alignment
+  if (alignment == TextAlign::Right)       { pos.a -= widthForStr(txt); }
+  else if (alignment == TextAlign::Centre) { pos.a -= widthForStr(txt) * 0.5; }
+
+  updateVertices(pos, txt);
+
+  for (int i=0; i < length; ++i) {
+    c_array[i] = col;
+  }
+  recopyC();
+}
+void W::DRetroText::updateVertices(W::v2f pos, std::string txt) {
+  v2f letterPos = pos;
+  updateLength(geomLengthForString(txt));
+  size_t geomOffset = 0;
+
+  for (auto c : txt) {
+    std::vector<fRect> rects_for_letter = GenericRetro[c];
+    for (auto r : rects_for_letter) {
+      v2f p = letterPos + r.position;
+      generateRectCoords(p, r.size, 0, v_array+geomOffset);
+      geomOffset += 6;
+    }
+    letterPos.a += widthForChar(c);
+  }
+
+  recopyV();
 }
 
 
