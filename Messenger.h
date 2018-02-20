@@ -34,10 +34,10 @@ namespace W {
 		static void subscribe(EventType::T, const Callback &);
 		static void unsubscribe(EventType::T, void *);
 		
-		static void subscribeInView(View *, EventType::T, const Callback &, iRect *);
+		static void subscribeInView(View *, EventType::T, const Callback &, fRect *);
 		static void unsubscribeInView(View *, EventType::T, void *);
 		
-		static void subscribeToMouseEvents(View *, const Callback &, iRect *);
+		static void subscribeToMouseEvents(View *, const Callback &, fRect *);
 		static void unsubscribeFromMouseEvents(View *, void *);
 		
 		static bool requestPrivilegedEventResponderStatus(View *, EventType::T, const Callback &, bool global = false);
@@ -56,6 +56,7 @@ namespace W {
 		
 		// GameState/State management
 		static void _useTemporaryState();	// Save subscriptions in a temporary state, for transferral in setActive~
+		static void _restorePreviousIfUsingTemporaryState();
 		static void _setActiveGamestate(GameState *);
 		static void _gamestateDestroyed(GameState *);
 		
@@ -67,6 +68,7 @@ namespace W {
 		static MState *s;	// The active state
 		
 		static GameState *activeGS;
+		static GameState *prev_activeGS;
 		
 		// Private dispatch methods
 		static bool dispMouse(Event *, View *);

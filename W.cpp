@@ -28,10 +28,14 @@ namespace W {
 		_createWindow(v2i(), "");
 	}
 #else
-	void W::createWindow(const v2i &sz, const std::string &title) {
+	void W::createWindow(v2i sz, std::string title) {
 		_createWindow(sz, title);
 	}
 #endif
+
+W::v2i W::windowSize() {
+  return wObjs.window->getSize();
+}
 
 
 /*** start() ***/
@@ -46,6 +50,6 @@ void W::start() {
 void W::pushState(W::GameState *s) {
 	_pushState(s);
 }
-void W::popState(const W::Returny &r) {
+void W::popState(W::Returny r) {
 	_popState(r);
 }

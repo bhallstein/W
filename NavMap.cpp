@@ -52,7 +52,7 @@ void W::NavNode::setComparand(float _min_dist) {
 }
 
 
-W::NavMap::NavMap(const v2i &_sz) :
+W::NavMap::NavMap(v2i _sz) :
 	w(_sz.a),
 	h(_sz.b),
 	open_nodes(_sz.a * _sz.b)
@@ -322,6 +322,6 @@ void W::NavMap::_makeImpassable(int atX, int atY) {
 W::NavNode* W::NavMap::_nodeAt(int atX, int atY) {
 	return &nodes[atY * w + atX];
 }
-W::NavNode* W::NavMap::_nodeAt(const v2i &p) {
+W::NavNode* W::NavMap::_nodeAt(v2i p) {
 	return &nodes[p.b * w + p.a];
 }

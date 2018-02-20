@@ -24,8 +24,8 @@ using std::string;
 
 struct cbAndRect {
 	W::Callback *cb;
-	W::iRect *rct;
-	cbAndRect(W::Callback *_cb, W::iRect *_rct) { cb = _cb; rct = _rct; }
+	W::fRect *rct;
+	cbAndRect(W::Callback *_cb, W::fRect *_rct) { cb = _cb; rct = _rct; }
 	~cbAndRect() { delete cb; }
 };
 struct cbAndView {
@@ -42,7 +42,7 @@ struct W::Messenger::MState {
 	}
 	~MState()
 	{
-		#pragma message("Messenger could destroy everything the user has forgotten to unsubscribe on destruct")
+		// TODO: Messenger could destroy everything the user has forgotten to unsubscribe on destruct
 	}
 	
 	map<EventType::T, vector<Callback*>>              typeSubs;
@@ -62,6 +62,7 @@ struct W::Messenger::MState {
 std::map<W::GameState*, W::Messenger::MState*> W::Messenger::stateMap;
 W::Messenger::MState *W::Messenger::s = NULL;
 W::GameState *W::Messenger::activeGS = NULL;
+W::GameState *W::Messenger::prev_activeGS = NULL;
 
 #pragma mark - Dispatch methods
 
@@ -245,7 +246,7 @@ void W::Messenger::unsubscribe(EventType::T t, void *r) {
 		else it++;
 }
 
-void W::Messenger::subscribeInView(View *v, W::EventType::T t, const W::Callback &c, iRect *rct) {
+void W::Messenger::subscribeInView(View *v, W::EventType::T t, const W::Callback &c, fRect *rct) {
 	if (!s) return;
 	s->positionalSubs[v][t].push_back(new cbAndRect(c.copy(), rct));
 }
@@ -279,7 +280,7 @@ void W::Messenger::unsubscribeInView(View *v, W::EventType::T t, void *r) {
 		s->positionalSubs.erase(itV);
 }
 
-void W::Messenger::subscribeToMouseEvents(View *v, const Callback &c, iRect *rct) {
+void W::Messenger::subscribeToMouseEvents(View *v, const Callback &c, fRect *rct) {
 	if (!s) return;
 	using namespace EventType;
 	subscribeInView(v, MouseMove, c, rct);
@@ -416,8 +417,15 @@ void W::Messenger::relinqPERNonglobally(W::View *v, EventType::T t, void *r) {
 #pragma mark - GameState/MState management
 
 void W::Messenger::_useTemporaryState() {
-	_gamestateDestroyed(NULL);
+	prev_activeGS = activeGS;
+	activeGS = NULL;
 	s = new MState;
+}
+void W::Messenger::_restorePreviousIfUsingTemporaryState() {
+  if (!activeGS && s && prev_activeGS) {
+    _setActiveGamestate(activeGS);
+    prev_activeGS = NULL;
+  }
 }
 void W::Messenger::_setActiveGamestate(W::GameState *_gs) {
 	map<GameState*, MState*>::iterator it;
@@ -434,8 +442,11 @@ void W::Messenger::_setActiveGamestate(W::GameState *_gs) {
 	activeGS = _gs;
 }
 void W::Messenger::_gamestateDestroyed(W::GameState *_gs) {
-	delete stateMap[_gs];
-	stateMap.erase(_gs);
+	auto *s_prev_gs = stateMap[_gs];
+	if (s_prev_gs) {
+		stateMap.erase(_gs);
+		delete s_prev_gs;
+	}
 	s = NULL;
 	activeGS = NULL;
 }

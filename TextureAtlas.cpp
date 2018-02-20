@@ -41,7 +41,7 @@ namespace W {
 			if (c1) delete c1;
 			if (c2) delete c2;
 		}
-		TANode* insert(const v2i &sz, int atlasCurSideLength);
+		TANode* insert(v2i sz, int atlasCurSideLength);
 			// Attempt to insert image of size r here or among descendants
 		
 		W::iRect rct;
@@ -105,7 +105,7 @@ bool W::TextureAtlas::addTex(const std::string &filename, Texture *_tex) {
 	
 	return success;
 }
-bool W::TextureAtlas::addTex(unsigned char *imagedata, const v2i &imageSz, W::Texture *_tex) {
+bool W::TextureAtlas::addTex(unsigned char *imagedata, v2i imageSz, W::Texture *_tex) {
 	// Find node to copy image into
 	TANode *n = NULL;
 	while(curTexPower <= TA_MAX_POWER && !n) {
@@ -217,7 +217,7 @@ void W::TextureAtlas::debug(std::string f) {
 /*** TANode implementation ***/
 /*****************************/
 
-W::TANode* W::TANode::insert(const v2i &imageSz, int atlasCurSideLength) {
+W::TANode* W::TANode::insert(v2i imageSz, int atlasCurSideLength) {
 	if (isBranch()) {
 		// If this is a `split` node, try to insert in descendants
 		TANode *retnode = c1->insert(imageSz, atlasCurSideLength);

@@ -153,7 +153,7 @@ namespace W {
 		iRect();
 		iRect(v2i _p, v2i _s);
 		
-		bool overlapsWith(const v2i &coord) const;
+		bool overlapsWith(v2f) const;
 		std::string str() const;
 	};
 	struct fRect {
@@ -164,7 +164,7 @@ namespace W {
 		fRect(v2f _p, v2f _s);
 		fRect(const iRect &);
 
-		bool overlapsWith(const v2f &coord) const;
+		bool overlapsWith(v2f coord) const;
 		std::string str() const;
 	};
 	

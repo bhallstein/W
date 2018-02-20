@@ -204,7 +204,7 @@ namespace W {
 
   class RetroText {
   public:
-    RetroText(View *, v2f position, std::string txt, Colour, TextAlign::T, int layer = DEFAULT_LAYER, BlendMode::T blendMode = BlendMode::Normal);
+    RetroText(View *, v2f position, std::string txt, Colour, TextAlign::T = TextAlign::Left, int layer = DEFAULT_LAYER, BlendMode::T blendMode = BlendMode::Normal);
     ~RetroText();
 
     void setPos(v2f);
@@ -221,45 +221,11 @@ namespace W {
     TextAlign::T alignment;
     Colour col;
 
-//    size;
-//    float rot;
-
-
   protected:
     void *dRetroText;
 
     void set();
-
   };
-
-//	class DText {
-//	public:
-//		DText(View *, const W::position &, const std::string &_txt, const W::Colour &, TextAlign::T _al = TextAlign::Left);
-//		~DText();
-//		
-//		void setPos(const W::position &);
-//		void setAlignment(TextAlign::T);
-//		void setTxt(const char *);
-//		
-//		std::string txt;
-//		
-//		position pos;
-//		W::Colour col;
-//		TextAlign::T alignment;
-//		
-//	protected:
-//		void updateVertices();
-//		void updateTexcoords();
-//		
-//	private:
-//		Texture *tex;
-//		int texA, texB, texC, texD;
-//
-//		static int _geomLengthForText(const std::string &);
-//		static int widthForStr(const std::string &);
-//		static int widthForChar(char c);
-//		
-//	};
 	
 }
 

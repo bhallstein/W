@@ -142,16 +142,12 @@ W::Positioner::Positioner(LuaObj *_l)
 	
 	// Get draggability
 	LuaObj &l_drag = l["draggable"];
-	if (l_drag.type() == LuaObj::Type::_Nil)
-		draggable = false;
-	else if (l_drag.type() == LuaObj::Type::Bool)
+  if (l_drag.type() == LuaObj::Type::Bool) {
 		draggable = l_drag.bool_value();
-	else {
-		error = true;
-		errmsgs.push_back(
-			"'draggable', if present, must be either true or false"
-		);
-	}
+  }
+  else {
+    draggable = false;
+  }
 	
 	if (error) {
 		std::string errmsg;
@@ -161,9 +157,9 @@ W::Positioner::Positioner(LuaObj *_l)
 	}
 }
 
-W::iRect& W::Positioner::refresh(const v2f &container_size) {
-	const int &Ww = container_size.a;
-	const int &Wh = container_size.b;
+W::iRect W::Positioner::refresh(v2f container_size) {
+	int Ww = container_size.a;
+	int Wh = container_size.b;
 	
 	if (sizing_method_x == PosType::Fixed) _p.size.a = w;
 	else _p.size.a = w * Ww;
@@ -189,7 +185,7 @@ W::iRect& W::Positioner::refresh(const v2f &container_size) {
 	return _p;
 }
 
-void W::Positioner::nudge(const v2f &delta) {
+void W::Positioner::nudge(v2f delta) {
 	corner_x += (fixed_corner == Corner::TopLeft || fixed_corner == Corner::BottomLeft ? delta.a : -delta.a);
 	corner_y += (fixed_corner == Corner::TopLeft || fixed_corner == Corner::TopRight   ? delta.b : -delta.b);
 }

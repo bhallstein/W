@@ -46,7 +46,7 @@ namespace W {
 	class NavMap
 	{
 	public:
-		NavMap(const v2i &);
+		NavMap(v2i);
 		NavMap(int _w, int _h);
 		~NavMap();
 		
@@ -67,7 +67,7 @@ namespace W {
 		bool getRoute(int fromX, int fromY, int toX, int toY, std::vector<v2i> &route);
 		
 		NavNode* _nodeAt(int atX, int atY);
-		NavNode* _nodeAt(const v2i &);
+		NavNode* _nodeAt(v2i);
 		
 		int width() { return w; }
 		int height() { return h; }

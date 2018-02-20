@@ -50,7 +50,7 @@ namespace W {
 			// set one up and call _updatePosition.
 		
 		void _updatePosition();	// Gets the window size automatically
-		void _updatePosition(const v2i &winsize);
+		void _updatePosition(v2i winsize);
 		
 		void _convertEventCoords(Event *);				// Converts to view's coordinates, and calls convertEventCoords() virtual
 		virtual void convertEventCoords(Event *) { }	// Override to perform further conversion of mouse events
@@ -58,7 +58,7 @@ namespace W {
 		virtual void mouseEvent(Event *) { }
 		virtual void touchDown(Event *) { }
 		
-		void _draw(const v2i &winSz);
+		void _draw(v2i winSz);
 		
 		const iRect& getRct() { return rct; }
 		
@@ -77,7 +77,7 @@ namespace W {
 		
 		v2i _offset;	// Def 0. Used by scrolling subviews. Undocumented!
 		
-		virtual void updatePosition(const v2i &winsize) { }	// Override to implement subclass position update behaviours
+		virtual void updatePosition(v2i winsize) { }	// Override to implement subclass position update behaviours
 		virtual void customOpenGLDrawing() { }
 		
 	private:

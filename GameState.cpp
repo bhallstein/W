@@ -27,7 +27,7 @@ W::GameState::GameState(GameStateTranslucency _tr) :
 }
 W::GameState::~GameState()
 {
-	// bai
+  Messenger::_restorePreviousIfUsingTemporaryState();
 }
 
 void W::GameState::addView(View *v) {

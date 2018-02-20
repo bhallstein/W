@@ -182,7 +182,7 @@ std::string W::v4f::str() const {
 W::iRect::iRect() { }
 W::iRect::iRect(v2i _p, v2i _s) : position(_p), size(_s) { }
 
-bool W::iRect::overlapsWith(const v2i &p) const {
+bool W::iRect::overlapsWith(v2f p) const {
 	return
 		p.a >= position.a && p.a < position.a + size.a &&
 		p.b >= position.b && p.b < position.b + size.b;
@@ -196,7 +196,7 @@ W::fRect::fRect() { }
 W::fRect::fRect(v2f _p, v2f _s) : position(_p), size(_s) { }
 W::fRect::fRect(const iRect &r) : position(r.position), size(r.size) { }
 
-bool W::fRect::overlapsWith(const v2f &p) const {
+bool W::fRect::overlapsWith(v2f p) const {
 	return
 		p.a >= position.a && p.a < position.a + size.a &&
 		p.b >= position.b && p.b < position.b + size.b;

@@ -99,7 +99,7 @@ W::View::~View()
 void W::View::_updatePosition() {
 	_updatePosition(windowSize());
 }
-void W::View::_updatePosition(const v2i &winsize) {
+void W::View::_updatePosition(v2i winsize) {
 	if (_positioner)
 		rct = _positioner->refresh(winsize);
 	updatePosition(winsize);
@@ -111,7 +111,7 @@ void W::View::_convertEventCoords(Event *ev) {
 	convertEventCoords(ev);
 }
 
-void W::View::_draw(const v2i &winSz) {
+void W::View::_draw(v2i winSz) {
 	w_dout << "View::_draw(const size &winSz)\n";
 	w_dout << " winsize: " << winSz.str() << "\n";
 	w_dout << " position:" << rct.position.str() << ", size:" << rct.size.str() << ", offset:" << _offset.str() << "\n";

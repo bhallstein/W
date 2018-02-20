@@ -397,11 +397,11 @@ W::RetroText::RetroText(View *_v,
                         int _lay,
                         BlendMode::T _blend) :
   pos(_p),
-  txt(_txt),
+  txt(downCase(_txt)),
   alignment(_align),
   col(_col)
 {
-  dRetroText = new DRetroText(_v, _p, _txt, _col, _align, _lay, _blend);
+  dRetroText = new DRetroText(_v, _p, txt, _col, _align, _lay, _blend);
 }
 W::RetroText::~RetroText()
 {
@@ -415,7 +415,7 @@ void W::RetroText::setPos(v2f _p) {
   set();
 }
 void W::RetroText::setText(std::string s) {
-  txt = s;
+  txt = downCase(s);
   set();
 }
 void W::RetroText::setAlignment(TextAlign::T _align) {
@@ -436,116 +436,3 @@ void W::RetroText::setLayer(int l) {
 void W::RetroText::setBlendMode(BlendMode::T m) {
   ((DRetroText*) dRetroText)->setBlendMode(m);
 }
-
-//W::DText::DText(View *_v, const position &_p, const std::string &_txt, Colour _col, TextAlign::T _al) :
-//	DObj(_v, _col, _geomLengthForText(downCase(_txt))),
-//	pos(_p),
-//	txt(_txt),
-//	col(_col),
-//	alignment(_al),
-//	tex(Texture::_whiteTexture),
-//	texA(0),texB(0),texC(tex->sz.width),texD(tex->sz.height)
-//{
-//	tex->incrementUsageCount();
-//	
-//	txt = downCase(txt);
-//	setPos(pos);
-//	
-//	updateTexcoords();
-//	updateColour();
-//}
-//W::DText::~DText()
-//{
-//	tex->decrementUsageCount();
-//}
-//void W::DText::setPos(const W::position &_pos) {
-//	pos = _pos;
-//	// Calculate position given total pixel width
-//	if (alignment == TextAlign::Right)       pos.x -= widthForStr(txt);
-//	else if (alignment == TextAlign::Centre) pos.x -= widthForStr(txt) * 0.5;
-//	updateVertices();
-//}
-//void W::DText::setAlignment(TextAlign::T _al) {
-//	if (_al != alignment) {
-//		alignment = _al;
-//		setPos(pos);
-//		updateVertices();
-//	}
-//}
-//void W::DText::setTxt(const char *_txt) {
-//	// Remove DObj
-//	makeTrianglesDegenerate();
-//	view->_remDObj(this);
-//	
-//	// Set pos property back to non-alignment-corrected state
-//	if (alignment == TextAlign::Right) pos.x += widthForStr(txt);
-//	else if (alignment == TextAlign::Centre) pos.x += widthForStr(txt) * 0.5;
-//	
-//	// Put back in virgin state
-//	prevDObj = nextDObj = NULL;
-//	_preceding_removed = 0;
-//	txt = _txt;
-//	downCase(txt);
-//	array_length = _geomLengthForText(txt);
-//	
-//	// Re-add
-//	view->_addDObj(this);
-//	setPos(pos);
-//	
-//	updateVertices();	// The location & length of our array chunk may have
-//	updateColour();		// changed, so we have to update everything.
-//	updateTexcoords();	//
-//}
-//void W::DText::updateVertices() {
-//	W::position letterPos = pos;
-//	for (int i=0, geomOffset=0, c; (c=txt[i]); ++i) {
-//		const std::vector<rect> &rectVec = GenericRetro[c];
-//		for (std::vector<rect>::const_iterator it = rectVec.begin(); it < rectVec.end(); ++it) {
-//			const rect &r = *it;
-//			copyRectGeom(vert_ptr+geomOffset, letterPos+r.pos, r.sz, 0);
-//			geomOffset += 6;
-//		}
-//		letterPos.x += widthForChar(c);
-//	}
-//}
-//void W::DText::updateTexcoords() {
-//	float
-//		tA = tex->floatCoordA(0),
-//		tB = tex->floatCoordB(0),
-//		tC = tex->floatCoordC(tex->sz.width),
-//		tD = tex->floatCoordD(tex->sz.height);
-//	
-//	for (int i=0; i < array_length; i += 6) {
-//		W::t2f
-//			&tc1 = texcoord_ptr[i],
-//			&tc2 = texcoord_ptr[i+1],
-//			&tc3 = texcoord_ptr[i+2],
-//			&tc4 = texcoord_ptr[i+3],
-//			&tc5 = texcoord_ptr[i+4],
-//			&tc6 = texcoord_ptr[i+5];
-//		
-//		tc1.x = tA, tc1.y = tB;
-//		tc2.x = tA, tc2.y = tD;
-//		tc3.x = tC, tc3.y = tD;
-//		tc4.x = tA, tc4.y = tB;
-//		tc5.x = tC, tc5.y = tB;
-//		tc6.x = tC, tc6.y = tD;
-//	}
-//}
-//int W::DText::_geomLengthForText(const std::string &txt) {
-//	int x = 0, c;
-//	for (int i=0; (c=txt[i]); ++i)
-//		x += GenericRetro[c].size();
-//	return x * 6;
-//}
-//int W::DText::widthForStr(const std::string &s) {
-//	int tw = 0, c;
-//	for (int i=0; (c=s[i]); ++i) tw += widthForChar(c);
-//	return tw;
-//}
-//int W::DText::widthForChar(char c) {
-//	static int defaultCharWidth = 14;
-//	if (c == 'i' || c == '1' || c == ':' || c == '!' || c == '.' || c == '\'') return defaultCharWidth - 4;
-//	else if (c == 'l') return defaultCharWidth - 2;
-//	return defaultCharWidth;
-//}

@@ -69,15 +69,15 @@ namespace W {
 	class Event {
 	public:
 		Event(EventType::T);
-		Event(EventType::T, const v2i &);
+		Event(EventType::T, v2i );
 		Event(EventType::T, KeyCode::T);
 		Event(EventType::T, float _x);
-		Event(EventType::T, int _touchID, const v2i &_pos, const v2i &_prev_pos = v2i(-1,-1));
+		Event(EventType::T, int _touchID, v2i _pos, v2i _prev_pos = v2i(-1,-1));
 		
 		std::string _printType();
 		
-		v2i pos;
-		v2i prev_pos;
+		v2f pos;
+		v2f prev_pos;
 		EventType::T type;
 		KeyCode::T key;
 		float x;

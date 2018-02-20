@@ -41,9 +41,9 @@ namespace W {
       bool draggable = false
 		);
 		Positioner(LuaObj *);
-		iRect& refresh(const v2f &container_size);
+		iRect refresh(v2f container_size);
 		
-		void nudge(const v2f &delta);
+		void nudge(v2f delta);
 		bool isDraggable() { return draggable; }
 		
 		static const Positioner *WholeAreaPositioner;

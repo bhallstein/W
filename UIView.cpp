@@ -175,7 +175,9 @@ bool W::UIView::initialize(const std::string &viewname) {
 		return false;
 	}
 	
-	orientation_check = (portraitObj.isTable() && landscapeObj.isTable());
+	orientation_check =
+    portraitObj.isTable() && portraitObj.descendants().size() > 0 &&
+    landscapeObj.isTable() && landscapeObj.descendants().size() > 0;
 	
 	try {
 		if (orientation_check) {

@@ -25,7 +25,7 @@ W::UIElement::~UIElement()
 	delete positioner;
 }
 
-void W::UIElement::_updatePosition(const v2i &_s) {
+void W::UIElement::_updatePosition(v2i _s) {
 	rct = positioner->refresh(_s);
 	updatePosition();
 }
@@ -35,7 +35,7 @@ void W::UIElement::_updatePosition(const v2i &_s) {
 /* Button */
 /**********/
 
-W::Button::Button(const std::string &_name, W::Positioner *_pos, View *_v) :
+W::Button::Button(std::string _name, W::Positioner *_pos, View *_v) :
 	UIElement(_name, _pos, _v),
 	hover(false), active(false),
 	buttonClickEvent(EventType::ButtonClick),

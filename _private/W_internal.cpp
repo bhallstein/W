@@ -119,7 +119,7 @@ W::WObjs::~WObjs()
 }
 
 
-void W::_createWindow(const W::v2i &sz, const std::string &title) {
+void W::_createWindow(W::v2i sz, std::string title) {
 	// Initialize W objects
 	if (wObjs.window) {
 		std::string s("Warning: createWindow() called, but window already exists\n");
@@ -168,10 +168,6 @@ void W::_pushState(GameState *g) {
 void W::_popState(const Returny &r) {
 	_popGS = true;
 	wObjs.returny = r;
-}
-
-const W::v2i& W::windowSize() {
-	return wObjs.window->getSize();
 }
 
 void _doPopState() {
@@ -301,7 +297,7 @@ void _update() {
 }
 
 void _updateAllViewPositions() {
-	const W::v2i &s = W::wObjs.window->getSize();
+  W::v2i s = W::windowSize();
 	for (std::vector<W::GameState*>::iterator itgs = W::wObjs.gsStack.begin(); itgs < W::wObjs.gsStack.end(); ++itgs) {
 		W::GameState::Viewlist &vlist = (*itgs)->_vlist;
 		for (W::GameState::Viewlist::iterator itv = vlist.begin(); itv != vlist.end(); itv++)

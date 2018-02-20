@@ -20,10 +20,10 @@ std::vector<W::Event*> W::Event::_events;
 W::Mutex W::Event::_mutex;
 
 W::Event::Event(EventType::T _type) : type(_type) { }
-W::Event::Event(EventType::T _type, const v2i &_pos) : type(_type), pos(_pos) { }
+W::Event::Event(EventType::T _type, v2i _pos) : type(_type), pos(_pos) { }
 W::Event::Event(EventType::T _type, KeyCode::T _key) : type(_type), key(_key) { }
 W::Event::Event(EventType::T _type, float _x) : type(_type), x(_x) { }
-W::Event::Event(EventType::T _type, int _touchID, const v2i &_pos, const v2i &_prev_pos) : type(_type), touchID(_touchID), pos(_pos), prev_pos(_prev_pos) { }
+W::Event::Event(EventType::T _type, int _touchID, v2i _pos, v2i _prev_pos) : type(_type), touchID(_touchID), pos(_pos), prev_pos(_prev_pos) { }
 
 std::string W::Event::_printType() {
 	using namespace EventType;

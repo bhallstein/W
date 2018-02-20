@@ -32,7 +32,7 @@ bool W::Retina;
 /*** Window: common implementation ***/
 /*************************************/
 
-W::Window::Window(const v2i &_sz, const std::string &_title) :
+W::Window::Window(v2i _sz, const std::string _title) :
 	sz(_sz),
 	objs(NULL),
 	winSizeHasChanged(false)
@@ -109,7 +109,7 @@ void W::Window::generateMouseMoveEvent() {
 		}
 	}
 }
-void W::Window::updateSize(const W::v2i &_sz) {
+void W::Window::updateSize(W::v2i _sz) {
 	if (sz != _sz) {
 		sz = _sz;
 		winSizeHasChanged = true;
@@ -154,7 +154,7 @@ void W::Window::closeWindow() {
 		objs = NULL;
 	}
 }
-void W::Window::setTitle(const std::string &t) {
+void W::Window::setTitle(std::string t) {
 	[objs->w_window setTitle:[NSString stringWithUTF8String:t.c_str()]];
 }
 void W::Window::setOpenGLThreadAffinity() {

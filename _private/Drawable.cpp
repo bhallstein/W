@@ -344,7 +344,6 @@ int geomLengthForString(std::string s) {
 W::DRetroText::DRetroText(View *_v, v2f _pos, std::string _msg, Colour _col, TextAlign::T _align, int _lay, BlendMode::T _blend) :
   DColouredShape(_v, 6, _lay, _blend)
 {
-  _msg = downCase(_msg);
   setPosTxtAlignmentCol(_pos, _msg, _align, _col);
 }
 void W::DRetroText::setPosTxtAlignmentCol(v2f pos, std::string txt, TextAlign::T alignment, W::Colour col) {
