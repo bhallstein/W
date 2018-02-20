@@ -39,14 +39,21 @@ W::UIView::UIView(const std::string &viewname) :
 			string("Error creating UIView '") + string(viewname) +
 			string("' - see log file for further details")
 		);
-	updatePosition(windowSize());
 	
 	bgrect = new Rectangle(this, v2i(), rct.size, W::Colour::TransparentBlack);
+  updatePosition(windowSize());
+}
+
+W::UIView::UIView() :
+  View(NULL),
+  dragloop(false),
+  cur_positioning_index(-1)
+{
+
 }
 
 W::UIView::~UIView()
 {
-	Messenger::unsubscribeFromMouseEvents(this, this);
 	delete bgrect;
 }
 
@@ -73,7 +80,7 @@ W::EventPropagation::T W::UIView::dragLoopEvent(Event *ev) {
 	return W::EventPropagation::ShouldStop;
 }
 
-void W::UIView::updatePosition(const v2i &winsize) {
+void W::UIView::updatePosition(v2i winsize) {
 	if (orientation_check)
 		orientation = (winsize.a >= winsize.b ? O_LANDSCAPE : O_PORTRAIT);
 	
@@ -126,6 +133,13 @@ void W::UIView::updatePosition(const v2i &winsize) {
 	ellist = &ellist_vec->at(cur_positioning_index);
 	for (element_list::iterator it = ellist->begin(); it < ellist->end(); it++)
 		(*it)->_updatePosition(rct.size);
+
+  // Update BG rect
+  bgrect->setPos({0,0});
+  bgrect->setSz(rct.size);
+
+  // Allow subclasses to position custom elements
+  updatePosition__uiview(winsize);
 }
 
 bool W::UIView::initialize(const std::string &viewname) {

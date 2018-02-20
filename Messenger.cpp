@@ -232,7 +232,6 @@ W::View* W::Messenger::lastViewBeneathEvent(Event *ev) {
 
 void W::Messenger::subscribe(EventType::T t, const Callback &c) {
 	if (!s) return;
-	unsubscribe(t, c.resp);
 	s->typeSubs[t].push_back(c.copy());
 }
 void W::Messenger::unsubscribe(EventType::T t, void *r) {
@@ -248,7 +247,6 @@ void W::Messenger::unsubscribe(EventType::T t, void *r) {
 
 void W::Messenger::subscribeInView(View *v, W::EventType::T t, const W::Callback &c, iRect *rct) {
 	if (!s) return;
-	unsubscribeInView(v, t, c.resp);
 	s->positionalSubs[v][t].push_back(new cbAndRect(c.copy(), rct));
 }
 void W::Messenger::unsubscribeInView(View *v, W::EventType::T t, void *r) {

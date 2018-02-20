@@ -89,8 +89,10 @@ W::EventPropagation::T W::Button::recEv(W::Event *ev) {
 	return EventPropagation::ShouldStop;
 }
 void W::Button::updatePosition() {
-	btnrect->setPos(rct.position);		// Update D.O.
-	btnrect->setSz(rct.size);
+  if (btnrect) {
+    btnrect->setPos(rct.position);
+    btnrect->setSz(rct.size);
+  }
 }
 void W::Button::activate() {
 	btnrect = new Rectangle(view, rct.position, rct.size, Colour::Black);

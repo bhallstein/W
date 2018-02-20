@@ -26,6 +26,7 @@ namespace W {
 	class UIView : public View {
 	public:
 		UIView(const std::string &viewname);
+    UIView();  // Subclass should set positioner & element state manually
 		~UIView();
 		
 		void mouseEvent(Event *);
@@ -35,9 +36,10 @@ namespace W {
 	protected:
 		virtual void drawCustomBackground() { }
 			// Override for custom drawing behind elements in UIView
-		void updatePosition(const v2i &winsize);
+		void updatePosition(v2i winsize);
 			// Override; note we do not call _updatePosition because that method of
 			// View doesn't have access to all the positioner arrays of UIView
+    virtual void updatePosition__uiview(v2i winsize) { }
 		
 		bool allowDrag;		// Set from positioner when refreshed
 		bool dragloop;

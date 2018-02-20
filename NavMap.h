@@ -53,15 +53,16 @@ namespace W {
 		void makeImpassable(const iRect &);	// Unlink all nodes in rect from the node network
 		void makePassable(const iRect &);
 		
-		void isolate(const iRect &);			// Unlink only across edge nodes of rect, leaving interior navigable
-		void unisolate(const iRect &);
-		
-		void createConnection(const v2i &p1, const v2i &p2);
-		void removeConnection(const v2i &p1, const v2i &p2);
+    void isolate(std::vector<v2i>);			// Unlink only across edge nodes of rect, leaving interior navigable
+//    void unisolate(const iRect &);
+
+		void createConnection(v2i p1, v2i p2);
+		void removeConnection(v2i p1, v2i p2);
 		
 		bool isPassableAt(int atX, int atY);
-		bool isPassableAt(const v2i &);
-		bool isPassableUnder(const iRect &);
+		bool isPassableAt(v2i);
+		bool isPassableUnder(iRect);
+    bool isPassableUnder(std::vector<v2i>);
 		
 		bool getRoute(int fromX, int fromY, int toX, int toY, std::vector<v2i> &route);
 		

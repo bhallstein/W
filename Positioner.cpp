@@ -50,13 +50,14 @@ W::Positioner::Positioner(
 	Corner::T _fixed_corner,
 	PosType::T _pos_method_x, PosType::T _pos_method_y,
 	PosType::T _sizing_method_x, PosType::T _sizing_method_y,
-	float _corner_x, float _corner_y, float _w, float _h
+	float _corner_x, float _corner_y, float _w, float _h,
+  bool _draggable
 ) :
 	fixed_corner(_fixed_corner),
 	pos_method_x(_pos_method_x), pos_method_y(_pos_method_y),
 	sizing_method_x(_sizing_method_x), sizing_method_y(_sizing_method_y),
 	corner_x(_corner_x), corner_y(_corner_y), w(_w), h(_h),
-	draggable(false)
+	draggable(_draggable)
 {
 	//
 }
