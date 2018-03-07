@@ -52,11 +52,11 @@ namespace W {
 		void _updatePosition();	// Gets the window size automatically
 		void _updatePosition(v2i winsize);
 		
-		void _convertEventCoords(Event *);				// Converts to view's coordinates, and calls convertEventCoords() virtual
-		virtual void convertEventCoords(Event *) { }	// Override to perform further conversion of mouse events
+		void _convertEventCoords(Event&);				// Converts to view's coordinates, and calls convertEventCoords() virtual
+		virtual void convertEventCoords(Event&) { }	// Override to perform further conversion of mouse events
 		
-		virtual void mouseEvent(Event *) { }
-		virtual void touchDown(Event *) { }
+		virtual void mouseEvent(Event) { }
+		virtual void touchDown(Event) { }
 		
 		void _draw(v2i winSz);
 		

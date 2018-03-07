@@ -29,8 +29,8 @@ namespace W {
     UIView();  // Subclass should set positioner & element state manually
 		~UIView();
 		
-		void mouseEvent(Event *);
-		EventPropagation::T dragLoopEvent(Event *);
+		void mouseEvent(Event);
+		EventPropagation::T dragLoopEvent(Event);
 //		void draw();
 		
 	protected:

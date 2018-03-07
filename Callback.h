@@ -19,8 +19,6 @@
 
 namespace W {
 	
-	class Event;
-	
 	namespace EventPropagation {
 		enum T {
 			ShouldStop, ShouldContinue
@@ -30,18 +28,18 @@ namespace W {
 	class CallbackBase {
 	public:
 		virtual ~CallbackBase() { }
-		virtual EventPropagation::T call(Event *) { return W::EventPropagation::ShouldContinue; }
+		virtual EventPropagation::T call(Event) { return W::EventPropagation::ShouldContinue; }
 		virtual CallbackBase* copy() = 0;
 	};
 	
 	
 	template <class T>
 	class MFCallback : public CallbackBase {
-		typedef EventPropagation::T (T::*mftype)(Event *);
+		typedef EventPropagation::T (T::*mftype)(Event);
 	public:
 		MFCallback(mftype _f, T *_o) : f(_f), o(_o) { }
 		~MFCallback() { }
-		EventPropagation::T call(Event *ev) {
+		EventPropagation::T call(Event ev) {
 			return (o->*f)(ev);
 		}
 		CallbackBase* copy() {
@@ -56,7 +54,7 @@ namespace W {
 	class Callback {
 	public:
 		template <class T>
-		Callback(EventPropagation::T (T::*_f)(Event *), T *_o) :
+		Callback(EventPropagation::T (T::*_f)(Event), T *_o) :
 			c(new MFCallback<T>(_f, _o)), resp(_o)
 		{
 			// constr for event response callbacks
@@ -65,7 +63,7 @@ namespace W {
 		{
 			delete c;
 		}
-		EventPropagation::T call(Event *ev) {
+		EventPropagation::T call(Event ev) {
 			return c->call(ev);
 		}
 		Callback* copy() const {

@@ -105,9 +105,9 @@ void W::View::_updatePosition(v2i winsize) {
 	updatePosition(winsize);
 }
 
-void W::View::_convertEventCoords(Event *ev) {
-	ev->pos -= rct.position;
-	ev->pos -= _offset;
+void W::View::_convertEventCoords(Event &ev) {
+	ev.pos -= rct.position;
+	ev.pos -= _offset;
 	convertEventCoords(ev);
 }
 

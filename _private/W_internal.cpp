@@ -221,25 +221,23 @@ void _update() {
 	#endif
 	
 	W::GameState *g = objs.gsStack.back();
-	
-	std::vector<W::Event*> &evs = W::Event::_events;
-	for (std::vector<W::Event*>::iterator it = evs.begin(); it < evs.end(); ++it) {
-		W::Event *ev = *it;
-		if (ev->type == W::EventType::Closed)
+
+	for (auto ev : W::Event::_events) {
+		if (ev.type == W::EventType::Closed) {
 			g->handleCloseEvent();
+		}
 		else {
 			// Correct any touch events that are misplaced due to calibration error
-			const W::v2i &wSz = objs.window->getSize();
-			if (ev->pos.a < 0) ev->pos.a = 0;
-			else if (ev->pos.a >= wSz.a) ev->pos.a = wSz.a - 1;
-			if (ev->pos.b < 0) ev->pos.b = 0;
-			else if (ev->pos.b >= wSz.b) ev->pos.b = wSz.b - 1;
-			// Dispatch event
+			W::v2i wSz = objs.window->getSize();
+			if (ev.pos.a < 0)           { ev.pos.a = 0; }
+			else if (ev.pos.a >= wSz.a) { ev.pos.a = wSz.a - 1; }
+			if (ev.pos.b < 0)           { ev.pos.b = 0; }
+			else if (ev.pos.b >= wSz.b) { ev.pos.b = wSz.b - 1; }
+
 			W::Messenger::dispatchEvent(ev);
 		}
-		delete *it;
 	}
-	evs.clear();
+	W::Event::_events.clear();
 	
 	#ifdef WTARGET_WIN
 		W::Event::_mutex.unlock();

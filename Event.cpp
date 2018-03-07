@@ -16,7 +16,7 @@
 #endif
 
 W::EventType::T W::Event::_typecounter = 100;
-std::vector<W::Event*> W::Event::_events;
+std::vector<W::Event> W::Event::_events;
 W::Mutex W::Event::_mutex;
 
 W::Event::Event(EventType::T _type) : type(_type) { }
@@ -72,7 +72,7 @@ W::KeyCode::T W::Event::charToKeycode(unsigned int c) {
 	#endif
 	return W::KeyCode::K_OTHER;
 }
-void W::Event::_addEvent(W::Event *ev) {
+void W::Event::_addEvent(W::Event ev) {
 	#if defined(WTARGET_WIN)
 		_mutex.lock();
 	#endif

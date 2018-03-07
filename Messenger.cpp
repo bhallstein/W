@@ -66,13 +66,13 @@ W::GameState *W::Messenger::prev_activeGS = NULL;
 
 #pragma mark - Dispatch methods
 
-bool W::Messenger::dispatchEvent(Event *ev) {
+bool W::Messenger::dispatchEvent(Event ev) {
 	if (!s) return false;
 	if (!activeGS) return false;
 	
 	if (_isPositional(ev)) {
 		// If there is a global PER for this event type, translate coords using its view & dispatch
-		map<EventType::T, cbAndView*>::iterator itGPER = s->globalPERs.find(ev->type);
+		map<EventType::T, cbAndView*>::iterator itGPER = s->globalPERs.find(ev.type);
 		if (itGPER != s->globalPERs.end()) {
 			itGPER->second->v->_convertEventCoords(ev);
 			itGPER->second->cb->call(ev);
@@ -95,7 +95,7 @@ bool W::Messenger::dispatchEvent(Event *ev) {
 	
 	// Dispatch to "normal" event type subscriptions
 	bool dispatched = false;
-	map<EventType::T, vector<Callback*>>::iterator it = s->typeSubs.find(ev->type);
+	map<EventType::T, vector<Callback*>>::iterator it = s->typeSubs.find(ev.type);
 	if (it != s->typeSubs.end()) {
 		vector<Callback*> &cblist = it->second;
 		for (std::vector<Callback*>::reverse_iterator it2 = cblist.rbegin(); it2 != cblist.rend(); ++it2)
@@ -109,12 +109,12 @@ bool W::Messenger::dispatchEvent(Event *ev) {
 	return dispatched;
 }
 
-bool W::Messenger::dispMouse(Event *ev, View *v) {
+bool W::Messenger::dispMouse(Event ev, View *v) {
 	// If there is a view-specific PER for this event type, dispatch to it
 	map<View*, map<EventType::T, Callback*>>::iterator itVPER = s->viewPERs.find(v);
 	if (itVPER != s->viewPERs.end()) {
 		map<EventType::T, Callback*> &typeSubsForView = itVPER->second;
-		map<EventType::T, Callback*>::iterator it = typeSubsForView.find(ev->type);
+		map<EventType::T, Callback*>::iterator it = typeSubsForView.find(ev.type);
 		if (it != typeSubsForView.end()) {
 			it->second->call(ev);			// Dispatch
 			return true;
@@ -129,14 +129,14 @@ bool W::Messenger::dispMouse(Event *ev, View *v) {
 	return true;
 }
 
-bool W::Messenger::dispTouch(Event *ev, View *v) {
+bool W::Messenger::dispTouch(Event ev, View *v) {
 	// For TouchDown events, test for view-specific PERs then try dispatching positionally
-	if (ev->type == EventType::TouchDown) {
+	if (ev.type == EventType::TouchDown) {
 		// Test for PER
 		map<View*, map<EventType::T, Callback*>>::iterator itVPER = s->viewPERs.find(v);
 		if (itVPER != s->viewPERs.end()) {
 			map<EventType::T, Callback*> &typeSubsForView = itVPER->second;
-			map<EventType::T, Callback*>::iterator it = typeSubsForView.find(ev->type);
+			map<EventType::T, Callback*>::iterator it = typeSubsForView.find(ev.type);
 			if (it != typeSubsForView.end()) {
 				it->second->call(ev);			// Dispatch
 				return true;
@@ -151,7 +151,7 @@ bool W::Messenger::dispTouch(Event *ev, View *v) {
 	}
 	
 	// For other touch events, send to subscriber to that touch id, if any
-	std::map<int, Callback*>::iterator it = s->touchSubs.find(ev->touchID);
+	std::map<int, Callback*>::iterator it = s->touchSubs.find(ev.touchID);
 	if (it != s->touchSubs.end()) {
 		it->second->call(ev);
 		return true;
@@ -159,8 +159,8 @@ bool W::Messenger::dispTouch(Event *ev, View *v) {
 	return false;
 }
 
-bool W::Messenger::dispUI(W::Event *ev) {
-	const std::string elname = ev->payload;
+bool W::Messenger::dispUI(W::Event ev) {
+	const std::string elname = ev.payload;
 	
 	// If no subscriptions to this element, return false
 	map<string, map<EventType::T, vector<Callback*>>>::iterator it1 = s->uiSubs.find(elname);
@@ -169,7 +169,7 @@ bool W::Messenger::dispUI(W::Event *ev) {
 	
 	// If no subscriptions to this event type for this element, return false
 	map<EventType::T, vector<Callback*>> &subs_for_element = it1->second;
-	map<EventType::T, vector<Callback*>>::iterator it2 = subs_for_element.find(ev->type);
+	map<EventType::T, vector<Callback*>>::iterator it2 = subs_for_element.find(ev.type);
 	if (it2 == subs_for_element.end())
 		return false;
 	
@@ -185,7 +185,7 @@ bool W::Messenger::dispUI(W::Event *ev) {
 	return dispatched;
 }
 
-bool W::Messenger::dispPositionalInView(Event *ev, View *v) {
+bool W::Messenger::dispPositionalInView(Event ev, View *v) {
 	// If view does not have entry in s.positionalSubs, return false
 	map<View*, map<EventType::T, vector<cbAndRect*>>>::iterator itV = s->positionalSubs.find(v);
 	if (itV == s->positionalSubs.end())
@@ -193,7 +193,7 @@ bool W::Messenger::dispPositionalInView(Event *ev, View *v) {
 	
 	// If no subscriptions to this event type for that view, return false
 	map<EventType::T, vector<cbAndRect*>> &typeSubsForView = itV->second;
-	map<EventType::T, vector<cbAndRect*>>::iterator itT = typeSubsForView.find(ev->type);
+	map<EventType::T, vector<cbAndRect*>>::iterator itT = typeSubsForView.find(ev.type);
 	if (itT == typeSubsForView.end())
 		return false;
 	
@@ -202,7 +202,7 @@ bool W::Messenger::dispPositionalInView(Event *ev, View *v) {
 	std::vector<cbAndRect*> &callbacks = itT->second;
 	for (std::vector<cbAndRect*>::reverse_iterator it = callbacks.rbegin(); it != callbacks.rend(); ++it) {
 		cbAndRect &cnr = **it;
-		if (cnr.rct->overlapsWith(ev->pos)) {
+		if (cnr.rct->overlapsWith(ev.pos)) {
 			dispatched = true;
 			if (cnr.cb->call(ev) == W::EventPropagation::ShouldStop)
 				break;
@@ -213,10 +213,10 @@ bool W::Messenger::dispPositionalInView(Event *ev, View *v) {
 	return false;
 }
 
-W::View* W::Messenger::lastViewBeneathEvent(Event *ev) {
+W::View* W::Messenger::lastViewBeneathEvent(Event ev) {
 	View *v = NULL;
 	for (GameState::Viewlist::reverse_iterator itV = activeGS->_vlist.rbegin(); itV != activeGS->_vlist.rend(); ++itV)
-		if ((*itV)->getRct().overlapsWith(ev->pos)) {
+		if ((*itV)->getRct().overlapsWith(ev.pos)) {
 			v = *itV;
 			break;
 		}
@@ -453,19 +453,19 @@ void W::Messenger::_gamestateDestroyed(W::GameState *_gs) {
 
 
 #pragma mark - Event type identification
-bool W::Messenger::_isMouse(Event *ev) {
+bool W::Messenger::_isMouse(Event ev) {
 	using namespace EventType;
-	return ev->type >= MouseMove && ev->type <= RMouseDown;
+	return ev.type >= MouseMove && ev.type <= RMouseDown;
 }
-bool W::Messenger::_isTouch(Event *ev) {
+bool W::Messenger::_isTouch(Event ev) {
 	using namespace EventType;
-	return ev->type >= TouchDown && ev->type <= TouchCancelled;
+	return ev.type >= TouchDown && ev.type <= TouchCancelled;
 }
-bool W::Messenger::_isPositional(Event *ev) {
+bool W::Messenger::_isPositional(Event ev) {
 	using namespace EventType;
-	return ev->type >= MouseMove && ev->type <= TouchCancelled;
+	return ev.type >= MouseMove && ev.type <= TouchCancelled;
 }
-bool W::Messenger::_isUI(Event *ev) {
+bool W::Messenger::_isUI(Event ev) {
 	using namespace EventType;
-	return ev->type >= ButtonClick && ev->type <= ButtonClick;	// lol
+	return ev.type >= ButtonClick && ev.type <= ButtonClick;	// lol
 }

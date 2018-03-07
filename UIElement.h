@@ -50,7 +50,7 @@ namespace W {
 	public:
 		Button(std::string _name, W::Positioner *, View *);
 		~Button();
-		EventPropagation::T recEv(Event *);
+		EventPropagation::T recEv(Event);
 		void activate();
 		void deactivate();
 	protected:

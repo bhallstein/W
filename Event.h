@@ -85,11 +85,11 @@ namespace W {
 		int touchID;
 		std::string payload;
 		
-		static W::EventType::T registerType();
-		static W::KeyCode::T charToKeycode(unsigned int c);
+		static EventType::T registerType();
+		static KeyCode::T charToKeycode(unsigned int c);
 		
-		static std::vector<W::Event*> _events;
-		static void _addEvent(W::Event *);
+		static std::vector<Event> _events;
+		static void _addEvent(Event);
 			// W's event queue
 		
 		static Mutex _mutex;

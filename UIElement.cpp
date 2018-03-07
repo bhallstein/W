@@ -55,18 +55,18 @@ W::Button::~Button()
 	Messenger::unsubscribeInView(view, EventType::LMouseDown, this);
 	Messenger::unsubscribeInView(view, EventType::LMouseUp, this);
 }
-W::EventPropagation::T W::Button::recEv(W::Event *ev) {
+W::EventPropagation::T W::Button::recEv(W::Event ev) {
 	using namespace EventType;
 	
-	if (ev->type == LMouseDown) {
+	if (ev.type == LMouseDown) {
 		active = true;
 		Messenger::requestPrivilegedEventResponderStatus(view, MouseMove, Callback(&Button::recEv, this));
 		Messenger::requestPrivilegedEventResponderStatus(view, LMouseUp, Callback(&Button::recEv, this));
 		btnrect->setCol(W::Colour::Red);
 	}
-	else if (ev->type == MouseMove) {
+	else if (ev.type == MouseMove) {
 		if (active) {
-			if (!rct.overlapsWith(ev->pos)) {
+			if (!rct.overlapsWith(ev.pos)) {
 				hover = false;
 				Messenger::relinquishPrivilegedEventResponderStatus(view, MouseMove, this);
 				Messenger::relinquishPrivilegedEventResponderStatus(view, LMouseUp, this);
@@ -77,14 +77,14 @@ W::EventPropagation::T W::Button::recEv(W::Event *ev) {
 			hover = true;
 		}
 	}
-	else if (ev->type == LMouseUp) {
+	else if (ev.type == LMouseUp) {
 		if (active) {
 			active = false;
 			Messenger::relinquishPrivilegedEventResponderStatus(view, MouseMove, this);
 			Messenger::relinquishPrivilegedEventResponderStatus(view, LMouseUp, this);
 			btnrect->setCol(W::Colour::Black);
-			if (rct.overlapsWith(ev->pos)) {
-				Messenger::dispatchEvent(&buttonClickEvent);
+			if (rct.overlapsWith(ev.pos)) {
+				Messenger::dispatchEvent(buttonClickEvent);
 			}
 		}
 	}

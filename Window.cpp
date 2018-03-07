@@ -86,26 +86,26 @@ void W::Window::beginDrawing() {
 void W::Window::generateMouseMoveEvent() {
 	v2i p = getMousePosition();
 	if (p.a >= 0 && p.b >= 0 && p.a < sz.a && p.b < sz.b)
-		W::Event::_addEvent(new W::Event(EventType::MouseMove, p));
+		W::Event::_addEvent(W::Event(EventType::MouseMove, p));
 	
 	static int generosity = 20, scrollMargin = 20;
 	// If within the view + generosity margin...
 	if (p.a >= -generosity && p.b >= -generosity && p.a < sz.a+generosity && p.b < sz.b+generosity) {
 		if (p.a < scrollMargin) {
 			float d = float(scrollMargin-p.a)/float(scrollMargin);
-			W::Event::_addEvent(new Event(EventType::ScreenEdgeLeft, float(d>1.0?1.0:d)));
+			W::Event::_addEvent(Event(EventType::ScreenEdgeLeft, float(d>1.0?1.0:d)));
 		}
 		else if (p.a >= sz.a-scrollMargin) {
 			float d = float(p.a-(sz.a-scrollMargin))/float(scrollMargin);
-			W::Event::_addEvent(new Event(EventType::ScreenEdgeRight, float(d>1.0?1.0:d)));
+			W::Event::_addEvent(Event(EventType::ScreenEdgeRight, float(d>1.0?1.0:d)));
 		}
 		if (p.b < scrollMargin) {
 			float d = float(scrollMargin-p.b)/float(scrollMargin);
-			W::Event::_addEvent(new Event(EventType::ScreenEdgeTop, float(d>1.0?1.0:d)));
+			W::Event::_addEvent(Event(EventType::ScreenEdgeTop, float(d>1.0?1.0:d)));
 		}
 		else if (p.b >= sz.b-scrollMargin) {
 			float d = float(p.b-(sz.b-scrollMargin))/float(scrollMargin);
-			W::Event::_addEvent(new Event(EventType::ScreenEdgeBottom, float(d>1.0?1.0:d)));
+			W::Event::_addEvent(Event(EventType::ScreenEdgeBottom, float(d>1.0?1.0:d)));
 		}
 	}
 }
@@ -434,7 +434,7 @@ W::position W::Window::getMousePosition() {
 }
 LRESULT CALLBACK W::Window::_WndProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM lParam) {
 	if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP || msg == WM_RBUTTONDOWN || msg == WM_RBUTTONUP) {
-		W::Event::_addEvent(new W::Event(
+		W::Event::_addEvent(W::Event(
 			_win_event_type_map[msg],
 			W::position((int)LOWORD(lParam), (int)HIWORD(lParam))
 		));
@@ -454,14 +454,14 @@ LRESULT CALLBACK W::Window::_WndProc(HWND windowHandle, UINT msg, WPARAM wParam,
 		else if (wParam == VK_END)	  k = KeyCode::END;
 		else if (wParam == VK_DELETE) k = KeyCode::_DELETE;
 		else k = Event::charToKeycode(wParam);
-		W::Event::_addEvent(new W::Event(
+		W::Event::_addEvent(W::Event(
 			msg == WM_KEYDOWN ? W::EventType::KeyDown : W::EventType::KeyUp,
 			k
 		));
 		return 0;
 	}
 	else if (msg ==  WM_CLOSE) {
-		W::Event::_addEvent(new W::Event(W::EventType::Closed));
+		W::Event::_addEvent(W::Event(W::EventType::Closed));
 		return 0;
 	}
 	else if (msg == WM_KEYUP) {
