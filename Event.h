@@ -15,6 +15,7 @@
 
 #include "types.h"
 #include "Mutex.h"
+#include <string>
 
 namespace W {
 	
@@ -82,7 +83,7 @@ namespace W {
 		KeyCode::T key;
 		float x;
 		int touchID;
-		void *_payload;
+		std::string payload;
 		
 		static W::EventType::T registerType();
 		static W::KeyCode::T charToKeycode(unsigned int c);

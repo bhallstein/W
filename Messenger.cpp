@@ -160,7 +160,7 @@ bool W::Messenger::dispTouch(Event *ev, View *v) {
 }
 
 bool W::Messenger::dispUI(W::Event *ev) {
-	const std::string &elname = *(std::string*)(ev->_payload);
+	const std::string elname = ev->payload;
 	
 	// If no subscriptions to this element, return false
 	map<string, map<EventType::T, vector<Callback*>>>::iterator it1 = s->uiSubs.find(elname);
