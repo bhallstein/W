@@ -63,19 +63,21 @@ void W::Layer::compact() {
 /*** View implementation ***/
 /***************************/
 
-W::View::View(const Positioner *_pos) :
-	_positioner(NULL),
+W::View::View(Positioner _pos) :
+	_positioner(_pos),
+	use_positioner(true),
 	frameCounter(0)
 {
-	if (_pos) {
-		_positioner = new Positioner(*_pos),
 		_updatePosition();
-	}
+}
+W::View::View() :
+	use_positioner(false),
+	frameCounter(0)
+{
+	_updatePosition();
 }
 W::View::~View()
 {
-	if (_positioner) delete _positioner;
-
 	// Delete all storage objects in all layers
 	for (std::map<int, Layer>::iterator it = layers.begin(); it != layers.end(); ++it) {
 		Layer &l = it->second;
@@ -100,8 +102,9 @@ void W::View::_updatePosition() {
 	_updatePosition(windowSize());
 }
 void W::View::_updatePosition(v2i winsize) {
-	if (_positioner)
-		rct = _positioner->refresh(winsize);
+	if (use_positioner) {
+		rct = _positioner.refresh(winsize);
+	}
 	updatePosition(winsize);
 }
 

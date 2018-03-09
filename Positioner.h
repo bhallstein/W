@@ -38,23 +38,24 @@ namespace W {
 			PosType::T _pos_method_x, PosType::T _pos_method_y,
 			PosType::T _sizing_method_x, PosType::T _sizing_method_y,
 			float _x, float _y, float _w, float _h,
-      bool draggable = false
+			bool draggable = false
 		);
+		Positioner();
 		Positioner(LuaObj *);
 		iRect refresh(v2f container_size);
 		
 		void nudge(v2f delta);
 		bool isDraggable() { return draggable; }
 		
-		static const Positioner *WholeAreaPositioner;
-		static const Positioner *LeftHalfPositioner;
-		static const Positioner *RightHalfPositioner;
-		static const Positioner *TopHalfPositioner;
-		static const Positioner *BottomHalfPositioner;
-		static const Positioner *TopLeftQuarterPositioner;
-		static const Positioner *TopRightQuarterPositioner;
-		static const Positioner *BottomLeftQuarterPositioner;
-		static const Positioner *BottomRightQuarterPositioner;
+		static const Positioner WholeAreaPositioner;
+		static const Positioner LeftHalfPositioner;
+		static const Positioner RightHalfPositioner;
+		static const Positioner TopHalfPositioner;
+		static const Positioner BottomHalfPositioner;
+		static const Positioner TopLeftQuarterPositioner;
+		static const Positioner TopRightQuarterPositioner;
+		static const Positioner BottomLeftQuarterPositioner;
+		static const Positioner BottomRightQuarterPositioner;
 		
 	private:
 		Corner::T fixed_corner;

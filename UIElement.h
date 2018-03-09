@@ -28,7 +28,7 @@ namespace W {
 	
 	class UIElement {
 	public:
-		UIElement(const std::string &_name, W::Positioner *, View *);
+		UIElement(const std::string &_name, W::Positioner, View *);
 		~UIElement();
 		
 		void _updatePosition(v2i containersize);
@@ -40,7 +40,7 @@ namespace W {
 		
 	protected:
 		std::string name;
-		W::Positioner *positioner;
+		W::Positioner positioner;
 		fRect rct;
 		View *view;
 	};
@@ -48,11 +48,11 @@ namespace W {
 	
 	class Button : public UIElement {
 	public:
-		Button(std::string _name, W::Positioner *, View *);
+		Button(std::string _name, W::Positioner, View *);
 		~Button();
 		EventPropagation::T recEv(Event);
-		void activate();
-		void deactivate();
+		virtual void activate();
+		virtual void deactivate();
 	protected:
 		void updatePosition();
 		bool hover;

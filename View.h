@@ -15,6 +15,7 @@
 
 #include "Colour.h"
 #include "Callback.h"
+#include "Positioner.h"
 
 #include <map>
 
@@ -24,7 +25,6 @@ namespace W {
 	
 	class Window;
 	class Event;
-	class Positioner;
 	class GameState;
 	class DColouredShape;
 	class DTexturedShape;
@@ -44,7 +44,8 @@ namespace W {
 	
 	class View {
 	public:
-		View(const Positioner *);
+		View(Positioner);
+		View();
 		~View();
 			// If NULL is supplied for positioner, subclass must
 			// set one up and call _updatePosition.
@@ -72,7 +73,8 @@ namespace W {
 		std::map<int, Layer> layers;
 		
 	protected:
-		Positioner *_positioner;
+		bool use_positioner;
+		Positioner _positioner;
 		iRect rct;
 		
 		v2i _offset;	// Def 0. Used by scrolling subviews. Undocumented!

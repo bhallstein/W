@@ -45,13 +45,13 @@ namespace W {
 	}
 }
 
-			  
+
 W::Positioner::Positioner(
 	Corner::T _fixed_corner,
 	PosType::T _pos_method_x, PosType::T _pos_method_y,
 	PosType::T _sizing_method_x, PosType::T _sizing_method_y,
 	float _corner_x, float _corner_y, float _w, float _h,
-  bool _draggable
+	bool _draggable
 ) :
 	fixed_corner(_fixed_corner),
 	pos_method_x(_pos_method_x), pos_method_y(_pos_method_y),
@@ -60,6 +60,11 @@ W::Positioner::Positioner(
 	draggable(_draggable)
 {
 	//
+}
+
+W::Positioner::Positioner()
+{
+	*this = WholeAreaPositioner;
 }
 
 W::Positioner::Positioner(LuaObj *_l)
@@ -142,12 +147,12 @@ W::Positioner::Positioner(LuaObj *_l)
 	
 	// Get draggability
 	LuaObj &l_drag = l["draggable"];
-  if (l_drag.type() == LuaObj::Type::Bool) {
+	if (l_drag.type() == LuaObj::Type::Bool) {
 		draggable = l_drag.bool_value();
-  }
-  else {
-    draggable = false;
-  }
+	}
+	else {
+		draggable = false;
+	}
 	
 	if (error) {
 		std::string errmsg;
@@ -194,55 +199,55 @@ void W::Positioner::nudge(v2f delta) {
 /* Initialize helper positioners */
 
 namespace W {
-	const Positioner *Positioner::WholeAreaPositioner = new Positioner(
+	const Positioner Positioner::WholeAreaPositioner = Positioner(
 		Corner::TopLeft,
 		PosType::Fixed, PosType::Fixed,
 		PosType::Proportional, PosType::Proportional,
 		0, 0, 1, 1
 	);
-	const Positioner *Positioner::LeftHalfPositioner = new Positioner(
+	const Positioner Positioner::LeftHalfPositioner = Positioner(
 		Corner::TopLeft,
 		PosType::Fixed, PosType::Fixed,
 		PosType::Proportional, PosType::Proportional,
 		0, 0, 0.5, 1
 	);
-	const Positioner *Positioner::RightHalfPositioner = new Positioner(
+	const Positioner Positioner::RightHalfPositioner = Positioner(
 		Corner::TopRight,
 		PosType::Fixed, PosType::Fixed,
 		PosType::Proportional, PosType::Proportional,
 		0, 0, 0.5, 1
 	);
-	const Positioner *Positioner::TopHalfPositioner = new Positioner(
+	const Positioner Positioner::TopHalfPositioner = Positioner(
 		Corner::TopLeft,
 		PosType::Fixed, PosType::Fixed,
 		PosType::Proportional, PosType::Proportional,
 		0, 0, 1, 0.5
 	);
-	const Positioner *Positioner::BottomHalfPositioner = new Positioner(
+	const Positioner Positioner::BottomHalfPositioner = Positioner(
 		Corner::BottomLeft,
 		PosType::Fixed, PosType::Fixed,
 		PosType::Proportional, PosType::Proportional,
 		0, 0, 1, 0.5
 	);
-	const Positioner *Positioner::TopLeftQuarterPositioner = new Positioner(
+	const Positioner Positioner::TopLeftQuarterPositioner = Positioner(
 		Corner::TopLeft,
 		PosType::Fixed, PosType::Fixed,
 		PosType::Proportional, PosType::Proportional,
 		0, 0, 0.5, 0.5
 	);
-	const Positioner *Positioner::TopRightQuarterPositioner = new Positioner(
+	const Positioner Positioner::TopRightQuarterPositioner = Positioner(
 		Corner::TopRight,
 		PosType::Fixed, PosType::Fixed,
 		PosType::Proportional, PosType::Proportional,
 		0, 0, 0.5, 0.5
 	);
-	const Positioner *Positioner::BottomLeftQuarterPositioner = new Positioner(
+	const Positioner Positioner::BottomLeftQuarterPositioner = Positioner(
 		Corner::BottomLeft,
 		PosType::Fixed, PosType::Fixed,
 		PosType::Proportional, PosType::Proportional,
 		0, 0, 0.5, 0.5
 	);
-	const Positioner *Positioner::BottomRightQuarterPositioner = new Positioner(
+	const Positioner Positioner::BottomRightQuarterPositioner = Positioner(
 		Corner::BottomRight,
 		PosType::Fixed, PosType::Fixed,
 		PosType::Proportional, PosType::Proportional,

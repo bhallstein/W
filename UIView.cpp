@@ -28,7 +28,7 @@ extern "C" {
 #include <iostream>
 
 W::UIView::UIView(const std::string &viewname) :
-	View(NULL),
+	View(),
 	dragloop(false),
 	cur_positioning_index(-1)
 {
@@ -45,7 +45,7 @@ W::UIView::UIView(const std::string &viewname) :
 }
 
 W::UIView::UIView() :
-  View(NULL),
+  View(),
   dragloop(false),
   cur_positioning_index(-1)
 {
@@ -69,7 +69,7 @@ void W::UIView::mouseEvent(Event ev) {
 W::EventPropagation::T W::UIView::dragLoopEvent(Event ev) {
 	using namespace EventType;
 	if (ev.type == MouseMove) {
-		cur_positioner->nudge(ev.pos - drag_initial);
+		cur_positioner.nudge(ev.pos - drag_initial);
 		_updatePosition();
 	}
 	else if (ev.type == LMouseUp) {
@@ -124,10 +124,10 @@ void W::UIView::updatePosition(v2i winsize) {
 	
 	// Update position of self
 	cur_positioner = psnr_vec->at(cur_positioning_index);
-	rct = cur_positioner->refresh(winsize);
+	rct = cur_positioner.refresh(winsize);
 //	std::cout << " - " << rct.pos.x << "," << rct.pos.y << " / " << rct.sz.width << "x" << rct.sz.height << "\n";
 	
-	allowDrag = cur_positioner->isDraggable();
+	allowDrag = cur_positioner.isDraggable();
 	
 	// Update element positions
 	ellist = &ellist_vec->at(cur_positioning_index);
@@ -253,9 +253,9 @@ void W::UIView::addPositioner(const std::string &limit, LuaObj *luaObj, W::UIVie
 			string("must be numeric")
 		);
 	// Create positioner
-	Positioner *pos;
+	Positioner pos;
 	try {
-		pos = new Positioner(luaObj);
+		pos = Positioner(luaObj);
 		// Add to relevant vectors if sucessful
 		if (_or == O_LANDSCAPE) {
 			landscape_positioning_limits.push_back(lim);
@@ -291,12 +291,12 @@ void W::UIView::addElements(const std::string &limit, LuaObj *luaObj, W::UIView:
 W::UIElement* W::UIView::createElement(const std::string &limit, const std::string &name, LuaObj *_luaObj, W::UIView::orientation_enum _or) {
 	using std::string;
 	
-	Positioner *pos;
+	Positioner pos;
 	LuaObj &luaObj = *_luaObj;
 	
 	try {
 		// Create positioner
-		pos = new Positioner(_luaObj);
+		pos = Positioner(_luaObj);
 		
 		// Get element properties
 		LuaObj &typeObj = luaObj["type"];

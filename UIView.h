@@ -46,13 +46,13 @@ namespace W {
 		v2f drag_initial;
 		
 		typedef std::vector<UIElement*> element_list;
-		typedef std::vector<Positioner*> positioner_list;
+		typedef std::vector<Positioner> positioner_list;
 		
 		bool orientation_check;
 		enum orientation_enum { O_LANDSCAPE, O_PORTRAIT };
 		
 		int cur_positioning_index;		// index of cur positioner in positioners vector
-		Positioner *cur_positioner;	
+		Positioner cur_positioner;
 		orientation_enum orientation;
 		
 		std::vector<int> landscape_positioning_limits;	// e.g. 400, 800, 1200

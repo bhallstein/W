@@ -15,18 +15,18 @@
 #include "Callback.h"
 #include "DrawingClasses.h"
 
-W::UIElement::UIElement(const std::string &_name, W::Positioner *_pos, View *_v) :
+W::UIElement::UIElement(const std::string &_name, W::Positioner _pos, View *_v) :
 	name(_name), positioner(_pos), view(_v)
 {
-	// hai element
+	//
 }
 W::UIElement::~UIElement()
 {
-	delete positioner;
+  //
 }
 
 void W::UIElement::_updatePosition(v2i _s) {
-	rct = positioner->refresh(_s);
+	rct = positioner.refresh(_s);
 	updatePosition();
 }
 
@@ -35,7 +35,7 @@ void W::UIElement::_updatePosition(v2i _s) {
 /* Button */
 /**********/
 
-W::Button::Button(std::string _name, W::Positioner *_pos, View *_v) :
+W::Button::Button(std::string _name, W::Positioner _pos, View *_v) :
 	UIElement(_name, _pos, _v),
 	hover(false), active(false),
 	buttonClickEvent(EventType::ButtonClick),
