@@ -255,3 +255,76 @@ namespace W {
 	);
 	
 }
+
+
+namespace W {
+  namespace PositionFuncs {
+
+    fRect FromCorner::f(v2f container_size, NewPositioner p, void *_pos_data) {
+      auto d = *(FromCorner*)_pos_data;
+
+      fRect result;
+
+      // Position
+      if (d.corner == Corner::TopLeft || d.corner == Corner::BottomLeft) {
+        result.position.a = (d.pos_method_x == PosType::Fixed ? p.r.position.a : p.r.position.a * container_size.a);
+      }
+      else {
+        int rval = container_size.a - (d.pos_method_x == PosType::Fixed ? p.r.position.a : p.r.position.a * container_size.a);
+        result.position.a = rval - p.r.size.a;
+      }
+      if (d.corner == Corner::TopLeft || d.corner == Corner::TopRight) {
+        result.position.b = (d.pos_method_y == PosType::Fixed ? p.r.position.b : p.r.position.b * container_size.b);
+      }
+      else {
+        int bval = container_size.b - (d.pos_method_y == PosType::Fixed ? p.r.position.b : p.r.position.b * container_size.b);
+        result.position.b = bval - p.r.size.b;
+      }
+
+      // Size
+      result.size.a = d.sizing_method_x == PosType::Fixed ? p.r.size.a : p.r.size.a * container_size.a;
+      result.size.b = d.sizing_method_y == PosType::Fixed ? p.r.size.b : p.r.size.b * container_size.b;
+
+      return result;
+    }
+
+    fRect FromCorner_Fixed::f(v2f container_size, NewPositioner p, void *_pos_data) {
+      auto d = *(FromCorner_Fixed*) _pos_data;
+      FromCorner d2 = {
+        d.corner,
+        PosType::Fixed, PosType::Fixed, PosType::Fixed, PosType::Fixed
+      };
+
+      return FromCorner::f(container_size, p, &d2);
+    }
+
+    fRect VCenter::f(v2f container_size, NewPositioner p, void *pos_data) {
+      fRect result = p.r;
+      result.position.a = (container_size.a - p.r.size.a) / 2;
+      return result;
+    }
+  }
+}
+
+W::PositionFuncs::FromCorner button_pos_data = {
+  W::Corner::TopLeft,
+  W::PosType::Fixed,
+  W::PosType::Fixed,
+  W::PosType::Fixed,
+  W::PosType::Fixed,
+};
+
+struct W::NewPositioner::Init {
+  Init() {
+    // Test: position a button in the middle of a container
+    W::NewPositioner p{
+      {{-1, 23}, {100, 40}},
+      { PositionFuncs::FromCorner::f, PositionFuncs::VCenter::f },
+      &button_pos_data,
+    };
+    auto result = p({200, 100});
+    printf("%.1f,%.1f %.1fx%.1f\n", result.position.a, result.position.b, result.size.a, result.size.b);
+  }
+};
+
+W::NewPositioner::Init* W::NewPositioner::init = new W::NewPositioner::Init;

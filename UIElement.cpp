@@ -14,6 +14,7 @@
 #include "Messenger.h"
 #include "Callback.h"
 #include "DrawingClasses.h"
+#include "Drawable.h"
 
 W::UIElement::UIElement(const std::string &_name, W::Positioner _pos, View *_v) :
 	name(_name), positioner(_pos), view(_v)
@@ -105,4 +106,48 @@ void W::Button::deactivate() {
 		delete btnrect;
 		btnrect = NULL;
 	}
+}
+
+
+/**************/
+/* TextButton */
+/**************/
+
+W::TextButton::TextButton(std::string _text, std::string name, W::Positioner pos, View *v) :
+  W::Button(name, pos, v),
+  str(_text)
+{
+  positioner.sizing_method_x = PosType::Fixed;
+  positioner.sizing_method_y = PosType::Fixed;
+
+  positioner.w = DRetroText::widthForStr(str) + 20;
+  positioner.h = 24;
+}
+W::TextButton::~TextButton()
+{
+  if (btntext) {
+    delete btntext;
+  }
+}
+
+void W::TextButton::updatePosition() {
+  Button::updatePosition();
+  if (btntext) {
+    btntext->setPos(rct.position + v2i{10, 6});
+  }
+}
+void W::TextButton::activate() {
+  Button::activate();
+  btntext = new RetroText(view,
+                          rct.position,
+                          str,
+                          Colour::White,
+                          TextAlign::Left);
+}
+void W::TextButton::deactivate() {
+  Button::deactivate();
+  if (btntext) {
+    delete btntext;
+    btntext = NULL;
+  }
 }

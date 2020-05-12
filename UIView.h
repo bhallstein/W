@@ -51,8 +51,8 @@ namespace W {
 		bool orientation_check;
 		enum orientation_enum { O_LANDSCAPE, O_PORTRAIT };
 		
-		int cur_positioning_index;		// index of cur positioner in positioners vector
-		Positioner cur_positioner;
+		int cur_positioner_index;
+    Positioner *cur_positioner;
 		orientation_enum orientation;
 		
 		std::vector<int> landscape_positioning_limits;	// e.g. 400, 800, 1200

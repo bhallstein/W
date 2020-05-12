@@ -25,7 +25,8 @@ namespace W {
 
 	class View;
 	class Rectangle;
-	
+  class RetroText;
+
 	class UIElement {
 	public:
 		UIElement(const std::string &_name, W::Positioner, View *);
@@ -52,14 +53,28 @@ namespace W {
 		~Button();
 		EventPropagation::T recEv(Event);
 		virtual void activate();
-		virtual void deactivate();
+    virtual void deactivate();
+    virtual void updatePosition();
 	protected:
-		void updatePosition();
 		bool hover;
 		bool active;
 		Event buttonClickEvent;
 		Rectangle *btnrect;
 	};
+
+
+  class TextButton : public Button {
+  public:
+    TextButton(std::string text, std::string name, W::Positioner, View*);
+    TextButton(std::string text, std::string name, View*);
+    ~TextButton();
+    virtual void activate();
+    virtual void deactivate();
+    virtual void updatePosition();
+  protected:
+    std::string str;
+    RetroText *btntext;
+  };
 
 }
 

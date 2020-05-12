@@ -326,7 +326,7 @@ int widthForChar(char c) {
   }
   return defaultCharWidth;
 }
-int widthForStr(std::string s) {
+int W::DRetroText::widthForStr(std::string s) {
   int tw = 0, c;
   for (int i=0; (c=s[i]); ++i) {
     tw += widthForChar(c);

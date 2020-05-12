@@ -147,6 +147,8 @@ namespace W {
     DRetroText(View*, v2f pos, std::string txt, Colour, TextAlign::T, int layer = DEFAULT_LAYER, BlendMode::T blendMode = BlendMode::Normal);
     void setPosTxtAlignmentCol(v2f, std::string, TextAlign::T, Colour);
 
+    static int widthForStr(std::string);
+
   private:
     void updateVertices(v2f, std::string);
 

@@ -14,6 +14,7 @@
 #define W_Positioner
 
 #include "types.h"
+#include <functional>
 
 class LuaObj;
 
@@ -30,6 +31,7 @@ namespace W {
 			Fixed, Proportional
 		};
 	}
+
 	
 	class Positioner {
 	public:
@@ -56,18 +58,58 @@ namespace W {
 		static const Positioner TopRightQuarterPositioner;
 		static const Positioner BottomLeftQuarterPositioner;
 		static const Positioner BottomRightQuarterPositioner;
-		
-	private:
+
 		Corner::T fixed_corner;
 		PosType::T pos_method_x, pos_method_y;
 		PosType::T sizing_method_x, sizing_method_y;
 		float corner_x, corner_y, w, h;
 		bool draggable;
-		
+
+  private:
 		iRect _p;
 		
 	};
-	
+
+
+  struct NewPositioner {
+    typedef std::function<fRect(v2f container_size, NewPositioner p, void *positioning_data)> PosFunc;
+
+    fRect r;
+    std::vector<PosFunc> funcs;
+    void *positioning_data;
+
+    fRect operator()(v2f container_size) {
+      fRect result = r;
+      for (auto f : funcs) {
+        result = f(container_size, *this, positioning_data);
+      }
+      return result;
+    }
+
+    struct Init;
+    static Init *init;
+  };
+
+  namespace PositionFuncs {
+    struct FromCorner {
+      static fRect f(v2f container_size, NewPositioner p, void *pos_data);
+      Corner::T corner;
+      PosType::T pos_method_x;
+      PosType::T pos_method_y;
+      PosType::T sizing_method_x;
+      PosType::T sizing_method_y;
+    };
+
+    struct FromCorner_Fixed {
+      static fRect f(v2f container_size, NewPositioner p, void *pos_data);
+      Corner::T corner;
+    };
+
+    struct VCenter {
+      static fRect f(v2f container_size, NewPositioner p, void *pos_data);
+    };
+  }
+
 }
 
 #endif

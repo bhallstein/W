@@ -25,12 +25,12 @@ extern "C" {
 	#include "lauxlib.h"
 }
 
-#include <iostream>
+#include <algorithm>
 
 W::UIView::UIView(const std::string &viewname) :
 	View(),
 	dragloop(false),
-	cur_positioning_index(-1)
+	cur_positioner_index(-1)
 {
 	// Initialize from Lua
 	using std::string;
@@ -47,7 +47,7 @@ W::UIView::UIView(const std::string &viewname) :
 W::UIView::UIView() :
   View(),
   dragloop(false),
-  cur_positioning_index(-1)
+  cur_positioner_index(-1)
 {
 
 }
@@ -61,7 +61,8 @@ void W::UIView::mouseEvent(Event ev) {
 	using namespace EventType;
 	if (ev.type == LMouseDown && allowDrag
 		&& Messenger::requestPrivilegedEventResponderStatus(this, MouseMove, Callback(&UIView::dragLoopEvent, this), true)
-		&& Messenger::requestPrivilegedEventResponderStatus(this, LMouseUp, Callback(&UIView::dragLoopEvent, this), true)) {
+		&& Messenger::requestPrivilegedEventResponderStatus(this, LMouseUp, Callback(&UIView::dragLoopEvent, this), true)
+  ) {
 		drag_initial = ev.pos;
 		dragloop = true;
 	}
@@ -69,7 +70,7 @@ void W::UIView::mouseEvent(Event ev) {
 W::EventPropagation::T W::UIView::dragLoopEvent(Event ev) {
 	using namespace EventType;
 	if (ev.type == MouseMove) {
-		cur_positioner.nudge(ev.pos - drag_initial);
+		cur_positioner->nudge(ev.pos - drag_initial);
 		_updatePosition();
 	}
 	else if (ev.type == LMouseUp) {
@@ -81,13 +82,13 @@ W::EventPropagation::T W::UIView::dragLoopEvent(Event ev) {
 }
 
 void W::UIView::updatePosition(v2i winsize) {
-	if (orientation_check)
+  if (orientation_check) {
 		orientation = (winsize.a >= winsize.b ? O_LANDSCAPE : O_PORTRAIT);
+  }
 	
 	std::vector<int> *limit_vec;
 	positioner_list *psnr_vec;
 	std::vector<element_list> *ellist_vec;
-	element_list *ellist;
 	
 	if (orientation == O_LANDSCAPE) {
 		limit_vec  = &landscape_positioning_limits;
@@ -103,36 +104,31 @@ void W::UIView::updatePosition(v2i winsize) {
 	// Get positioning index
 	// - Limits are "up to": a limit of 400 applies up to & including width 400
 	// - If width larger than greatest limit, the last limit is used
-	int new_positioning_index = -1;
-	for (std::vector<int>::iterator it = limit_vec->begin(); it < limit_vec->end(); it++, new_positioning_index++)
-		if (*it > winsize.a)
-			break;
+  int new_positioner_index = (int) (std::find_if(limit_vec->begin(), limit_vec->end(), [=](int x) { return x > winsize.a; }) - limit_vec->begin() - 1);
 	
 	// If change in index, deactivate current elements, activate new ones
-	if (new_positioning_index != cur_positioning_index) {
-		if (cur_positioning_index != -1) {
-			ellist = &ellist_vec->at(cur_positioning_index);
-			for (element_list::iterator it = ellist->begin(); it < ellist->end(); it++)
-				(*it)->deactivate();
+	if (new_positioner_index != cur_positioner_index) {
+		if (cur_positioner_index != -1) {
+      for (auto el : ellist_vec->at(cur_positioner_index)) {
+        el->deactivate();
+      }
 		}
-		ellist = &ellist_vec->at(new_positioning_index);
-		for (element_list::iterator it = ellist->begin(); it < ellist->end(); it++)
-			(*it)->activate();
+    for (auto el : ellist_vec->at(new_positioner_index)) {
+			el->activate();
+    }
 	}
-	cur_positioning_index = new_positioning_index;
-//	std::cout << "uiv: positioning index: " << cur_positioning_index << "\n";
+	cur_positioner_index = new_positioner_index;
 	
 	// Update position of self
-	cur_positioner = psnr_vec->at(cur_positioning_index);
-	rct = cur_positioner.refresh(winsize);
-//	std::cout << " - " << rct.pos.x << "," << rct.pos.y << " / " << rct.sz.width << "x" << rct.sz.height << "\n";
+  cur_positioner = &(*psnr_vec)[cur_positioner_index];
+	rct = cur_positioner->refresh(winsize);
 	
-	allowDrag = cur_positioner.isDraggable();
+	allowDrag = cur_positioner->isDraggable();
 	
 	// Update element positions
-	ellist = &ellist_vec->at(cur_positioning_index);
-	for (element_list::iterator it = ellist->begin(); it < ellist->end(); it++)
-		(*it)->_updatePosition(rct.size);
+  for (auto el : ellist_vec->at(cur_positioner_index)) {
+		el->_updatePosition(rct.size);
+  }
 
   // Update BG rect
   bgrect->setPos({0,0});
@@ -188,9 +184,9 @@ bool W::UIView::initialize(const std::string &viewname) {
 					"UIView: '" << viewname << "': Landscape: error: no layouts found" << std::endl;
 				return false;
 			}
-			for (LuaObj::_descendantmap::iterator it = d1.begin(); it != d1.end(); it++) {
-				addPositioner(it->first, &it->second, O_LANDSCAPE);
-				addElements(it->first, &it->second["elements"], O_LANDSCAPE);
+      for (auto l : d1) {
+				addPositioner(l.first, &l.second, O_LANDSCAPE);
+				addElements(l.first, &l.second["elements"], O_LANDSCAPE);
 			}
 			// Add all portrait descendants as positioners
 			LuaObj::_descendantmap d2 = portraitObj.descendants();
@@ -199,9 +195,9 @@ bool W::UIView::initialize(const std::string &viewname) {
 					"UIView: '" << viewname << "': Portrait: error: no layouts found" << std::endl;
 				return false;
 			}
-			for (LuaObj::_descendantmap::iterator it = d2.begin(); it != d2.end(); it++) {
-				const std::string &descName = it->first;
-				LuaObj &descendant = it->second;
+      for (auto l : d2) {
+				const std::string &descName = l.first;
+				LuaObj &descendant = l.second;
 				addPositioner(descName, &descendant, O_PORTRAIT);
 				addElements(descName, &descendant["elements"], O_PORTRAIT);
 			}
@@ -225,9 +221,9 @@ bool W::UIView::initialize(const std::string &viewname) {
 					<< ": error: no layouts found" << std::endl;
 				return false;
 			}
-			for (LuaObj::_descendantmap::iterator it = d.begin(); it != d.end(); it++) {
-				const std::string &descName = it->first;
-				LuaObj &descendant = it->second;
+      for (auto l : d) {
+        const std::string &descName = l.first;
+				LuaObj &descendant = l.second;
 				addPositioner(descName, &descendant, orientation);
 				addElements(descName, &descendant["elements"], orientation);
 			}
@@ -278,11 +274,11 @@ void W::UIView::addElements(const std::string &limit, LuaObj *luaObj, W::UIView:
 	std::vector<element_list> &l = (_or == O_LANDSCAPE ? landscape_elements : portrait_elements);
 	l.push_back(element_list());
 	element_list &elvec = l.back();
+
 	// For each descendant, create an element
-	LuaObj::_descendantmap d = luaObj->descendants();
-	for (LuaObj::_descendantmap::iterator it = d.begin(); it != d.end(); it++) {
-		const std::string &elName = it->first;
-		LuaObj &elObj = it->second;
+  for (auto l : luaObj->descendants()) {
+		const std::string &elName = l.first;
+		LuaObj &elObj = l.second;
 		elvec.push_back(
 			createElement(limit, elName, &elObj, _or)
 		);
