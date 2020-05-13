@@ -1,6 +1,6 @@
 [submodule "luaobj"]
 	path = luaobj
-	url = git@bitbucket.org:hallstein/luaobj.git
+	url = git@github.com:bhallstein/luaobj.git
 [submodule "soil"]
 	path = soil
 	url = https://github.com/kbranigan/Simple-OpenGL-Image-Library.git
